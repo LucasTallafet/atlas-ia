@@ -1,0 +1,6 @@
+markdown>=3.4
+numpy
+pandas
+scipy
+scikit-learn
+matplotlib

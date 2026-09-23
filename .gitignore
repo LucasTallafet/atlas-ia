@@ -1,0 +1,5 @@
+fuentes/
+capturas/
+__pycache__/
+*.pyc
+.DS_Store

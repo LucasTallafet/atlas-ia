@@ -1,0 +1,4648 @@
+{
+ "bloques": {
+  "B1": "Fundamentos matemáticos",
+  "B2": "Fundamentos de IA y ML",
+  "B3": "ML clásico",
+  "B4": "Deep Learning",
+  "B5": "Aprendizaje por refuerzo",
+  "B6": "NLP y LLMs",
+  "B7": "Razonamiento simbólico",
+  "B8": "Producción, ética y aplicaciones"
+ },
+ "conceptos": [
+  {
+   "id": "vectores",
+   "nombre": "Vectores, escalares y operaciones",
+   "bloque": "B1",
+   "principal": [
+    "mat:01-algebra/01-vectores-escalares.md#Ejemplo práctico: Vectores",
+    "mat:01-algebra/01-vectores-escalares.md#Suma y Resta",
+    "mat:01-algebra/01-vectores-escalares.md#Multiplicación por un escalar"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mat:01-algebra/03-algebra-representacion.md#Datos como vectores",
+     "uso": "E",
+     "nota": ""
+    },
+    {
+     "fuente": "mat:01-algebra/03-algebra-representacion.md#Combinaciones lineales",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [],
+   "visual": "Plano 2D con vectores arrastrables: suma, resta y escalado en vivo",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 843,
+   "palabras_fusion": 101,
+   "tipo": "fusion",
+   "motor": "vectores2d",
+   "modo": "operaciones",
+   "objetivo_palabras": 500,
+   "lote": "L01"
+  },
+  {
+   "id": "producto-escalar-similitud",
+   "nombre": "Producto escalar, norma, distancias y similitud del coseno",
+   "bloque": "B1",
+   "principal": [
+    "mat:01-algebra/01-vectores-escalares.md#Producto escalar",
+    "mat:01-algebra/01-vectores-escalares.md#Normalización de vectores"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mat:01-algebra/03-algebra-representacion.md#Producto escalar y similitud",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:03-ML_no_supervisado/01-clustering.md#Métricas de distancia",
+     "uso": "F",
+     "nota": "euclídea, Manhattan, etc. se explican aquí una vez"
+    },
+    {
+     "fuente": "ml:03-ML_no_supervisado/01-clustering.md#La noción de similitud",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/04-embeddings.md#Comparación entre palabras usando la similitud del coseno",
+     "uso": "E",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/08-red-transformer-caso-practico.md#¿Qué es la atención en los Transformers?",
+     "uso": "E",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "vectores"
+   ],
+   "visual": "Dos vectores con ángulo ajustable: producto escalar, coseno y distancias euclídea/Manhattan a la vez",
+   "ampliacion": null,
+   "nota": "Concepto puente: lo usan KNN, clustering, embeddings y atención",
+   "palabras_principal": 1762,
+   "palabras_fusion": 1230,
+   "tipo": "fusion",
+   "motor": "vectores2d",
+   "modo": "similitud",
+   "objetivo_palabras": 600,
+   "lote": "L01"
+  },
+  {
+   "id": "espacio-vectorial",
+   "nombre": "Espacio vectorial, dependencia lineal y base",
+   "bloque": "B1",
+   "principal": [
+    "mat:01-algebra/01-vectores-escalares.md#Espacio vectorial",
+    "mat:01-algebra/01-vectores-escalares.md#Dependencia lineal"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "vectores"
+   ],
+   "visual": "Dos vectores base: ver qué región del plano generan y cuándo son dependientes",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 3315,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "vectores2d",
+   "modo": "base",
+   "objetivo_palabras": 650,
+   "lote": "L01"
+  },
+  {
+   "id": "matrices",
+   "nombre": "Matrices: operaciones, tipos especiales y normas",
+   "bloque": "B1",
+   "principal": [
+    "mat:01-algebra/02-matrices.md#Principales operaciones",
+    "mat:01-algebra/02-matrices.md#Norma de una matriz"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mat:01-algebra/03-algebra-representacion.md#Multiplicación de una matriz por un vector",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mat:01-algebra/03-algebra-representacion.md#Multiplicación de matrices",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "vectores"
+   ],
+   "visual": "Multiplicación matriz×vector paso a paso, fila por columna",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 3281,
+   "palabras_fusion": 233,
+   "tipo": "fusion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 700,
+   "lote": "L01"
+  },
+  {
+   "id": "datos-como-matrices",
+   "nombre": "Los datos como vectores y matrices; la matriz como transformación",
+   "bloque": "B1",
+   "principal": [
+    "mat:01-algebra/03-algebra-representacion.md#Conjuntos de datos como matrices",
+    "mat:01-algebra/03-algebra-representacion.md#La matriz como transformación",
+    "mat:01-algebra/03-algebra-representacion.md#Interpretación geométrica de la representación"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:04-Redes_Neuronales/06-ap_enfoques-desarrollo-tf.md#El Tensor",
+     "uso": "E",
+     "nota": "el tensor como generalización"
+    }
+   ],
+   "prerequisitos": [
+    "matrices"
+   ],
+   "visual": "Matriz 2×2 editable que deforma una cuadrícula (rotar, escalar, cizallar)",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1071,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "transformacion2d",
+   "modo": "rejilla",
+   "objetivo_palabras": 500,
+   "lote": "L01"
+  },
+  {
+   "id": "determinante-inversa",
+   "nombre": "Determinante, rango e inversa",
+   "bloque": "B1",
+   "principal": [
+    "mat:01-algebra/02-matrices.md#Matrices cuadradas y determinante",
+    "mat:01-algebra/02-matrices.md#Matriz Inversa"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "datos-como-matrices"
+   ],
+   "visual": "El determinante como área del paralelogramo; cuando vale 0 el plano colapsa",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2746,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "transformacion2d",
+   "modo": "determinante",
+   "objetivo_palabras": 550,
+   "lote": "L01"
+  },
+  {
+   "id": "sistemas-lineales",
+   "nombre": "Sistemas de ecuaciones lineales y su resolución",
+   "bloque": "B1",
+   "principal": [
+    "mat:01-algebra/04-ecuaciones-lineales.md"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/04-regresion_lineal.md#Generalización a regresión lineal múltiple",
+     "uso": "E",
+     "nota": "ecuaciones normales = aplicación directa"
+    }
+   ],
+   "prerequisitos": [
+    "determinante-inversa"
+   ],
+   "visual": "Dos rectas: solución única, infinitas o ninguna",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 3354,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "funcion",
+   "modo": "rectas",
+   "objetivo_palabras": 650,
+   "lote": "L01"
+  },
+  {
+   "id": "autovalores-svd",
+   "nombre": "Autovalores, autovectores y SVD",
+   "bloque": "B1",
+   "principal": [
+    "mat:01-algebra/02-matrices.md#Autovalores y autovectores",
+    "mat:01-algebra/02-matrices.md#La Descomposición en Valores Singulares",
+    "mat:01-algebra/02-matrices.md#Aplicación en la IA: Descubrimiento de factores latentes"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "determinante-inversa"
+   ],
+   "visual": "Transformación que muestra qué direcciones solo se estiran (autovectores)",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 3411,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "transformacion2d",
+   "modo": "autovectores",
+   "objetivo_palabras": 700,
+   "lote": "L02"
+  },
+  {
+   "id": "funciones",
+   "nombre": "Funciones como modelos: lineales y no lineales",
+   "bloque": "B1",
+   "principal": [
+    "mat:02-funciones-calculo/01-funciones-tipos.md#Funciones como modelos",
+    "mat:02-funciones-calculo/01-funciones-tipos.md#Funciones lineales",
+    "mat:02-funciones-calculo/01-funciones-tipos.md#Funciones no lineales"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mat:02-funciones-calculo/04-conexion-IA.md#La función: El corazón del modelo",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [],
+   "visual": "Selector de familia (lineal, exponencial, log, polinómica) con sliders de parámetros",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 5780,
+   "palabras_fusion": 103,
+   "tipo": "fusion",
+   "motor": "funcion",
+   "modo": "familias",
+   "objetivo_palabras": 1200,
+   "lote": "L02"
+  },
+  {
+   "id": "no-linealidad",
+   "nombre": "Funciones por tramos: el origen de las activaciones",
+   "bloque": "B1",
+   "principal": [
+    "mat:02-funciones-calculo/01-funciones-tipos.md#Funciones de activación",
+    "mat:02-funciones-calculo/01-funciones-tipos.md#Doblar el espacio"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "funciones"
+   ],
+   "visual": "Problema XOR: una recta no separa; al \"doblar\" el plano con una función por tramos sí",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1531,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "red",
+   "modo": "xor",
+   "objetivo_palabras": 500,
+   "lote": "L02"
+  },
+  {
+   "id": "derivada",
+   "nombre": "La derivada: cambio, sensibilidad y optimización",
+   "bloque": "B1",
+   "principal": [
+    "mat:02-funciones-calculo/02-derivadas.md#La derivada como herramienta de cambio",
+    "mat:02-funciones-calculo/02-derivadas.md#La derivada como sensibilidad"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "funciones"
+   ],
+   "visual": "Recta secante que se convierte en tangente al reducir h",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1112,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "funcion",
+   "modo": "tangente",
+   "objetivo_palabras": 500,
+   "lote": "L02"
+  },
+  {
+   "id": "regla-cadena",
+   "nombre": "La regla de la cadena",
+   "bloque": "B1",
+   "principal": [
+    "mat:02-funciones-calculo/02-derivadas.md#La regla de la cadena"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "derivada"
+   ],
+   "visual": "Cadena de funciones compuestas donde se ve cómo se multiplican las sensibilidades",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 501,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L02"
+  },
+  {
+   "id": "gradiente",
+   "nombre": "Derivadas parciales y gradiente",
+   "bloque": "B1",
+   "principal": [
+    "mat:02-funciones-calculo/02-derivadas.md#Derivadas parciales y gradiente"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mat:02-funciones-calculo/04-conexion-IA.md#La derivada: La brújula",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "derivada"
+   ],
+   "visual": "Superficie 3D / curvas de nivel con la flecha del gradiente en el punto elegido",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 503,
+   "palabras_fusion": 119,
+   "tipo": "fusion",
+   "motor": "descenso",
+   "modo": "gradiente",
+   "objetivo_palabras": 500,
+   "lote": "L02"
+  },
+  {
+   "id": "integral-monte-carlo",
+   "nombre": "Integral, integración numérica y Monte Carlo",
+   "bloque": "B1",
+   "principal": [
+    "mat:02-funciones-calculo/03-calculo-integral.md"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mat:03-probabilidad-estadistica/05-est-inferencial.md#Simulaciones y métodos de Monte Carlo",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mat:02-funciones-calculo/04-conexion-IA.md#La integral",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:05-Aprendizaje-Refuerzo/04-algoritmos-rl-MonteCarlo.md",
+     "uso": "E",
+     "nota": "misma idea de muestreo aplicada a RL"
+    }
+   ],
+   "prerequisitos": [
+    "funciones"
+   ],
+   "visual": "Estimar π lanzando puntos aleatorios; ver converger con N",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2381,
+   "palabras_fusion": 1222,
+   "tipo": "fusion",
+   "motor": "simulacion",
+   "modo": "pi",
+   "objetivo_palabras": 700,
+   "lote": "L02"
+  },
+  {
+   "id": "probabilidad",
+   "nombre": "Fundamentos de probabilidad y axiomas de Kolmogórov",
+   "bloque": "B1",
+   "principal": [
+    "mat:03-probabilidad-estadistica/01-fund-probabilidad.md"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:02-Razonamiento/03-razonamiento-impreciso.md#Conceptos Fundamentales de Probabilidad",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [],
+   "visual": "Diagrama de Venn de eventos con probabilidades ajustables",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2735,
+   "palabras_fusion": 664,
+   "tipo": "fusion",
+   "motor": "probabilidad",
+   "modo": "venn",
+   "objetivo_palabras": 700,
+   "lote": "L02"
+  },
+  {
+   "id": "prob-condicional",
+   "nombre": "Probabilidad condicional e independencia (también condicional)",
+   "bloque": "B1",
+   "principal": [
+    "mat:03-probabilidad-estadistica/03-prob-condicional.md#Concepto de probabilidad condicional",
+    "mat:03-probabilidad-estadistica/03-prob-condicional.md#Definición formal: regla",
+    "mat:03-probabilidad-estadistica/03-prob-condicional.md#Independencia de eventos"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:02-Razonamiento/03-razonamiento-impreciso.md#Probabilidad condicionada",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:02-Razonamiento/03-razonamiento-impreciso.md#Independencia y dependencia",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mat:03-probabilidad-estadistica/05-est-inferencial.md#Independencia condicional",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "probabilidad"
+   ],
+   "visual": "Tabla de contingencia: filtrar por una condición y ver cómo cambia la probabilidad",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1580,
+   "palabras_fusion": 1542,
+   "tipo": "fusion",
+   "motor": "probabilidad",
+   "modo": "tabla",
+   "objetivo_palabras": 600,
+   "lote": "L03"
+  },
+  {
+   "id": "bayes",
+   "nombre": "Teorema de Bayes: prior, verosimilitud y posterior",
+   "bloque": "B1",
+   "principal": [
+    "mat:03-probabilidad-estadistica/03-prob-condicional.md#El Teorema de Bayes",
+    "mat:03-probabilidad-estadistica/03-prob-condicional.md#Interpretación en términos",
+    "mat:03-probabilidad-estadistica/03-prob-condicional.md#Ejemplo ilustrativo"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:02-Razonamiento/03-razonamiento-impreciso.md#El Teorema de Bayes",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mat:03-probabilidad-estadistica/03-prob-condicional.md#Conexiones con la Inteligencia Artificial",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "prob-condicional"
+   ],
+   "visual": "Test diagnóstico: sliders de prevalencia, sensibilidad y especificidad → posterior con 1000 puntitos",
+   "ampliacion": null,
+   "nota": "Aparece en 10 archivos: aquí se explica una vez; Naive Bayes y redes bayesianas enlazan",
+   "palabras_principal": 816,
+   "palabras_fusion": 1134,
+   "tipo": "fusion",
+   "motor": "probabilidad",
+   "modo": "test",
+   "objetivo_palabras": 500,
+   "lote": "L03"
+  },
+  {
+   "id": "variable-aleatoria",
+   "nombre": "Variable aleatoria, distribución, esperanza, varianza y CDF",
+   "bloque": "B1",
+   "principal": [
+    "mat:03-probabilidad-estadistica/02-distribuciones.md#Concepto de variable aleatoria",
+    "mat:03-probabilidad-estadistica/02-distribuciones.md#Concepto de distribución"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "probabilidad"
+   ],
+   "visual": "Histograma ↔ PDF ↔ CDF sincronizados",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1855,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "funcion",
+   "modo": "pdf-cdf",
+   "objetivo_palabras": 500,
+   "lote": "L03"
+  },
+  {
+   "id": "dist-normal",
+   "nombre": "Distribución Normal",
+   "bloque": "B1",
+   "principal": [
+    "mat:03-probabilidad-estadistica/02-distribuciones.md#Distribución Normal"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "variable-aleatoria"
+   ],
+   "visual": "Campana con sliders μ y σ; área sombreada entre dos valores",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2131,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "funcion",
+   "modo": "densidad",
+   "objetivo_palabras": 500,
+   "lote": "L03"
+  },
+  {
+   "id": "dist-binomial",
+   "nombre": "Distribución Binomial",
+   "bloque": "B1",
+   "principal": [
+    "mat:03-probabilidad-estadistica/02-distribuciones.md#Distribución Binomial"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "variable-aleatoria"
+   ],
+   "visual": "Sliders n y p; comparación con la Normal cuando n crece",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 684,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "funcion",
+   "modo": "discreta",
+   "objetivo_palabras": 500,
+   "lote": "L03"
+  },
+  {
+   "id": "dist-poisson",
+   "nombre": "Distribución de Poisson",
+   "bloque": "B1",
+   "principal": [
+    "mat:03-probabilidad-estadistica/02-distribuciones.md#Distribución de Poisson"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mat:03-probabilidad-estadistica/02-distribuciones.md#Interpretación gráfica",
+     "uso": "F",
+     "nota": "se reparte entre las tres distribuciones"
+    }
+   ],
+   "prerequisitos": [
+    "variable-aleatoria"
+   ],
+   "visual": "Slider λ; eventos raros simulados en una línea temporal",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1016,
+   "palabras_fusion": 332,
+   "tipo": "fusion",
+   "motor": "funcion",
+   "modo": "discreta",
+   "objetivo_palabras": 500,
+   "lote": "L03"
+  },
+  {
+   "id": "estadistica-descriptiva",
+   "nombre": "Estadística descriptiva: centralidad, dispersión y posición",
+   "bloque": "B1",
+   "principal": [
+    "mat:03-probabilidad-estadistica/04-est-descriptiva.md#Concepto general",
+    "mat:03-probabilidad-estadistica/04-est-descriptiva.md#Medidas de tendencia central",
+    "mat:03-probabilidad-estadistica/04-est-descriptiva.md#Medidas de dispersión",
+    "mat:03-probabilidad-estadistica/04-est-descriptiva.md#Medidas de posición"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/02-eda.md#Resumen estadístico",
+     "uso": "F",
+     "nota": "media, dispersión, percentiles, IQR duplicados"
+    },
+    {
+     "fuente": "mat:03-probabilidad-estadistica/04-est-descriptiva.md#Conexiones de la estadística descriptiva",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "variable-aleatoria"
+   ],
+   "visual": "Añadir un outlier arrastrándolo: ver cómo se mueven media y mediana y no la moda",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2979,
+   "palabras_fusion": 2136,
+   "tipo": "fusion",
+   "motor": "datos1d",
+   "modo": "centralidad",
+   "objetivo_palabras": 1000,
+   "lote": "L03"
+  },
+  {
+   "id": "graficos-estadisticos",
+   "nombre": "Gráficos estadísticos: histograma, boxplot y dispersión",
+   "bloque": "B1",
+   "principal": [
+    "mat:03-probabilidad-estadistica/04-est-descriptiva.md#Representaciones gráficas en EDA"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/02-eda.md#Análisis de la distribución de las características",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mat:03-probabilidad-estadistica/02-distribuciones.md#Funciones prácticas en el análisis de datos",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "estadistica-descriptiva"
+   ],
+   "visual": "El mismo dataset visto como histograma (bins ajustables) y como boxplot",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2303,
+   "palabras_fusion": 1510,
+   "tipo": "fusion",
+   "motor": "datos1d",
+   "modo": "graficos",
+   "objetivo_palabras": 750,
+   "lote": "L03"
+  },
+  {
+   "id": "muestreo-intervalos",
+   "nombre": "Muestreo, intervalos de confianza y bootstrap",
+   "bloque": "B1",
+   "principal": [
+    "mat:03-probabilidad-estadistica/05-est-inferencial.md#Introducción",
+    "mat:03-probabilidad-estadistica/05-est-inferencial.md#Muestreo y estimación"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/06-arboles.md#Muestreo Bootstrap",
+     "uso": "E",
+     "nota": "bagging reutiliza el bootstrap"
+    },
+    {
+     "fuente": "mat:03-probabilidad-estadistica/05-est-inferencial.md#Conexiones de la estadística inferencial",
+     "uso": "F",
+     "nota": "síntesis final: se reparte como \"dónde se usa\" entre las fichas de inferencia"
+    }
+   ],
+   "prerequisitos": [
+    "dist-normal"
+   ],
+   "visual": "Sacar 100 muestras: ver qué % de intervalos contiene la media real",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2901,
+   "palabras_fusion": 1087,
+   "tipo": "fusion",
+   "motor": "simulacion",
+   "modo": "intervalos",
+   "objetivo_palabras": 800,
+   "lote": "L04"
+  },
+  {
+   "id": "contraste-hipotesis",
+   "nombre": "Contraste de hipótesis y p-valor",
+   "bloque": "B1",
+   "principal": [
+    "mat:03-probabilidad-estadistica/05-est-inferencial.md#Contraste de hipótesis"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "muestreo-intervalos"
+   ],
+   "visual": "Distribución bajo H0 con región de rechazo y p-valor sombreado",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 3521,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "funcion",
+   "modo": "region",
+   "objetivo_palabras": 700,
+   "lote": "L04"
+  },
+  {
+   "id": "correlacion",
+   "nombre": "Correlación, dependencia y causalidad",
+   "bloque": "B1",
+   "principal": [
+    "mat:03-probabilidad-estadistica/05-est-inferencial.md#Correlación y dependencia"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/02-eda.md#Matrices de correlación",
+     "uso": "E",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "estadistica-descriptiva"
+   ],
+   "visual": "Nube de puntos con slider de correlación; ejemplo de correlación espuria",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 997,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "dispersion2d",
+   "modo": "correlacion",
+   "objetivo_palabras": 500,
+   "lote": "L04"
+  },
+  {
+   "id": "que-es-ia",
+   "nombre": "Qué es la IA: definiciones, agente, entorno y racionalidad",
+   "bloque": "B2",
+   "principal": [
+    "mod:01-Fundamentos/01-definiciones.md"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:05-Aprendizaje-Refuerzo/01-fundamentos-rl.md#Agente, entorno",
+     "uso": "D",
+     "nota": "\"agente\" en IA general vs. agente de RL (mismo núcleo, otro nivel de detalle)"
+    }
+   ],
+   "prerequisitos": [],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2520,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L05"
+  },
+  {
+   "id": "historia-ia",
+   "nombre": "Historia de la IA: de Dartmouth a los modelos fundacionales",
+   "bloque": "B2",
+   "principal": [
+    "mod:01-Fundamentos/02-historia.md"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/02-Historia.md",
+     "uso": "F",
+     "nota": "duplicado: se absorben el detalle del Perceptrón de Rosenblatt y el boom del ML"
+    }
+   ],
+   "prerequisitos": [
+    "que-es-ia"
+   ],
+   "visual": "Línea temporal navegable con inviernos y veranos de la IA",
+   "ampliacion": null,
+   "nota": "DUPLICADO REAL",
+   "palabras_principal": 4607,
+   "palabras_fusion": 2392,
+   "tipo": "fusion",
+   "motor": "linea-tiempo",
+   "modo": null,
+   "objetivo_palabras": 1400,
+   "lote": "L05"
+  },
+  {
+   "id": "paradigmas-ia",
+   "nombre": "Paradigmas: simbólico, conexionista, evolutivo, probabilístico e híbridos",
+   "bloque": "B2",
+   "principal": [
+    "mod:01-Fundamentos/03-paradigmas.md"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "que-es-ia"
+   ],
+   "visual": "Mapa de paradigmas con enlaces a los bloques donde se estudia cada uno",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2507,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "grafo",
+   "modo": "diagrama",
+   "objetivo_palabras": 500,
+   "lote": "L05"
+  },
+  {
+   "id": "ia-debil-general",
+   "nombre": "IA débil vs. IA general",
+   "bloque": "B2",
+   "principal": [
+    "mod:01-Fundamentos/04-IA-debil-general.md"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "que-es-ia"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2367,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L05"
+  },
+  {
+   "id": "resolucion-problemas",
+   "nombre": "Resolución de problemas, búsqueda y optimización",
+   "bloque": "B2",
+   "principal": [
+    "mod:01-Fundamentos/05-caracterizacion.md#Introducción a los sistemas de resolución",
+    "mod:01-Fundamentos/05-caracterizacion.md#Modelos de búsqueda y optimización"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "que-es-ia"
+   ],
+   "visual": "Búsqueda en un laberinto: BFS vs DFS expandiendo nodos",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 7580,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "rejilla",
+   "modo": "busqueda",
+   "objetivo_palabras": 1500,
+   "lote": "L06"
+  },
+  {
+   "id": "automatizacion-seleccion",
+   "nombre": "Automatización con IA y cómo elegir el tipo de modelo",
+   "bloque": "B2",
+   "principal": [
+    "mod:01-Fundamentos/05-caracterizacion.md#Modelos de automatización",
+    "mod:01-Fundamentos/05-caracterizacion.md#Adecuación de los modelos"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "resolucion-problemas"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 3715,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 750,
+   "lote": "L06"
+  },
+  {
+   "id": "que-es-ml",
+   "nombre": "Qué es el Machine Learning y cuándo usarlo",
+   "bloque": "B2",
+   "principal": [
+    "ml:01-Determinacion/01-Definiciones.md"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/01-Introduccion.md#Definición de Aprendizaje Automático Supervisado",
+     "uso": "E",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "que-es-ia"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1415,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L06"
+  },
+  {
+   "id": "tipos-aprendizaje",
+   "nombre": "Tipos de aprendizaje: supervisado, no supervisado y por refuerzo",
+   "bloque": "B2",
+   "principal": [
+    "ml:01-Determinacion/04-Tipos.md#Aprendizaje supervisado",
+    "ml:01-Determinacion/04-Tipos.md#Aprendizaje no supervisado",
+    "ml:01-Determinacion/04-Tipos.md#Aprendizaje por refuerzo"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/01-Introduccion.md#Diferencias con otros paradigmas",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:03-ML_no_supervisado/01-clustering.md#Clustering vs. clasificación supervisada",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:05-Aprendizaje-Refuerzo/01-fundamentos-rl.md#Diferencias entre el aprendizaje por refuerzo",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "que-es-ml"
+   ],
+   "visual": "El mismo dataset mostrado con etiquetas, sin etiquetas y como entorno con recompensa",
+   "ampliacion": null,
+   "nota": "DUPLICADO REAL: la comparación entre paradigmas se repite en 4 sitios",
+   "palabras_principal": 2833,
+   "palabras_fusion": 1193,
+   "tipo": "fusion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 800,
+   "lote": "L06"
+  },
+  {
+   "id": "componentes-ml",
+   "nombre": "Componentes: datos, modelo, algoritmo y parámetros",
+   "bloque": "B2",
+   "principal": [
+    "ml:01-Determinacion/03-Componentes.md"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "que-es-ml"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 5733,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 1150,
+   "lote": "L07"
+  },
+  {
+   "id": "ciclo-proyecto-ml",
+   "nombre": "Ciclo de vida de un proyecto de ML (mapa general)",
+   "bloque": "B2",
+   "principal": [
+    "ml:01-Determinacion/05-Etapas.md#=4. Etapas en un proyecto ML",
+    "ml:01-Determinacion/05-Etapas.md#Definición del problema",
+    "ml:01-Determinacion/05-Etapas.md#Recolección de datos",
+    "ml:01-Determinacion/05-Etapas.md#Selección del modelo"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/01-Introduccion.md#Flujo del aprendizaje supervisado",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Flujo de trabajo",
+     "uso": "E",
+     "nota": "versión DL"
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/09-consideraciones-practicas-keras-NLP.md#Flujo general de preprocesamiento",
+     "uso": "E",
+     "nota": "versión NLP"
+    }
+   ],
+   "prerequisitos": [
+    "componentes-ml"
+   ],
+   "visual": "Diagrama del ciclo: cada etapa es un enlace a su ficha",
+   "ampliacion": null,
+   "nota": "Ficha \"hub\": Etapas.md tiene resúmenes de EDA, escalado, validación, métricas, despliegue… que se reparten a sus fichas",
+   "palabras_principal": 2000,
+   "palabras_fusion": 305,
+   "tipo": "fusion",
+   "motor": "grafo",
+   "modo": "diagrama",
+   "objetivo_palabras": 500,
+   "lote": "L07"
+  },
+  {
+   "id": "funciones-perdida",
+   "nombre": "Funciones de pérdida: MSE, MAE, Huber, log-loss",
+   "bloque": "B2",
+   "principal": [
+    "ml:02-ML_Supervisado/04-regresion_lineal.md#Variantes de la función de pérdida"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mat:03-probabilidad-estadistica/04-est-descriptiva.md#Media y el Error Cuadrático Medio",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:02-ML_Supervisado/05-regresion_logistica.md#Log-verosimilitud",
+     "uso": "E",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#Importancia de la función de pérdida",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "estadistica-descriptiva"
+   ],
+   "visual": "Mismos residuos penalizados por MSE, MAE y Huber; arrastrar un outlier",
+   "ampliacion": null,
+   "nota": "DESAMBIGUAR en glosario: MSE como pérdida (se optimiza) vs MSE como métrica (se reporta)",
+   "palabras_principal": 697,
+   "palabras_fusion": 506,
+   "tipo": "fusion",
+   "motor": "funcion",
+   "modo": "perdidas",
+   "objetivo_palabras": 500,
+   "lote": "L07"
+  },
+  {
+   "id": "descenso-gradiente",
+   "nombre": "Descenso de gradiente y tasa de aprendizaje",
+   "bloque": "B2",
+   "principal": [
+    "ml:02-ML_Supervisado/04-regresion_lineal.md#Comparación entre el método de mínimos cuadrados"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/03-Componentes.md#Optimización y Ajuste",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:01-Determinacion/05-Etapas.md#Proceso de optimización",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#Importancia de la tasa de aprendizaje",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:05-Aprendizaje-Refuerzo/06-algoritmos-rl-REINFORCE.md#El ascenso del gradiente",
+     "uso": "E",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "gradiente",
+    "funciones-perdida"
+   ],
+   "visual": "Bola bajando por una superficie de pérdida; slider de learning rate (converge / oscila / diverge)",
+   "ampliacion": null,
+   "nota": "CADENA: derivada → gradiente → descenso → backprop → policy gradient",
+   "palabras_principal": 1982,
+   "palabras_fusion": 1085,
+   "tipo": "fusion",
+   "motor": "descenso",
+   "modo": "lr",
+   "objetivo_palabras": 600,
+   "lote": "L07"
+  },
+  {
+   "id": "generalizacion",
+   "nombre": "Generalización, sobreajuste/subajuste y sesgo-varianza",
+   "bloque": "B2",
+   "principal": [
+    "ml:02-ML_Supervisado/01-Introduccion.md#Generalización",
+    "ml:02-ML_Supervisado/01-Introduccion.md#Sesgo y Varianza"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/05-Etapas.md#Evitar el sobreajuste",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:01-Determinacion/03-Componentes.md#Entrenamiento y generalización",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:02-ML_Supervisado/06-arboles.md#El equilibrio entre sesgo y varianza",
+     "uso": "E",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#Desafíos en el entrenamiento: sobreajuste",
+     "uso": "E",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "componentes-ml"
+   ],
+   "visual": "Polinomio con slider de grado: error de train vs test y la curva en U",
+   "ampliacion": null,
+   "nota": "DUPLICADO REAL en 3 sitios + 2 aplicaciones",
+   "palabras_principal": 1577,
+   "palabras_fusion": 724,
+   "tipo": "fusion",
+   "motor": "dispersion2d",
+   "modo": "polinomio",
+   "objetivo_palabras": 500,
+   "lote": "L07"
+  },
+  {
+   "id": "validacion",
+   "nombre": "División train/val/test y validación cruzada",
+   "bloque": "B2",
+   "principal": [
+    "ml:01-Determinacion/05-Etapas.md#División del dataset",
+    "ml:01-Determinacion/05-Etapas.md#Validación del Modelo"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/06-arboles.md#División del dataset de entrada y validación cruzada",
+     "uso": "F",
+     "nota": "la más larga (841 pal.); aporta ejemplos"
+    },
+    {
+     "fuente": "ml:02-ML_Supervisado/04-regresion_lineal.md#Validación cruzada",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mat:03-probabilidad-estadistica/05-est-inferencial.md#Validación cruzada como estimación",
+     "uso": "F",
+     "nota": "aporta la visión estadística"
+    },
+    {
+     "fuente": "ml:01-Determinacion/03-Componentes.md#Entrenamiento, test y validación",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:01-Determinacion/05-Etapas.md#Evaluación del modelo",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:01-Determinacion/05-Etapas.md#Técnicas avanzadas de evaluación",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:01-Determinacion/05-Etapas.md#Importancia de la evaluación",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "generalizacion"
+   ],
+   "visual": "Animación k-fold: el bloque de validación rota y se promedian las puntuaciones",
+   "ampliacion": null,
+   "nota": "DUPLICADO REAL en 5 sitios. Principal = Etapas (visión general); la versión de árboles es más larga y se fusiona",
+   "palabras_principal": 1046,
+   "palabras_fusion": 3430,
+   "tipo": "fusion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 900,
+   "lote": "L07"
+  },
+  {
+   "id": "regularizacion",
+   "nombre": "Regularización: L1, L2 y control de complejidad",
+   "bloque": "B2",
+   "principal": [
+    "ml:02-ML_Supervisado/04-regresion_lineal.md#Generalización y regularización",
+    "ml:02-ML_Supervisado/04-regresion_lineal.md#Regularización"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/06-arboles.md#Regularización en árboles de decisión. El",
+     "uso": "E",
+     "nota": "poda y profundidad"
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Técnicas de regularización",
+     "uso": "E",
+     "nota": "weight decay, dropout, batchnorm"
+    }
+   ],
+   "prerequisitos": [
+    "generalizacion",
+    "funciones-perdida"
+   ],
+   "visual": "Slider de λ: coeficientes que se encogen (L2) o se anulan (L1)",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2251,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "dispersion2d",
+   "modo": "ridge-lasso",
+   "objetivo_palabras": 500,
+   "lote": "L08"
+  },
+  {
+   "id": "metricas-regresion",
+   "nombre": "Métricas de regresión: MAE, RMSE, R², MAPE",
+   "bloque": "B2",
+   "principal": [
+    "ml:02-ML_Supervisado/04-regresion_lineal.md#Evaluación y métricas del modelo de regresión"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/05-Etapas.md#Métricas para modelos de regresión",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:02-ML_Supervisado/06-arboles.md#Evaluación en problemas de regresión",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Métricas para regresión",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "funciones-perdida"
+   ],
+   "visual": "Predicciones vs reales: mover puntos y ver las 4 métricas cambiar a la vez",
+   "ampliacion": null,
+   "nota": "DUPLICADO REAL en 4 sitios",
+   "palabras_principal": 777,
+   "palabras_fusion": 680,
+   "tipo": "fusion",
+   "motor": "dispersion2d",
+   "modo": "metricas-regresion",
+   "objetivo_palabras": 500,
+   "lote": "L08"
+  },
+  {
+   "id": "metricas-clasificacion",
+   "nombre": "Métricas de clasificación: matriz de confusión, precisión, recall, F1, ROC-AUC",
+   "bloque": "B2",
+   "principal": [
+    "ml:02-ML_Supervisado/05-regresion_logistica.md#Evaluación del modelo"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/05-Etapas.md#Métricas para modelos de clasificación",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:02-ML_Supervisado/06-arboles.md#Evaluación del modelo de árbol",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:02-ML_Supervisado/06-arboles.md#Evaluación en problemas de clasificación",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Métricas para clasificación",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Diferencias entre usar métricas dentro o fuera",
+     "uso": "E",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "validacion"
+   ],
+   "visual": "Slider de umbral: la matriz de confusión se recalcula y el punto se mueve sobre la curva ROC",
+   "ampliacion": null,
+   "nota": "DUPLICADO REAL en 4 sitios. Principal = regresión logística (la más completa, ~2.000 pal.)",
+   "palabras_principal": 2143,
+   "palabras_fusion": 920,
+   "tipo": "fusion",
+   "motor": "umbral",
+   "modo": "clasificacion",
+   "objetivo_palabras": 600,
+   "lote": "L08"
+  },
+  {
+   "id": "hiperparametros",
+   "nombre": "Hiperparámetros y su búsqueda (grid, random, bayesiana)",
+   "bloque": "B2",
+   "principal": [
+    "ml:02-ML_Supervisado/06-arboles.md#Hiperparámetros óptimos con Grid Search"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Ajuste de hiperparámetros",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "validacion"
+   ],
+   "visual": "Mapa de calor de 2 hiperparámetros: grid vs random explorando el mismo espacio",
+   "ampliacion": {
+    "que": "Qué es un hiperparámetro vs parámetro; grid/random search con validación cruzada; búsqueda bayesiana (Optuna); nested CV",
+    "prioridad": "alta",
+    "fuentes_externas": [
+     "scikit-learn User Guide §3.2 Tuning the hyper-parameters",
+     "Bergstra & Bengio 2012 (random search)",
+     "documentación de Optuna"
+    ]
+   },
+   "nota": "HUECO PARCIAL: el curso lo menciona (~80 veces) pero solo dedica ~40 palabras de sección",
+   "palabras_principal": 27,
+   "palabras_fusion": 169,
+   "tipo": "original+ampliacion",
+   "motor": "matriz-calor",
+   "modo": "busqueda",
+   "objetivo_palabras": 500,
+   "lote": "L08"
+  },
+  {
+   "id": "tipos-datos",
+   "nombre": "Tipos de datos y variable objetivo",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/02-eda.md#Comprensión de las características",
+    "ml:01-Determinacion/06-codificacion.md#Tipos de datos y necesidades"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/06-codificacion.md#Introducción a la codificación",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "que-es-ml"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 978,
+   "palabras_fusion": 683,
+   "tipo": "fusion",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L09"
+  },
+  {
+   "id": "eda",
+   "nombre": "Análisis exploratorio de datos (EDA): el proceso",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/02-eda.md#Introducción",
+    "ml:02-ML_Supervisado/02-eda.md#Comparación entre distribuciones",
+    "ml:02-ML_Supervisado/02-eda.md#Identificación de relaciones",
+    "ml:02-ML_Supervisado/02-eda.md#Análisis de la relación entre la variable objetivo",
+    "ml:02-ML_Supervisado/02-eda.md#Exploración de interacciones",
+    "ml:02-ML_Supervisado/02-eda.md#Automatización del análisis exploratorio",
+    "ml:02-ML_Supervisado/02-eda.md#Consideraciones finales"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/05-Etapas.md#Análisis exploratorio de datos",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mat:03-probabilidad-estadistica/04-est-descriptiva.md#Conexión con la exploración",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "tipos-datos",
+    "graficos-estadisticos",
+    "correlacion"
+   ],
+   "visual": "Mini-EDA guiado sobre un dataset incrustado: cada pregunta revela un gráfico",
+   "ampliacion": null,
+   "nota": "EDA.md (13k pal.) se reparte: estadísticos → B1; outliers, ausentes, multicolinealidad y desbalanceo → fichas propias",
+   "palabras_principal": 5231,
+   "palabras_fusion": 1152,
+   "tipo": "fusion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 1300,
+   "lote": "L09"
+  },
+  {
+   "id": "preprocesamiento",
+   "nombre": "Preprocesamiento: visión general, orden de las operaciones y fuga de datos",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/03-preprocesamiento.md#Introducción",
+    "ml:02-ML_Supervisado/03-preprocesamiento.md#Limpieza de Datos",
+    "ml:02-ML_Supervisado/03-preprocesamiento.md#Transformación de datos"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/05-Etapas.md#Preprocesamiento de los datos",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:01-Determinacion/05-Etapas.md#Limpieza de datos",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Preprocesamiento de datos@2",
+     "uso": "E",
+     "nota": "versión DL"
+    }
+   ],
+   "prerequisitos": [
+    "eda",
+    "validacion"
+   ],
+   "visual": "Pipeline arrastrable: cambiar el orden (escalar antes o después del split) y ver la fuga de datos",
+   "ampliacion": null,
+   "nota": "Ficha \"hub\" del preprocesamiento: cada técnica enlaza a su ficha propia",
+   "palabras_principal": 1230,
+   "palabras_fusion": 220,
+   "tipo": "fusion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L09"
+  },
+  {
+   "id": "outliers",
+   "nombre": "Valores atípicos: detección y tratamiento",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/03-preprocesamiento.md#Tratamiento de valores atípicos",
+    "ml:02-ML_Supervisado/03-preprocesamiento.md#Técnicas de tratamiento de valores atípicos"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/02-eda.md#Detección de anomalías y valores atípicos",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:02-ML_Supervisado/02-eda.md#Valores atípicos (outliers)",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mat:03-probabilidad-estadistica/04-est-descriptiva.md#Mediana y su robustez",
+     "uso": "E",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "estadistica-descriptiva"
+   ],
+   "visual": "Regla IQR vs z-score sobre el mismo dataset: qué puntos marca cada uno",
+   "ampliacion": null,
+   "nota": "DUPLICADO REAL (EDA + preprocesamiento)",
+   "palabras_principal": 1505,
+   "palabras_fusion": 1058,
+   "tipo": "fusion",
+   "motor": "datos1d",
+   "modo": "outliers",
+   "objetivo_palabras": 500,
+   "lote": "L09"
+  },
+  {
+   "id": "valores-ausentes",
+   "nombre": "Valores ausentes: patrones e imputación",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/03-preprocesamiento.md#Imputación de valores faltantes"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/02-eda.md#Manejo de valores ausentes",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Manejo de valores faltantes",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "estadistica-descriptiva"
+   ],
+   "visual": "Imputar con media, mediana o KNN y ver cómo se deforma la distribución",
+   "ampliacion": null,
+   "nota": "DUPLICADO REAL",
+   "palabras_principal": 1251,
+   "palabras_fusion": 1717,
+   "tipo": "fusion",
+   "motor": "datos1d",
+   "modo": "imputacion",
+   "objetivo_palabras": 600,
+   "lote": "L09"
+  },
+  {
+   "id": "multicolinealidad",
+   "nombre": "Multicolinealidad y VIF",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/02-eda.md#Análisis de la multicolinealidad"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/05-regresion_logistica.md#Ausencia de multicolinealidad",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "correlacion"
+   ],
+   "visual": "Dos variables casi iguales: los coeficientes del modelo se vuelven inestables",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 877,
+   "palabras_fusion": 1654,
+   "tipo": "fusion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L09"
+  },
+  {
+   "id": "escalado",
+   "nombre": "Escalado: normalización y estandarización",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/03-preprocesamiento.md#Escalado de datos"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/05-Etapas.md#Escalado de datos",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mat:03-probabilidad-estadistica/04-est-descriptiva.md#Desviación estándar en la normalización",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mat:01-algebra/03-algebra-representacion.md#Normalización y escalado",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Normalización y estandarización",
+     "uso": "E",
+     "nota": "cuándo en DL"
+    },
+    {
+     "fuente": "mat:01-algebra/01-vectores-escalares.md#Normalización de vectores",
+     "uso": "D",
+     "nota": "\"normalizar un vector\" (norma 1) ≠ \"normalizar una variable\" (min-max)"
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Batch Normalization",
+     "uso": "D",
+     "nota": "BatchNorm es otra cosa: capa de la red"
+    }
+   ],
+   "prerequisitos": [
+    "estadistica-descriptiva"
+   ],
+   "visual": "Dos variables en escalas distintas: ver cómo cambian las distancias al escalar",
+   "ampliacion": null,
+   "nota": "\"Normalización\" significa 3 cosas distintas en el material → entrada de desambiguación",
+   "palabras_principal": 593,
+   "palabras_fusion": 995,
+   "tipo": "fusion",
+   "motor": "dispersion2d",
+   "modo": "escalado",
+   "objetivo_palabras": 500,
+   "lote": "L09"
+  },
+  {
+   "id": "codificacion-categoricas",
+   "nombre": "Codificación de variables categóricas",
+   "bloque": "B3",
+   "principal": [
+    "ml:01-Determinacion/06-codificacion.md#Codificación de variables categóricas"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/03-preprocesamiento.md#Codificación de variables categóricas",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:01-Determinacion/06-codificacion.md#Impacto de la codificación",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:01-Determinacion/05-Etapas.md#Codificación de variables categóricas",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Codificación de variables categóricas",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/03-codificacion_basica.md",
+     "uso": "D",
+     "nota": "\"codificación\" de texto (BoW/TF-IDF) es otra ficha"
+    }
+   ],
+   "prerequisitos": [
+    "tipos-datos"
+   ],
+   "visual": "Una columna categórica transformada en vivo: label, one-hot, binaria, target",
+   "ampliacion": null,
+   "nota": "DUPLICADO REAL en 4 sitios",
+   "palabras_principal": 3425,
+   "palabras_fusion": 1654,
+   "tipo": "fusion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 1000,
+   "lote": "L10"
+  },
+  {
+   "id": "seleccion-caracteristicas",
+   "nombre": "Selección e ingeniería de características",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/03-preprocesamiento.md#Métodos de selección"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/05-Etapas.md#Ingeniería de características",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:02-ML_Supervisado/02-eda.md#Técnicas de interacción cruzada",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "eda"
+   ],
+   "visual": "Filtro vs wrapper vs embedded: qué variables elige cada método en el mismo dataset",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1342,
+   "palabras_fusion": 526,
+   "tipo": "fusion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L10"
+  },
+  {
+   "id": "reduccion-dimensionalidad",
+   "nombre": "Reducción de dimensionalidad: PCA, LDA y t-SNE",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/03-preprocesamiento.md#Reducción de dimensionalidad"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mat:01-algebra/03-algebra-representacion.md#Espacios vectoriales y reducción",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:01-Determinacion/05-Etapas.md#Reducción de dimensionalidad",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:01-Determinacion/06-codificacion.md#Reducción dimensional",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/04-embeddings.md#Reducción de dimensionalidad con PCA y t-SNE",
+     "uso": "E",
+     "nota": "aplicación a embeddings"
+    }
+   ],
+   "prerequisitos": [
+    "autovalores-svd",
+    "escalado"
+   ],
+   "visual": "Nube 2D: girar el eje y ver la varianza explicada; proyección sobre la 1ª componente",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2416,
+   "palabras_fusion": 1485,
+   "tipo": "fusion",
+   "motor": "dispersion2d",
+   "modo": "pca",
+   "objetivo_palabras": 800,
+   "lote": "L10"
+  },
+  {
+   "id": "desbalanceo",
+   "nombre": "Datos desbalanceados: remuestreo, SMOTE y pesos de clase",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/03-preprocesamiento.md#Tratamiento de datos desbalanceados"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/06-codificacion.md#Codificación de datos desbalanceados",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:02-ML_Supervisado/02-eda.md#Distribución de clases",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "metricas-clasificacion"
+   ],
+   "visual": "Clase minoritaria: aplicar under/oversampling y ver la accuracy engañosa frente al F1",
+   "ampliacion": null,
+   "nota": "DUPLICADO REAL en 3 sitios",
+   "palabras_principal": 2308,
+   "palabras_fusion": 1014,
+   "tipo": "fusion",
+   "motor": "umbral",
+   "modo": "desbalanceo",
+   "objetivo_palabras": 650,
+   "lote": "L10"
+  },
+  {
+   "id": "series-temporales",
+   "nombre": "Datos de series temporales: codificación, ventanas y evaluación",
+   "bloque": "B3",
+   "principal": [
+    "ml:01-Determinacion/06-codificacion.md#Codificación de series temporales"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Datos en series temporales",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Evaluación en problemas de series temporales",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/03-modelos-secuenciales.md#El paradigma de la secuencia",
+     "uso": "E",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "tipos-datos"
+   ],
+   "visual": "Ventana deslizante sobre una serie: cómo se generan pares (X, y)",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1079,
+   "palabras_fusion": 1055,
+   "tipo": "fusion",
+   "motor": "serie",
+   "modo": "ventana",
+   "objetivo_palabras": 500,
+   "lote": "L10"
+  },
+  {
+   "id": "supervisado",
+   "nombre": "Aprendizaje supervisado: panorama, aplicaciones y límites",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/01-Introduccion.md"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "tipos-aprendizaje",
+    "generalizacion"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "Las secciones de generalización y comparación de paradigmas ya se han repartido",
+   "palabras_principal": 1400,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L10"
+  },
+  {
+   "id": "regresion-lineal",
+   "nombre": "Regresión lineal: OLS, supuestos y diagnóstico",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/04-regresion_lineal.md#Introducción a la regresión lineal",
+    "ml:02-ML_Supervisado/04-regresion_lineal.md#Fundamentos matemáticos",
+    "ml:02-ML_Supervisado/04-regresion_lineal.md#Optimización mediante mínimos cuadrados",
+    "ml:02-ML_Supervisado/04-regresion_lineal.md#Diagnóstico y gráficos",
+    "ml:02-ML_Supervisado/04-regresion_lineal.md#Ejemplo práctico de protocolo"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "sistemas-lineales",
+    "descenso-gradiente",
+    "metricas-regresion"
+   ],
+   "visual": "Arrastrar puntos y ver la recta OLS recalcularse con sus residuos",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 5590,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "dispersion2d",
+   "modo": "ols",
+   "objetivo_palabras": 1100,
+   "lote": "L11"
+  },
+  {
+   "id": "regresion-logistica",
+   "nombre": "Regresión logística: sigmoide, verosimilitud y multiclase",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/05-regresion_logistica.md#Introducción",
+    "ml:02-ML_Supervisado/05-regresion_logistica.md#Fundamentos estadísticos",
+    "ml:02-ML_Supervisado/05-regresion_logistica.md#Comparación con el modelo de regresión lineal",
+    "ml:02-ML_Supervisado/05-regresion_logistica.md#Condiciones de aplicabilidad",
+    "ml:02-ML_Supervisado/05-regresion_logistica.md#Extensiones"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "regresion-lineal",
+    "probabilidad"
+   ],
+   "visual": "Frontera de decisión en 2D que se mueve con los pesos; sigmoide al lado",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 5588,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "dispersion2d",
+   "modo": "logistica",
+   "objetivo_palabras": 1100,
+   "lote": "L11"
+  },
+  {
+   "id": "knn",
+   "nombre": "K vecinos más cercanos (KNN)",
+   "bloque": "B3",
+   "principal": [
+    "mat:03-probabilidad-estadistica/04-est-descriptiva.md#Moda en algoritmos de clasificación"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/03-preprocesamiento.md#Imputación mediante modelos predictivos",
+     "uso": "E",
+     "nota": "KNN como imputador"
+    }
+   ],
+   "prerequisitos": [
+    "producto-escalar-similitud",
+    "escalado"
+   ],
+   "visual": "Punto arrastrable que se clasifica por votación de sus k vecinos; slider de k",
+   "ampliacion": {
+    "que": "Algoritmo completo; elección de k; distancias; ponderación; maldición de la dimensionalidad; KNN para regresión",
+    "prioridad": "alta",
+    "fuentes_externas": [
+     "scikit-learn User Guide §1.6 Nearest Neighbors",
+     "Cover & Hart 1967"
+    ]
+   },
+   "nota": "HUECO: anunciado en el temario (2.6); solo hay ~270 palabras dentro de estadística descriptiva",
+   "palabras_principal": 273,
+   "palabras_fusion": 0,
+   "tipo": "original+ampliacion",
+   "motor": "dispersion2d",
+   "modo": "knn",
+   "objetivo_palabras": 500,
+   "lote": "L11"
+  },
+  {
+   "id": "naive-bayes",
+   "nombre": "Clasificador Naive Bayes",
+   "bloque": "B3",
+   "principal": [
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Aplicaciones del Teorema de Bayes"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mat:03-probabilidad-estadistica/03-prob-condicional.md#Ejemplo ilustrativo",
+     "uso": "E",
+     "nota": "el ejemplo del spam"
+    }
+   ],
+   "prerequisitos": [
+    "bayes"
+   ],
+   "visual": "Filtro de spam: escribir un mensaje y ver cómo cada palabra mueve la probabilidad",
+   "ampliacion": null,
+   "nota": "Está en el repo de razonamiento, pero es un clasificador de ML: se muda a B3",
+   "palabras_principal": 1446,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "probabilidad",
+   "modo": "naive-bayes",
+   "objetivo_palabras": 500,
+   "lote": "L11"
+  },
+  {
+   "id": "svm",
+   "nombre": "Máquinas de vectores soporte (SVM)",
+   "bloque": "B3",
+   "principal": [],
+   "secundarias": [],
+   "prerequisitos": [
+    "producto-escalar-similitud",
+    "regresion-logistica",
+    "regularizacion"
+   ],
+   "visual": "Margen máximo con vectores soporte resaltados; slider de C; kernel RBF curvando la frontera",
+   "ampliacion": {
+    "que": "Margen, vectores soporte, margen blando (C), truco del kernel (lineal, polinómico, RBF), SVR",
+    "prioridad": "alta",
+    "fuentes_externas": [
+     "scikit-learn User Guide §1.4 Support Vector Machines",
+     "Cortes & Vapnik 1995"
+    ]
+   },
+   "nota": "HUECO: anunciado en el temario (2.8), sin sección propia",
+   "palabras_principal": 0,
+   "palabras_fusion": 0,
+   "tipo": "ampliacion",
+   "motor": "dispersion2d",
+   "modo": "svm",
+   "objetivo_palabras": 900,
+   "lote": "L11"
+  },
+  {
+   "id": "arboles-decision",
+   "nombre": "Árboles de decisión: divisiones, impureza y poda",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/06-arboles.md#Árboles de decisión: Una introducción",
+    "ml:02-ML_Supervisado/06-arboles.md#Estructura de los árboles",
+    "ml:02-ML_Supervisado/06-arboles.md#Bases matemáticas",
+    "ml:02-ML_Supervisado/06-arboles.md#Ventajas y limitaciones en el uso de árboles",
+    "ml:02-ML_Supervisado/06-arboles.md#Algunas consideraciones prácticas"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "probabilidad",
+    "generalizacion"
+   ],
+   "visual": "Árbol que crece: cada división parte el plano 2D; ver Gini/entropía de cada nodo",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 9707,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "dispersion2d",
+   "modo": "arbol",
+   "objetivo_palabras": 1950,
+   "lote": "L12"
+  },
+  {
+   "id": "bagging-random-forest",
+   "nombre": "Ensembles I: bagging y Random Forest",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/06-arboles.md#Modelos de ensamblaje",
+    "ml:02-ML_Supervisado/06-arboles.md#Bagging",
+    "ml:02-ML_Supervisado/06-arboles.md#Bosques aleatorios: Introducción",
+    "ml:02-ML_Supervisado/06-arboles.md#Construcción de un bosque aleatorio",
+    "ml:02-ML_Supervisado/06-arboles.md#Evaluación de los Random Forest",
+    "ml:02-ML_Supervisado/06-arboles.md#Importancia de la diversidad",
+    "ml:02-ML_Supervisado/06-arboles.md#Ventajas e inconvenientes en el uso de los Bosques"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "arboles-decision",
+    "muestreo-intervalos"
+   ],
+   "visual": "N árboles votando: la frontera se suaviza al aumentar N; error OOB",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 3265,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "dispersion2d",
+   "modo": "bosque",
+   "objetivo_palabras": 650,
+   "lote": "L12"
+  },
+  {
+   "id": "boosting",
+   "nombre": "Ensembles II: boosting, Gradient Boosting, XGBoost y LightGBM",
+   "bloque": "B3",
+   "principal": [
+    "ml:02-ML_Supervisado/06-arboles.md#Boosting"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "bagging-random-forest",
+    "descenso-gradiente"
+   ],
+   "visual": "Iteraciones de boosting: cada árbol nuevo ajusta los residuos del anterior",
+   "ampliacion": {
+    "que": "AdaBoost; gradient boosting como descenso de gradiente en el espacio de funciones; XGBoost (regularización), LightGBM (histogramas, leaf-wise), CatBoost; hiperparámetros clave; early stopping",
+    "prioridad": "alta",
+    "fuentes_externas": [
+     "scikit-learn User Guide §1.11 Ensembles",
+     "Friedman 2001",
+     "Chen & Guestrin 2016 (XGBoost)",
+     "Ke et al. 2017 (LightGBM)"
+    ]
+   },
+   "nota": "HUECO PARCIAL: el concepto está (~320 pal.); faltan los algoritmos modernos del temario (XGBoost)",
+   "palabras_principal": 324,
+   "palabras_fusion": 0,
+   "tipo": "original+ampliacion",
+   "motor": "dispersion2d",
+   "modo": "boosting",
+   "objetivo_palabras": 500,
+   "lote": "L12"
+  },
+  {
+   "id": "clustering",
+   "nombre": "Clustering: similitud, estrategias y qué es un buen clúster",
+   "bloque": "B3",
+   "principal": [
+    "ml:03-ML_no_supervisado/01-clustering.md#Introducción@1",
+    "ml:03-ML_no_supervisado/01-clustering.md#Conceptos clave en clustering",
+    "ml:03-ML_no_supervisado/01-clustering.md#Estrategias de clustering"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "producto-escalar-similitud",
+    "tipos-aprendizaje"
+   ],
+   "visual": "Misma nube resuelta por 4 estrategias lado a lado",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2658,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "dispersion2d",
+   "modo": "comparar-clustering",
+   "objetivo_palabras": 550,
+   "lote": "L12"
+  },
+  {
+   "id": "kmeans",
+   "nombre": "K-Means (y G-Means)",
+   "bloque": "B3",
+   "principal": [
+    "ml:03-ML_no_supervisado/01-clustering.md#Clustering basado en particiones: Algoritmo K-Means",
+    "ml:03-ML_no_supervisado/01-clustering.md#Clustering K-Means"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "clustering"
+   ],
+   "visual": "K-Means paso a paso: asignar → mover centroides; método del codo",
+   "ampliacion": {
+    "que": "G-Means como sección: elegir k con test de normalidad (Anderson-Darling) por clúster",
+    "prioridad": "baja",
+    "fuentes_externas": [
+     "Hamerly & Elkan 2003"
+    ]
+   },
+   "nota": "G-Means anunciado en el temario (3.4) con 1 sola mención: se añade como sección, no ficha",
+   "palabras_principal": 4315,
+   "palabras_fusion": 0,
+   "tipo": "original+ampliacion",
+   "motor": "dispersion2d",
+   "modo": "kmeans",
+   "objetivo_palabras": 850,
+   "lote": "L12"
+  },
+  {
+   "id": "clustering-jerarquico",
+   "nombre": "Clustering jerárquico y dendrogramas",
+   "bloque": "B3",
+   "principal": [
+    "ml:03-ML_no_supervisado/01-clustering.md#Clustering jerárquico@2",
+    "ml:03-ML_no_supervisado/01-clustering.md#Clustering jerárquico@3"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "clustering"
+   ],
+   "visual": "Dendrograma con línea de corte arrastrable que colorea los clústeres",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2223,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "dispersion2d",
+   "modo": "jerarquico",
+   "objetivo_palabras": 500,
+   "lote": "L13"
+  },
+  {
+   "id": "dbscan",
+   "nombre": "DBSCAN: clustering por densidad",
+   "bloque": "B3",
+   "principal": [
+    "ml:03-ML_no_supervisado/01-clustering.md#Clustering basado en densidad: DBSCAN"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:03-ML_no_supervisado/01-clustering.md#Implementación práctica del clustering DBSCAN",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "clustering"
+   ],
+   "visual": "Sliders ε y minPts: puntos núcleo, frontera y ruido en vivo",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2346,
+   "palabras_fusion": 1211,
+   "tipo": "fusion",
+   "motor": "dispersion2d",
+   "modo": "dbscan",
+   "objetivo_palabras": 700,
+   "lote": "L13"
+  },
+  {
+   "id": "gmm",
+   "nombre": "Modelos de mezcla de gaussianas (GMM)",
+   "bloque": "B3",
+   "principal": [
+    "ml:03-ML_no_supervisado/01-clustering.md#Clustering basado en probabilidad"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:03-ML_no_supervisado/01-clustering.md#Implementación práctica del clustering GMM",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "clustering",
+    "dist-normal"
+   ],
+   "visual": "Elipses gaussianas que se ajustan iteración a iteración (EM)",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2069,
+   "palabras_fusion": 1139,
+   "tipo": "fusion",
+   "motor": "dispersion2d",
+   "modo": "gmm",
+   "objetivo_palabras": 650,
+   "lote": "L13"
+  },
+  {
+   "id": "evaluacion-clustering",
+   "nombre": "Evaluar un clustering: silueta y otras métricas",
+   "bloque": "B3",
+   "principal": [
+    "ml:03-ML_no_supervisado/01-clustering.md#Evaluación de la calidad del clustering"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:03-ML_no_supervisado/01-clustering.md#Características de un buen clustering",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "kmeans"
+   ],
+   "visual": "Coeficiente de silueta por punto al variar k",
+   "ampliacion": null,
+   "nota": "El material lo explica dentro de DBSCAN pero es general: se extrae a ficha propia",
+   "palabras_principal": 599,
+   "palabras_fusion": 169,
+   "tipo": "fusion",
+   "motor": "dispersion2d",
+   "modo": "silueta",
+   "objetivo_palabras": 500,
+   "lote": "L13"
+  },
+  {
+   "id": "del-ml-al-dl",
+   "nombre": "Del ML al Deep Learning: por qué y cuándo",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#La evolución desde el Machine Learning",
+    "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#Diferencias clave",
+    "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#Aplicaciones prácticas"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/04-Tipos.md#Redes neuronales",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:01-Fundamentos/03-paradigmas.md#IA conexionista",
+     "uso": "E",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "supervisado"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2584,
+   "palabras_fusion": 1394,
+   "tipo": "fusion",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 800,
+   "lote": "L14"
+  },
+  {
+   "id": "perceptron",
+   "nombre": "Neurona artificial y perceptrón",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#Concepto de neurona artificial"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/02-Historia.md#Orígenes",
+     "uso": "E",
+     "nota": "contexto histórico de Rosenblatt"
+    }
+   ],
+   "prerequisitos": [
+    "del-ml-al-dl",
+    "producto-escalar-similitud"
+   ],
+   "visual": "Perceptrón aprendiendo AND/OR y fallando en XOR",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1392,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "red",
+   "modo": "perceptron",
+   "objetivo_palabras": 500,
+   "lote": "L14"
+  },
+  {
+   "id": "mlp",
+   "nombre": "Redes multicapa (MLP) y propagación hacia delante",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#Evolución a redes neuronales multicapa",
+    "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#Propagación de la información",
+    "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#Capacidades y limitaciones de las MLP"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Perceptrón y MLP",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "perceptron",
+    "matrices"
+   ],
+   "visual": "Red pequeña editable: valores fluyendo capa a capa",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1654,
+   "palabras_fusion": 673,
+   "tipo": "fusion",
+   "motor": "red",
+   "modo": "forward",
+   "objetivo_palabras": 500,
+   "lote": "L14"
+  },
+  {
+   "id": "funciones-activacion",
+   "nombre": "Funciones de activación: sigmoide, tanh, ReLU, softmax",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#El papel de la función de activación"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mat:02-funciones-calculo/01-funciones-tipos.md#De las funciones por tramos a las funciones de activación",
+     "uso": "E",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Selección de capas y funciones de activación",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "no-linealidad",
+    "mlp"
+   ],
+   "visual": "Gráfica de cada activación y su derivada; softmax con slider de temperatura",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 802,
+   "palabras_fusion": 212,
+   "tipo": "fusion",
+   "motor": "funcion",
+   "modo": "activaciones",
+   "objetivo_palabras": 500,
+   "lote": "L14"
+  },
+  {
+   "id": "backpropagation",
+   "nombre": "Retropropagación del error",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#Retropropagación del error"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "regla-cadena",
+    "descenso-gradiente",
+    "mlp"
+   ],
+   "visual": "Red de 2 capas: gradientes fluyendo hacia atrás; ver desvanecimiento con sigmoide",
+   "ampliacion": null,
+   "nota": "CADENA: aquí culmina regla de la cadena + descenso de gradiente",
+   "palabras_principal": 1133,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "red",
+   "modo": "backprop",
+   "objetivo_palabras": 500,
+   "lote": "L14"
+  },
+  {
+   "id": "optimizadores",
+   "nombre": "Optimizadores y dinámica de entrenamiento: SGD, momentum, Adam, batch",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Optimización en redes neuronales"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#Estrategias de optimización y entrenamiento",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "descenso-gradiente",
+    "backpropagation"
+   ],
+   "visual": "Mismo valle de pérdida recorrido por SGD, momentum y Adam en paralelo",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 554,
+   "palabras_fusion": 168,
+   "tipo": "fusion",
+   "motor": "descenso",
+   "modo": "optimizadores",
+   "objetivo_palabras": 500,
+   "lote": "L14"
+  },
+  {
+   "id": "entrenamiento-dl",
+   "nombre": "Entrenar redes en la práctica: dropout, BatchNorm, callbacks y diagnóstico",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Consideraciones prácticas en la fase de análisis",
+    "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Consideraciones prácticas en la fase de entrenamiento"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "optimizadores",
+    "regularizacion"
+   ],
+   "visual": "Curvas de aprendizaje: identificar sobreajuste y dónde actuaría early stopping",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 873,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "funcion",
+   "modo": "series",
+   "objetivo_palabras": 500,
+   "lote": "L14"
+  },
+  {
+   "id": "keras-tensorflow",
+   "nombre": "TensorFlow y Keras: tensores, grafo, APIs y tf.data",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/06-ap_enfoques-desarrollo-tf.md"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#Construcción de una MLP en TensorFlow",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Generación de datasets en tf.data",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:02-Razonamiento/01-representacion.md#Grafos de conocimiento",
+     "uso": "D",
+     "nota": "\"grafo computacional\" ≠ \"grafo de conocimiento\""
+    }
+   ],
+   "prerequisitos": [
+    "mlp"
+   ],
+   "visual": "Comparador Sequential / Functional / Subclassing con el mismo modelo",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 12385,
+   "palabras_fusion": 477,
+   "tipo": "fusion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 2550,
+   "lote": "L15"
+  },
+  {
+   "id": "flujo-dl-por-dato",
+   "nombre": "Flujo de un proyecto DL según el tipo de dato",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Flujo de trabajo",
+    "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Datos estructurados",
+    "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Datos de imágenes"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "ciclo-proyecto-ml",
+    "keras-tensorflow"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "CADENA con el ciclo general (B2)",
+   "palabras_principal": 1202,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L15"
+  },
+  {
+   "id": "cnn",
+   "nombre": "Redes convolucionales: kernel, convolución, padding, stride y pooling",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/02-cnn-vision.md#Fundamentos teóricos",
+    "ml:04-Redes_Neuronales/02-cnn-vision.md#Fundamentos técnicos",
+    "ml:04-Redes_Neuronales/02-cnn-vision.md#Arquitectura de una red convolucional"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/06-codificacion.md#Codificación de imágenes",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Redes convolucionales",
+     "uso": "F",
+     "nota": "implementación Keras"
+    }
+   ],
+   "prerequisitos": [
+    "mlp",
+    "matrices"
+   ],
+   "visual": "Kernel 3×3 deslizándose sobre una imagen pixelada; sliders de padding y stride",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 9823,
+   "palabras_fusion": 2976,
+   "tipo": "fusion",
+   "motor": "convolucion",
+   "modo": null,
+   "objetivo_palabras": 2550,
+   "lote": "L16"
+  },
+  {
+   "id": "cnn-arquitecturas",
+   "nombre": "Arquitecturas CNN clásicas: LeNet, AlexNet, VGG, GoogLeNet, ResNet",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/02-cnn-vision.md#Arquitecturas AlexNet y VGGNet"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "cnn"
+   ],
+   "visual": "Diagramas de bloques comparables: profundidad, parámetros y la conexión residual",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2327,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L16"
+  },
+  {
+   "id": "rnn",
+   "nombre": "Redes recurrentes y retropropagación en el tiempo (BPTT)",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/03-modelos-secuenciales.md"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/06-modelos-dinamicos.md#Fundamentos de RNNs",
+     "uso": "F",
+     "nota": "queda como sección \"aplicado a texto\""
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/06-modelos-dinamicos.md#Aplicaciones prácticas de redes recurrentes en NLP",
+     "uso": "E",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Redes recurrentes",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "backpropagation",
+    "series-temporales"
+   ],
+   "visual": "RNN desenrollada en el tiempo; gradiente que se desvanece al retroceder",
+   "ampliacion": null,
+   "nota": "DUPLICADO REAL: ML y NLP explican las RNN por separado",
+   "palabras_principal": 3764,
+   "palabras_fusion": 763,
+   "tipo": "fusion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 900,
+   "lote": "L16"
+  },
+  {
+   "id": "lstm-gru",
+   "nombre": "LSTM y GRU",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/03-modelos-secuenciales.md#Long Short-Term Memory",
+    "ml:04-Redes_Neuronales/03-modelos-secuenciales.md#Redes GRU"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/06-modelos-dinamicos.md#Modelos mejorados: LSTM y GRU",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/06-modelos-dinamicos.md#Comparación entre RNN, LSTM y GRU",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Diferencias entre RNN, LSTM y GRU",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "rnn"
+   ],
+   "visual": "Puertas de la LSTM abriéndose y cerrándose con una secuencia de ejemplo",
+   "ampliacion": null,
+   "nota": "DUPLICADO REAL en 3 sitios",
+   "palabras_principal": 1993,
+   "palabras_fusion": 606,
+   "tipo": "fusion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L17"
+  },
+  {
+   "id": "autoencoders",
+   "nombre": "Autoencoders y VAE",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/04-Autoencoders-GAN-Transfer_learning.md#Autoencoders y sus variantes"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "mlp",
+    "reduccion-dimensionalidad",
+    "dist-normal"
+   ],
+   "visual": "Espacio latente 2D: moverse por él y ver la reconstrucción",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 3903,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 800,
+   "lote": "L17"
+  },
+  {
+   "id": "gans",
+   "nombre": "Redes generativas antagónicas (GAN)",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/04-Autoencoders-GAN-Transfer_learning.md#Redes Generativas Antagónicas"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "mlp"
+   ],
+   "visual": "Generador vs discriminador en 1D: la distribución generada se acerca a la real",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 4262,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 850,
+   "lote": "L17"
+  },
+  {
+   "id": "transfer-learning",
+   "nombre": "Aprendizaje por transferencia",
+   "bloque": "B4",
+   "principal": [
+    "ml:04-Redes_Neuronales/04-Autoencoders-GAN-Transfer_learning.md#Aprendizaje por transferencia"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/05-intro-modelos-lenguaje.md#Uso de modelos pre-entrenados para representación",
+     "uso": "E",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/07-LLMs.md#Preentrenamiento y Transfer Learning en LLMs",
+     "uso": "E",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "cnn"
+   ],
+   "visual": "Capas congeladas vs entrenables: elegir qué descongelar",
+   "ampliacion": null,
+   "nota": "CADENA: → fine-tuning en NLP (B6)",
+   "palabras_principal": 3449,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 700,
+   "lote": "L17"
+  },
+  {
+   "id": "rl-fundamentos",
+   "nombre": "Fundamentos de RL: agente, entorno, recompensa, exploración/explotación",
+   "bloque": "B5",
+   "principal": [
+    "ml:05-Aprendizaje-Refuerzo/01-fundamentos-rl.md#Introducción",
+    "ml:05-Aprendizaje-Refuerzo/01-fundamentos-rl.md#Elementos fundamentales"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/04-Tipos.md#Componentes clave del aprendizaje por refuerzo",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:01-Fundamentos/01-definiciones.md#Algunos conceptos básicos",
+     "uso": "E",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "tipos-aprendizaje",
+    "probabilidad"
+   ],
+   "visual": "Bandido multibrazo: ε-greedy con slider de ε y recompensa acumulada",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1030,
+   "palabras_fusion": 844,
+   "tipo": "fusion",
+   "motor": "simulacion",
+   "modo": "bandido",
+   "objetivo_palabras": 500,
+   "lote": "L18"
+  },
+  {
+   "id": "mdp",
+   "nombre": "Procesos de decisión de Markov (MDP)",
+   "bloque": "B5",
+   "principal": [
+    "ml:05-Aprendizaje-Refuerzo/01-fundamentos-rl.md#Formalización matemática",
+    "ml:05-Aprendizaje-Refuerzo/01-fundamentos-rl.md#Formalización de un proceso de Markov@*"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "rl-fundamentos",
+    "prob-condicional"
+   ],
+   "visual": "Tablero 1D y 2D del curso: estados, acciones, transiciones y recompensas clicables",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 6432,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "rejilla",
+   "modo": "mdp",
+   "objetivo_palabras": 1300,
+   "lote": "L18"
+  },
+  {
+   "id": "politica-valor-bellman",
+   "nombre": "Política, funciones de valor V y Q, y ecuaciones de Bellman",
+   "bloque": "B5",
+   "principal": [
+    "ml:05-Aprendizaje-Refuerzo/02-algoritmos-rl-intro.md#El agente en el entorno"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "mdp"
+   ],
+   "visual": "Rejilla con valores V(s) y flechas de política; editar recompensas y ver propagarse los valores",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 4560,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "rejilla",
+   "modo": "valores",
+   "objetivo_palabras": 900,
+   "lote": "L18"
+  },
+  {
+   "id": "taxonomia-rl",
+   "nombre": "Mapa de algoritmos de RL: modelo, on/off-policy, valor vs política",
+   "bloque": "B5",
+   "principal": [
+    "ml:05-Aprendizaje-Refuerzo/02-algoritmos-rl-intro.md#Clasificación de los algoritmos"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "politica-valor-bellman"
+   ],
+   "visual": "Árbol de clasificación que enlaza a cada algoritmo",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2821,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "grafo",
+   "modo": "diagrama",
+   "objetivo_palabras": 550,
+   "lote": "L18"
+  },
+  {
+   "id": "programacion-dinamica",
+   "nombre": "Programación dinámica: evaluación, iteración de políticas y de valores",
+   "bloque": "B5",
+   "principal": [
+    "ml:05-Aprendizaje-Refuerzo/03-algoritmos-rl-DP.md"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "politica-valor-bellman"
+   ],
+   "visual": "Iteración de valores barrido a barrido sobre el gridworld",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 7532,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "rejilla",
+   "modo": "iteracion-valores",
+   "objetivo_palabras": 1500,
+   "lote": "L19"
+  },
+  {
+   "id": "monte-carlo-rl",
+   "nombre": "Métodos de Monte Carlo en RL",
+   "bloque": "B5",
+   "principal": [
+    "ml:05-Aprendizaje-Refuerzo/04-algoritmos-rl-MonteCarlo.md"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "politica-valor-bellman",
+    "integral-monte-carlo"
+   ],
+   "visual": "Episodios completos promediando retornos por estado",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 8835,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "rejilla",
+   "modo": "monte-carlo",
+   "objetivo_palabras": 1750,
+   "lote": "L19"
+  },
+  {
+   "id": "td-learning",
+   "nombre": "Aprendizaje por diferencias temporales: TD(0)",
+   "bloque": "B5",
+   "principal": [
+    "ml:05-Aprendizaje-Refuerzo/05-algoritmos-rl-TD.md#Introducción@1",
+    "ml:05-Aprendizaje-Refuerzo/05-algoritmos-rl-TD.md#Algoritmo TD(0)",
+    "ml:05-Aprendizaje-Refuerzo/05-algoritmos-rl-TD.md#Ventajas del aprendizaje incremental"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "monte-carlo-rl",
+    "programacion-dinamica"
+   ],
+   "visual": "Actualización TD paso a paso frente a MC al final del episodio",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 4601,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "rejilla",
+   "modo": "td0",
+   "objetivo_palabras": 900,
+   "lote": "L19"
+  },
+  {
+   "id": "sarsa-qlearning",
+   "nombre": "Control TD: SARSA y Q-learning",
+   "bloque": "B5",
+   "principal": [
+    "ml:05-Aprendizaje-Refuerzo/05-algoritmos-rl-TD.md#Métodos TD para control",
+    "ml:05-Aprendizaje-Refuerzo/05-algoritmos-rl-TD.md#Comparativa de los métodos clásicos"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "td-learning"
+   ],
+   "visual": "Cliff walking: SARSA (camino seguro) vs Q-learning (camino óptimo) con slider de ε",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 6007,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "rejilla",
+   "modo": "sarsa-qlearning",
+   "objetivo_palabras": 1200,
+   "lote": "L20"
+  },
+  {
+   "id": "policy-gradient",
+   "nombre": "Gradiente de la política y REINFORCE",
+   "bloque": "B5",
+   "principal": [
+    "ml:05-Aprendizaje-Refuerzo/06-algoritmos-rl-REINFORCE.md#Introducción: Algoritmos",
+    "ml:05-Aprendizaje-Refuerzo/06-algoritmos-rl-REINFORCE.md#El ascenso del gradiente",
+    "ml:05-Aprendizaje-Refuerzo/06-algoritmos-rl-REINFORCE.md#Parametrización de la política",
+    "ml:05-Aprendizaje-Refuerzo/06-algoritmos-rl-REINFORCE.md#Introducción a los algoritmos del gradiente",
+    "ml:05-Aprendizaje-Refuerzo/06-algoritmos-rl-REINFORCE.md#El algoritmo REINFORCE"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "taxonomia-rl",
+    "descenso-gradiente",
+    "funciones-activacion"
+   ],
+   "visual": "Probabilidades de acción (softmax) que se desplazan tras cada episodio",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 9868,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "simulacion",
+   "modo": "policy-gradient",
+   "objetivo_palabras": 1950,
+   "lote": "L20"
+  },
+  {
+   "id": "actor-critico",
+   "nombre": "Actor-Crítico",
+   "bloque": "B5",
+   "principal": [
+    "ml:05-Aprendizaje-Refuerzo/06-algoritmos-rl-REINFORCE.md#El algoritmo Actor"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "policy-gradient",
+    "td-learning"
+   ],
+   "visual": "Dos cajas (actor y crítico) intercambiando la señal de ventaja",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1197,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L20"
+  },
+  {
+   "id": "rl-aplicaciones",
+   "nombre": "Aplicaciones del aprendizaje por refuerzo",
+   "bloque": "B5",
+   "principal": [
+    "ml:05-Aprendizaje-Refuerzo/01-fundamentos-rl.md#Aplicaciones y casos de uso"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "rl-fundamentos"
+   ],
+   "visual": "",
+   "ampliacion": {
+    "que": "Casos de referencia (AlphaGo/AlphaZero, robótica, recomendación, RLHF en LLMs) enlazados a sus fichas",
+    "prioridad": "baja",
+    "fuentes_externas": [
+     "Silver et al. 2016/2017",
+     "Sutton & Barto, Reinforcement Learning (2ª ed.) cap. 16"
+    ]
+   },
+   "nota": "El temario (5.5) lo anuncia; hay ~450 pal. en fundamentos",
+   "palabras_principal": 457,
+   "palabras_fusion": 0,
+   "tipo": "original+ampliacion",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L20"
+  },
+  {
+   "id": "nlp-intro",
+   "nombre": "Introducción al NLP y sus tareas",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/01-intro_nlp.md#Introducción"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/09-consideraciones-practicas-keras-NLP.md#Principales tareas de NLP",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "tipos-datos"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2205,
+   "palabras_fusion": 107,
+   "tipo": "fusion",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L21"
+  },
+  {
+   "id": "limpieza-texto",
+   "nombre": "Limpieza y normalización de texto",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/02-limpieza_preprocesamiento.md"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/01-intro_nlp.md#Procesamiento y limpieza de texto",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/09-consideraciones-practicas-keras-NLP.md#Limpieza del texto",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "nlp-intro"
+   ],
+   "visual": "Pipeline de limpieza con interruptores: ver el texto transformarse paso a paso",
+   "ampliacion": null,
+   "nota": "DUPLICADO REAL en 3 sitios. Tokenización y lematización salen a su propia ficha",
+   "palabras_principal": 8163,
+   "palabras_fusion": 748,
+   "tipo": "fusion",
+   "motor": "texto",
+   "modo": "limpieza",
+   "objetivo_palabras": 1800,
+   "lote": "L21"
+  },
+  {
+   "id": "tokenizacion",
+   "nombre": "Tokenización, lematización y stemming",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/02-limpieza_preprocesamiento.md#Tokenización de textos",
+    "mod:03-NLP-LLM/02-limpieza_preprocesamiento.md#Lematización y stemming"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/09-consideraciones-practicas-keras-NLP.md#Tokenización (o vectorización",
+     "uso": "F",
+     "nota": "versión Keras TextVectorization"
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/08-red-transformer-caso-practico.md#Tokenización: conversión del texto",
+     "uso": "E",
+     "nota": "tokenización por subpalabras en Transformers"
+    }
+   ],
+   "prerequisitos": [
+    "limpieza-texto"
+   ],
+   "visual": "Frase de entrada tokenizada por palabras, subpalabras y caracteres; lemas vs raíces",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2169,
+   "palabras_fusion": 915,
+   "tipo": "fusion",
+   "motor": "texto",
+   "modo": "tokenizacion",
+   "objetivo_palabras": 600,
+   "lote": "L21"
+  },
+  {
+   "id": "bow-tfidf",
+   "nombre": "Codificación clásica de texto: índices, BoW y TF-IDF",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/03-codificacion_basica.md"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/06-codificacion.md#Primeros pasos en la codificación de textos",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:01-Determinacion/06-codificacion.md#Codificación de variables categóricas",
+     "uso": "D",
+     "nota": "\"codificación\" tabular ≠ codificación de texto"
+    }
+   ],
+   "prerequisitos": [
+    "tokenizacion",
+    "producto-escalar-similitud"
+   ],
+   "visual": "3 documentos editables → matriz BoW y TF-IDF recalculadas",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 7812,
+   "palabras_fusion": 1144,
+   "tipo": "fusion",
+   "motor": "texto",
+   "modo": "bow-tfidf",
+   "objetivo_palabras": 1800,
+   "lote": "L22"
+  },
+  {
+   "id": "word-embeddings",
+   "nombre": "Embeddings de palabras: Word2Vec, GloVe y FastText",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/04-embeddings.md"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:01-Determinacion/06-codificacion.md#Codificación de textos: embeddings",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mat:01-algebra/03-algebra-representacion.md#Conexión con embeddings",
+     "uso": "E",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/09-consideraciones-practicas-keras-NLP.md#Capa de Embedding (punto",
+     "uso": "F",
+     "nota": "capa Embedding de Keras: desde cero vs preentrenada"
+    }
+   ],
+   "prerequisitos": [
+    "bow-tfidf",
+    "reduccion-dimensionalidad"
+   ],
+   "visual": "Espacio 2D de palabras: analogías rey − hombre + mujer ≈ reina; vecinos más cercanos",
+   "ampliacion": null,
+   "nota": "DUPLICADO: codificacion.md adelanta embeddings y Transformers antes de tiempo",
+   "palabras_principal": 16050,
+   "palabras_fusion": 2807,
+   "tipo": "fusion",
+   "motor": "vectores2d",
+   "modo": "etiquetas",
+   "objetivo_palabras": 2800,
+   "lote": "L23"
+  },
+  {
+   "id": "modelos-lenguaje",
+   "nombre": "Qué es un modelo de lenguaje: representación vs generación",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/05-intro-modelos-lenguaje.md#Evolución de la representación",
+    "mod:03-NLP-LLM/05-intro-modelos-lenguaje.md#¿Qué es un modelo de lenguaje",
+    "mod:03-NLP-LLM/05-intro-modelos-lenguaje.md#Modelos de representación del lenguaje"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "word-embeddings"
+   ],
+   "visual": "Predicción de la siguiente palabra con un modelo de n-gramas de juguete",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2847,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "texto",
+   "modo": "ngramas",
+   "objetivo_palabras": 550,
+   "lote": "L24"
+  },
+  {
+   "id": "embeddings-contextuales",
+   "nombre": "Embeddings estáticos vs contextuales: ELMo",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/06-modelos-dinamicos.md#Diferencias entre modelos estáticos y dinámicos",
+    "mod:03-NLP-LLM/06-modelos-dinamicos.md#Representaciones dinámicas con ELMo"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/05-intro-modelos-lenguaje.md#Comparación entre métodos estáticos y dinámicos",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "modelos-lenguaje",
+    "lstm-gru"
+   ],
+   "visual": "\"banco\" (asiento) vs \"banco\" (entidad): mismo vector estático, vectores contextuales distintos",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2238,
+   "palabras_fusion": 322,
+   "tipo": "fusion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L24"
+  },
+  {
+   "id": "atencion",
+   "nombre": "El mecanismo de atención (Q, K, V)",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/08-red-transformer-caso-practico.md#El mecanismo de autoatención",
+    "mod:03-NLP-LLM/08-red-transformer-caso-practico.md#¿Qué es la atención en los Transformers?",
+    "mod:03-NLP-LLM/08-red-transformer-caso-practico.md#El mecanismo de atención: comparar"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/06-modelos-dinamicos.md#El mecanismo de autoatención",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "producto-escalar-similitud",
+    "funciones-activacion",
+    "word-embeddings"
+   ],
+   "visual": "Mapa de calor de atención sobre una frase; clic en un token para ver a qué atiende; paso Q·Kᵀ → softmax → ·V",
+   "ampliacion": null,
+   "nota": "DUPLICADO: la versión del caso práctico es 5 veces más detallada",
+   "palabras_principal": 2387,
+   "palabras_fusion": 315,
+   "tipo": "fusion",
+   "motor": "matriz-calor",
+   "modo": "atencion",
+   "objetivo_palabras": 550,
+   "lote": "L24"
+  },
+  {
+   "id": "transformer",
+   "nombre": "La arquitectura Transformer: encoder, decoder, posiciones y máscaras",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/08-red-transformer-caso-practico.md"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/06-modelos-dinamicos.md#Arquitectura Transformer y su impacto",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/06-modelos-dinamicos.md#Comparación entre RNNs y transformers",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:01-Determinacion/06-codificacion.md#¿Qué son las representaciones distribuidas? Transformers",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "atencion"
+   ],
+   "visual": "Diagrama del Transformer navegable; conmutador de máscaras (padding / causal / ninguna)",
+   "ampliacion": null,
+   "nota": "DUPLICADO REAL en 3 sitios",
+   "palabras_principal": 4465,
+   "palabras_fusion": 2153,
+   "tipo": "fusion",
+   "motor": "matriz-calor",
+   "modo": "mascaras",
+   "objetivo_palabras": 1300,
+   "lote": "L24"
+  },
+  {
+   "id": "bert-encoders",
+   "nombre": "Modelos encoder: BERT y variantes",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/06-modelos-dinamicos.md#BERT: Representación contextual"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/10-consideraciones-practicas-proyectos-llm.md#Notas extras a tener en cuenta en modelos encoder-only",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "transformer"
+   ],
+   "visual": "Masked language modeling: ocultar una palabra y ver las candidatas",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1300,
+   "palabras_fusion": 668,
+   "tipo": "fusion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L24"
+  },
+  {
+   "id": "gpt-t5-generativos",
+   "nombre": "Modelos generativos: GPT (decoder) y T5 (encoder-decoder)",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/06-modelos-dinamicos.md#Modelos generativos: GPT y T5"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/08-red-transformer-caso-practico.md#Preentrenamiento y generación en modelos de tipo decoder-only",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/08-red-transformer-caso-practico.md#Preentrenamiento conjunto en arquitecturas encoder-decoder",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/10-consideraciones-practicas-proyectos-llm.md#Generación de texto con arquitecturas",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "transformer"
+   ],
+   "visual": "Generación token a token con slider de temperatura y top-k",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 783,
+   "palabras_fusion": 2764,
+   "tipo": "fusion",
+   "motor": "probabilidad",
+   "modo": "softmax",
+   "objetivo_palabras": 700,
+   "lote": "L24"
+  },
+  {
+   "id": "fine-tuning",
+   "nombre": "Modelos preentrenados y fine-tuning",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/05-intro-modelos-lenguaje.md#Entrenamiento y uso de modelos de representación",
+    "mod:03-NLP-LLM/05-intro-modelos-lenguaje.md#Flujos de trabajo"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/10-consideraciones-practicas-proyectos-llm.md#Modelos de representación en Hugging Face",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "transfer-learning",
+    "bert-encoders"
+   ],
+   "visual": "Elegir congelar / ajustar capas y ver el coste en parámetros entrenables",
+   "ampliacion": null,
+   "nota": "CADENA desde transfer learning (B4)",
+   "palabras_principal": 9133,
+   "palabras_fusion": 1668,
+   "tipo": "fusion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 2150,
+   "lote": "L25"
+  },
+  {
+   "id": "dl-para-nlp",
+   "nombre": "Deep Learning para tareas NLP: clasificación, etiquetado, seq2seq y QA",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/09-consideraciones-practicas-keras-NLP.md"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "tokenizacion",
+    "word-embeddings",
+    "lstm-gru"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "Versión NLP del flujo DL (B4): enlaza en vez de repetir",
+   "palabras_principal": 7529,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 1500,
+   "lote": "L25"
+  },
+  {
+   "id": "huggingface-practico",
+   "nombre": "Hugging Face en la práctica y recursos limitados",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/10-consideraciones-practicas-proyectos-llm.md"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/06-modelos-dinamicos.md#Implementación con Hugging Face",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "fine-tuning"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 626,
+   "palabras_fusion": 103,
+   "tipo": "fusion",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L25"
+  },
+  {
+   "id": "llms",
+   "nombre": "Grandes modelos de lenguaje: escala, entrenamiento e infraestructura",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/07-LLMs.md#Introducción a los LLM",
+    "mod:03-NLP-LLM/07-LLMs.md#Arquitecturas y entrenamiento"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "gpt-t5-generativos"
+   ],
+   "visual": "Escala de parámetros (BERT → modelos actuales) en eje logarítmico",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1427,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "funcion",
+   "modo": "barras",
+   "objetivo_palabras": 500,
+   "lote": "L25"
+  },
+  {
+   "id": "prompting",
+   "nombre": "Prompt engineering, few-shot y técnicas de razonamiento",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/07-LLMs.md#Interacción con LLM"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "llms"
+   ],
+   "visual": "Mismo problema con zero-shot, few-shot y chain-of-thought lado a lado (ejemplos estáticos)",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 589,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L26"
+  },
+  {
+   "id": "evaluacion-llm",
+   "nombre": "Evaluación de LLM: métricas y factualidad",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/07-LLMs.md#Evaluación de LLM"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "llms"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 768,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L26"
+  },
+  {
+   "id": "rag",
+   "nombre": "RAG: generación aumentada por recuperación",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/07-LLMs.md#Optimización de la recuperación de información con RAG"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/03-codificacion_basica.md#Caso 3: Recuperación de información con TF-IDF",
+     "uso": "E",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "llms",
+    "word-embeddings"
+   ],
+   "visual": "Pipeline RAG: pregunta → embeddings → top-k fragmentos → prompt final",
+   "ampliacion": {
+    "que": "Chunking, embeddings y bases vectoriales, recuperación híbrida (BM25 + densa), reranking, evaluación de RAG",
+    "prioridad": "media",
+    "fuentes_externas": [
+     "Lewis et al. 2020 (RAG)",
+     "documentación de Hugging Face / sentence-transformers"
+    ]
+   },
+   "nota": "HUECO PARCIAL: ~170 palabras en el curso",
+   "palabras_principal": 182,
+   "palabras_fusion": 0,
+   "tipo": "original+ampliacion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L26"
+  },
+  {
+   "id": "rlhf",
+   "nombre": "Alineamiento: fine-tuning con retroalimentación humana (RLHF)",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/07-LLMs.md#Fine-Tuning con retroalimentación humana"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "fine-tuning",
+    "policy-gradient"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "CADENA con RL (B5)",
+   "palabras_principal": 234,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L26"
+  },
+  {
+   "id": "llm-aplicaciones",
+   "nombre": "LLMs en aplicaciones: asistentes, código, multimodalidad y agentes",
+   "bloque": "B6",
+   "principal": [
+    "mod:03-NLP-LLM/07-LLMs.md#Implementación de LLM en aplicaciones reales",
+    "mod:03-NLP-LLM/07-LLMs.md#El futuro de los modelos de lenguaje"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "llms"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 512,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L26"
+  },
+  {
+   "id": "representacion-conocimiento",
+   "nombre": "Representación del conocimiento: semántica, declarativo vs procedimental",
+   "bloque": "B7",
+   "principal": [
+    "mod:02-Razonamiento/01-representacion.md#Qué significa"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:02-Razonamiento/01-representacion.md#Conocimiento declarativo y procedimental",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:02-Razonamiento/01-representacion.md#Determinismo e incertidumbre",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:02-Razonamiento/01-representacion.md#Del conocimiento al razonamiento",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "paradigmas-ia"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1750,
+   "palabras_fusion": 1486,
+   "tipo": "fusion",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 650,
+   "lote": "L27"
+  },
+  {
+   "id": "ontologias-grafos",
+   "nombre": "Ontologías, grafos de conocimiento, marcos y redes semánticas",
+   "bloque": "B7",
+   "principal": [
+    "mod:02-Razonamiento/01-representacion.md#Ontologías",
+    "mod:02-Razonamiento/01-representacion.md#Grafos de conocimiento",
+    "mod:02-Razonamiento/01-representacion.md#Marcos y redes semánticas"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:04-Redes_Neuronales/06-ap_enfoques-desarrollo-tf.md#El Grafo Computacional",
+     "uso": "D",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "representacion-conocimiento"
+   ],
+   "visual": "Grafo de conocimiento pequeño: clic en un nodo para ver sus tripletas",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2386,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "grafo",
+   "modo": "conocimiento",
+   "objetivo_palabras": 500,
+   "lote": "L27"
+  },
+  {
+   "id": "sistemas-expertos",
+   "nombre": "Sistemas expertos: arquitectura, desarrollo y límites",
+   "bloque": "B7",
+   "principal": [
+    "mod:02-Razonamiento/02-sistemas-expertos.md#Introducción a los sistemas expertos",
+    "mod:02-Razonamiento/02-sistemas-expertos.md#Arquitectura de los sistemas expertos",
+    "mod:02-Razonamiento/02-sistemas-expertos.md#Desarrollo y aplicación",
+    "mod:02-Razonamiento/02-sistemas-expertos.md#Desafíos y tendencias"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:01-Fundamentos/03-paradigmas.md#Aplicaciones históricas y sistemas expertos",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "representacion-conocimiento"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 13362,
+   "palabras_fusion": 123,
+   "tipo": "fusion",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 2700,
+   "lote": "L27"
+  },
+  {
+   "id": "motores-inferencia",
+   "nombre": "Motores de inferencia: encadenamiento hacia delante y hacia atrás",
+   "bloque": "B7",
+   "principal": [
+    "mod:02-Razonamiento/02-sistemas-expertos.md#Razonamiento en sistemas expertos"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "sistemas-expertos"
+   ],
+   "visual": "Base de reglas: ver dispararse las reglas paso a paso en forward y backward chaining",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 6101,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 1200,
+   "lote": "L28"
+  },
+  {
+   "id": "logica-difusa",
+   "nombre": "Lógica difusa: conjuntos, pertenencia, reglas y control",
+   "bloque": "B7",
+   "principal": [
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#=3. Sistemas de razonamiento impreciso",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Importancia y relevancia",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Principales modelos de razonamiento",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Comparación con la lógica clásica",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Concepto de conjunto difuso",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Funciones de pertenencia",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Reglas difusas",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Operaciones en conjuntos difusos",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Elaboración de modelos",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Aplicaciones y ejemplos de los modelos difusos",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Ventajas y limitaciones de la lógica difusa"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "representacion-conocimiento"
+   ],
+   "visual": "Controlador difuso de temperatura: funciones de pertenencia y salida defuzzificada en vivo",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 8003,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": "funcion",
+   "modo": "pertenencia",
+   "objetivo_palabras": 1600,
+   "lote": "L28"
+  },
+  {
+   "id": "redes-bayesianas",
+   "nombre": "Redes bayesianas e inferencia",
+   "bloque": "B7",
+   "principal": [
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Redes bayesianas: representación",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Inferencia en redes bayesianas"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:02-Razonamiento/03-razonamiento-impreciso.md#Aplicaciones de los Enfoques Probabilísticos",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:02-Razonamiento/03-razonamiento-impreciso.md#Modelos probabilísticos",
+     "uso": "F",
+     "nota": "introducción del bloque"
+    },
+    {
+     "fuente": "mod:02-Razonamiento/02-sistemas-expertos.md#Razonamiento probabilístico y manejo de incertidumbre",
+     "uso": "E",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "bayes",
+    "prob-condicional"
+   ],
+   "visual": "Red de 3-4 nodos: fijar evidencia y ver actualizarse las probabilidades",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 3246,
+   "palabras_fusion": 1150,
+   "tipo": "fusion",
+   "motor": "grafo",
+   "modo": "red-bayesiana",
+   "objetivo_palabras": 900,
+   "lote": "L28"
+  },
+  {
+   "id": "teoria-posibilidad",
+   "nombre": "Teoría de la posibilidad frente a la probabilidad",
+   "bloque": "B7",
+   "principal": [
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Principios básicos de la teoría de la posibilidad",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Diferencias clave entre probabilidad y posibilidad",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Principios de incertidumbre"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "logica-difusa",
+    "probabilidad"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 2106,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L28"
+  },
+  {
+   "id": "hibridos-tendencias-simbolico",
+   "nombre": "Enfoques híbridos y futuro del razonamiento simbólico",
+   "bloque": "B7",
+   "principal": [
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Ventajas y desventajas en comparación",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Posibles integraciones",
+    "mod:02-Razonamiento/03-razonamiento-impreciso.md#Tendencias futuras"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:01-Fundamentos/03-paradigmas.md#Cuando los paradigmas no son suficientes",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:02-Razonamiento/03-razonamiento-impreciso.md#Relación con los sistemas expertos",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "teoria-posibilidad",
+    "redes-bayesianas"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1602,
+   "palabras_fusion": 671,
+   "tipo": "fusion",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L29"
+  },
+  {
+   "id": "despliegue",
+   "nombre": "Despliegue de modelos: batch, tiempo real y serving",
+   "bloque": "B8",
+   "principal": [
+    "ml:01-Determinacion/05-Etapas.md#Despliegue del modelo"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Despliegue y consideraciones en producción",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Implementación en producción",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "ciclo-proyecto-ml"
+   ],
+   "visual": "Diagrama batch vs online: dónde vive el modelo y cuándo se llama",
+   "ampliacion": {
+    "que": "Serialización y formatos (joblib, SavedModel, ONNX); servir con API (FastAPI); inferencia batch vs online; contenedores",
+    "prioridad": "media",
+    "fuentes_externas": [
+     "documentación de FastAPI",
+     "documentación de TensorFlow Serving / ONNX"
+    ]
+   },
+   "nota": "Tema 4 de Modelos (4.3). Parte original (~800 pal.) + ampliación",
+   "palabras_principal": 719,
+   "palabras_fusion": 71,
+   "tipo": "original+ampliacion",
+   "motor": "grafo",
+   "modo": "diagrama",
+   "objetivo_palabras": 500,
+   "lote": "L30"
+  },
+  {
+   "id": "monitorizacion-drift",
+   "nombre": "Monitorización, drift y reentrenamiento",
+   "bloque": "B8",
+   "principal": [
+    "ml:01-Determinacion/05-Etapas.md#Monitoreo y mantenimiento"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:01-Fundamentos/07-desafios.md#Actualización y mantenimiento",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "despliegue",
+    "contraste-hipotesis"
+   ],
+   "visual": "Distribución de una variable en train vs producción separándose con el tiempo; alerta por PSI/KS",
+   "ampliacion": {
+    "que": "Data drift vs concept drift; PSI, test KS; métricas en producción; políticas de reentrenamiento; versionado de modelos",
+    "prioridad": "media",
+    "fuentes_externas": [
+     "Gama et al. 2014 (concept drift survey)",
+     "documentación de Evidently AI"
+    ]
+   },
+   "nota": "Tema 4 de Modelos (4.6)",
+   "palabras_principal": 643,
+   "palabras_fusion": 244,
+   "tipo": "original+ampliacion",
+   "motor": "serie",
+   "modo": "drift",
+   "objetivo_palabras": 500,
+   "lote": "L30"
+  },
+  {
+   "id": "mlops",
+   "nombre": "MLOps: pipelines, CI/CD, seguimiento de experimentos y registro de modelos",
+   "bloque": "B8",
+   "principal": [],
+   "secundarias": [],
+   "prerequisitos": [
+    "despliegue",
+    "monitorizacion-drift"
+   ],
+   "visual": "Pipeline de MLOps: datos → entrenamiento → registro → despliegue → monitorización, clicable",
+   "ampliacion": {
+    "que": "Pipelines reproducibles, tracking (MLflow), registro y versionado, CI/CD para ML, orquestación",
+    "prioridad": "media",
+    "fuentes_externas": [
+     "Google Cloud \"MLOps: Continuous delivery and automation pipelines in ML\"",
+     "documentación de MLflow",
+     "Sculley et al. 2015 (Hidden Technical Debt in ML)"
+    ]
+   },
+   "nota": "HUECO: tema 4.4 de Modelos, sin contenido",
+   "palabras_principal": 0,
+   "palabras_fusion": 0,
+   "tipo": "ampliacion",
+   "motor": "grafo",
+   "modo": "diagrama",
+   "objetivo_palabras": 900,
+   "lote": "L30"
+  },
+  {
+   "id": "optimizacion-inferencia",
+   "nombre": "Escalabilidad y rendimiento: cuantización, GPUs e inferencia distribuida",
+   "bloque": "B8",
+   "principal": [
+    "mod:03-NLP-LLM/07-LLMs.md#Técnicas de optimización para LLMs",
+    "mod:03-NLP-LLM/07-LLMs.md#Infraestructura y hardware"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/10-consideraciones-practicas-proyectos-llm.md#Consideraciones prácticas en entornos de recursos limitados",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/05-consideraciones-practicas-keras.md#Conversión y optimización",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "llms",
+    "despliegue"
+   ],
+   "visual": "Precisión FP32 → FP16 → INT8: memoria y error en una misma gráfica",
+   "ampliacion": {
+    "que": "Cuantización, pruning, destilación; batching de inferencia; GPU/TPU; LoRA/PEFT para ajuste eficiente",
+    "prioridad": "baja",
+    "fuentes_externas": [
+     "Hu et al. 2021 (LoRA)",
+     "documentación de Hugging Face PEFT / bitsandbytes"
+    ]
+   },
+   "nota": "Tema 4.5 de Modelos: cubierto solo de pasada",
+   "palabras_principal": 452,
+   "palabras_fusion": 340,
+   "tipo": "original+ampliacion",
+   "motor": "funcion",
+   "modo": "barras",
+   "objetivo_palabras": 500,
+   "lote": "L30"
+  },
+  {
+   "id": "desafios-tecnicos",
+   "nombre": "Desafíos técnicos: datos, generalización, escalabilidad, robustez",
+   "bloque": "B8",
+   "principal": [
+    "mod:01-Fundamentos/07-desafios.md#=7. Desafíos éticos y técnicos",
+    "mod:01-Fundamentos/07-desafios.md#Desafíos técnicos"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "generalizacion"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1572,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L30"
+  },
+  {
+   "id": "sesgos-equidad",
+   "nombre": "Sesgos algorítmicos y equidad",
+   "bloque": "B8",
+   "principal": [
+    "ml:01-Determinacion/06-codificacion.md#Consideraciones éticas y sesgo"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:01-Fundamentos/07-desafios.md#Sesgos en los algoritmos",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:01-Fundamentos/07-desafios.md#Sesgos y equidad",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "desbalanceo",
+    "metricas-clasificacion"
+   ],
+   "visual": "Mismo modelo con dos grupos: tasas de falsos positivos distintas por grupo",
+   "ampliacion": {
+    "que": "Tipos de sesgo; métricas de equidad (paridad demográfica, igualdad de oportunidades); mitigación",
+    "prioridad": "baja",
+    "fuentes_externas": [
+     "Mehrabi et al. 2021 (survey on bias and fairness)",
+     "documentación de Fairlearn"
+    ]
+   },
+   "nota": "Principal = ML (765 pal.), más completa que las dos secciones de Modelos (~200 pal.)",
+   "palabras_principal": 773,
+   "palabras_fusion": 582,
+   "tipo": "original+ampliacion",
+   "motor": "umbral",
+   "modo": "grupos",
+   "objetivo_palabras": 500,
+   "lote": "L30"
+  },
+  {
+   "id": "explicabilidad",
+   "nombre": "Explicabilidad (XAI): importancia de variables, SHAP y LIME",
+   "bloque": "B8",
+   "principal": [
+    "mod:01-Fundamentos/07-desafios.md#Interpretabilidad y explicabilidad",
+    "mod:01-Fundamentos/07-desafios.md#Transparencia y explicabilidad"
+   ],
+   "secundarias": [
+    {
+     "fuente": "ml:02-ML_Supervisado/06-arboles.md#Interpretación y explicabilidad",
+     "uso": "E",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#Visualización de pesos y activaciones",
+     "uso": "E",
+     "nota": ""
+    },
+    {
+     "fuente": "ml:04-Redes_Neuronales/01-introduccion-deep-learning.md#Interpretabilidad y uso en la industria",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "bagging-random-forest"
+   ],
+   "visual": "Gráfico de cascada SHAP para una predicción; importancia por permutación",
+   "ampliacion": {
+    "que": "Interpretabilidad intrínseca vs post-hoc; importancia por permutación; SHAP (valores de Shapley); LIME; PDP/ICE",
+    "prioridad": "media",
+    "fuentes_externas": [
+     "Lundberg & Lee 2017 (SHAP)",
+     "Ribeiro et al. 2016 (LIME)",
+     "Molnar, Interpretable Machine Learning"
+    ]
+   },
+   "nota": "Tema 5.2 de Modelos: el concepto está; faltan las técnicas",
+   "palabras_principal": 781,
+   "palabras_fusion": 313,
+   "tipo": "original+ampliacion",
+   "motor": "funcion",
+   "modo": "barras",
+   "objetivo_palabras": 500,
+   "lote": "L30"
+  },
+  {
+   "id": "privacidad-responsabilidad",
+   "nombre": "Privacidad, seguridad y responsabilidad",
+   "bloque": "B8",
+   "principal": [
+    "mod:01-Fundamentos/07-desafios.md#Privacidad y seguridad de los datos",
+    "mod:01-Fundamentos/07-desafios.md#Responsabilidad y toma de decisiones"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "que-es-ia"
+   ],
+   "visual": "",
+   "ampliacion": null,
+   "nota": "",
+   "palabras_principal": 1108,
+   "palabras_fusion": 0,
+   "tipo": "original",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L30"
+  },
+  {
+   "id": "regulacion",
+   "nombre": "Regulación y gobernanza: la AI Act europea",
+   "bloque": "B8",
+   "principal": [
+    "mod:01-Fundamentos/07-desafios.md#Regulación legal de la IA"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/07-LLMs.md#Regulación y gobernanza de la IA",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:01-Fundamentos/01-definiciones.md#Una definición operativa: AI Watch",
+     "uso": "E",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "privacidad-responsabilidad"
+   ],
+   "visual": "Pirámide de riesgo de la AI Act con ejemplos por nivel",
+   "ampliacion": {
+    "que": "Verificar el calendario de aplicación y las obligaciones vigentes a la fecha de construcción",
+    "prioridad": "media",
+    "fuentes_externas": [
+     "Reglamento (UE) 2024/1689 (texto oficial en EUR-Lex)"
+    ]
+   },
+   "nota": "Contenido del curso; es lo que antes se queda obsoleto → comprobar al construir",
+   "palabras_principal": 886,
+   "palabras_fusion": 290,
+   "tipo": "original+ampliacion",
+   "motor": "pasos",
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L31"
+  },
+  {
+   "id": "impacto-social",
+   "nombre": "Impacto social y laboral de la IA",
+   "bloque": "B8",
+   "principal": [
+    "mod:01-Fundamentos/04-IA-debil-general.md#El frente social y ético"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "ia-debil-general"
+   ],
+   "visual": "",
+   "ampliacion": {
+    "que": "Efectos en el empleo y las tareas; automatización vs aumento",
+    "prioridad": "baja",
+    "fuentes_externas": [
+     "OCDE, Employment Outlook (capítulo IA)"
+    ]
+   },
+   "nota": "Tema 5.4 de Modelos: solo ~120 palabras",
+   "palabras_principal": 122,
+   "palabras_fusion": 0,
+   "tipo": "original+ampliacion",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L31"
+  },
+  {
+   "id": "aplicaciones-sectoriales",
+   "nombre": "Aplicaciones por sectores: salud, industria, finanzas, retail, automoción",
+   "bloque": "B8",
+   "principal": [
+    "mod:01-Fundamentos/06-aplicaciones.md"
+   ],
+   "secundarias": [],
+   "prerequisitos": [
+    "que-es-ia"
+   ],
+   "visual": "Matriz sector × técnica: cada celda enlaza a la ficha de la técnica",
+   "ampliacion": {
+    "que": "Sector público y smart cities (el único sector del tema 6 que falta)",
+    "prioridad": "baja",
+    "fuentes_externas": [
+     "AI Watch (Comisión Europea)"
+    ]
+   },
+   "nota": "Tema 6 de Modelos: cubierto en su mayoría por Fundamentos 1.6",
+   "palabras_principal": 4370,
+   "palabras_fusion": 0,
+   "tipo": "original+ampliacion",
+   "motor": "matriz-calor",
+   "modo": "tabla-enlaces",
+   "objetivo_palabras": 850,
+   "lote": "L31"
+  },
+  {
+   "id": "tendencias",
+   "nombre": "Tendencias: multimodalidad, agentes, Green AI y computación cuántica",
+   "bloque": "B8",
+   "principal": [
+    "mod:01-Fundamentos/02-historia.md#Mirando al futuro"
+   ],
+   "secundarias": [
+    {
+     "fuente": "mod:03-NLP-LLM/07-LLMs.md#Hacia la expansión de modelos multimodales",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:03-NLP-LLM/07-LLMs.md#Modelos autónomos y el futuro",
+     "uso": "F",
+     "nota": ""
+    },
+    {
+     "fuente": "mod:02-Razonamiento/03-razonamiento-impreciso.md#Avances en la computación cuántica",
+     "uso": "F",
+     "nota": ""
+    }
+   ],
+   "prerequisitos": [
+    "llm-aplicaciones"
+   ],
+   "visual": "",
+   "ampliacion": {
+    "que": "Green AI y huella energética; estado de los agentes; con fecha visible porque caduca rápido",
+    "prioridad": "baja",
+    "fuentes_externas": [
+     "Schwartz et al. 2020 (Green AI)",
+     "fuentes actuales en el momento de construir"
+    ]
+   },
+   "nota": "Tema 6.5: el contenido más perecedero → una sola ficha panorámica con fecha",
+   "palabras_principal": 321,
+   "palabras_fusion": 536,
+   "tipo": "original+ampliacion",
+   "motor": null,
+   "modo": null,
+   "objetivo_palabras": 500,
+   "lote": "L31"
+  }
+ ],
+ "meta": {
+  "generado": "2026-09-23",
+  "repos": {
+   "mat": "https://github.com/sebamendoza-eusa/matematicas-IA",
+   "ml": "https://github.com/sebamendoza-eusa/ml_101_2025",
+   "mod": "https://github.com/sebamendoza-eusa/modelos_ia_101_2025"
+  },
+  "cobertura": "99,0%",
+  "palabras_totales": 463119,
+  "commits": {
+   "mat": "42f29ea11e9c51d4218c8ca89cec15c6e7dfdac8",
+   "ml": "52f66e5b59fbf6382aa7c1cd54ef4977b0e84168",
+   "mod": "9cc34fbadb21ce1732581b1a3b854b4141f0e3f9"
+  }
+ },
+ "orden": [
+  "vectores",
+  "producto-escalar-similitud",
+  "espacio-vectorial",
+  "matrices",
+  "datos-como-matrices",
+  "determinante-inversa",
+  "sistemas-lineales",
+  "autovalores-svd",
+  "funciones",
+  "no-linealidad",
+  "derivada",
+  "regla-cadena",
+  "gradiente",
+  "integral-monte-carlo",
+  "probabilidad",
+  "prob-condicional",
+  "bayes",
+  "variable-aleatoria",
+  "dist-normal",
+  "dist-binomial",
+  "dist-poisson",
+  "estadistica-descriptiva",
+  "graficos-estadisticos",
+  "muestreo-intervalos",
+  "contraste-hipotesis",
+  "correlacion",
+  "que-es-ia",
+  "historia-ia",
+  "paradigmas-ia",
+  "ia-debil-general",
+  "resolucion-problemas",
+  "automatizacion-seleccion",
+  "que-es-ml",
+  "tipos-aprendizaje",
+  "componentes-ml",
+  "ciclo-proyecto-ml",
+  "funciones-perdida",
+  "descenso-gradiente",
+  "generalizacion",
+  "validacion",
+  "regularizacion",
+  "metricas-regresion",
+  "metricas-clasificacion",
+  "hiperparametros",
+  "tipos-datos",
+  "eda",
+  "preprocesamiento",
+  "outliers",
+  "valores-ausentes",
+  "multicolinealidad",
+  "escalado",
+  "codificacion-categoricas",
+  "seleccion-caracteristicas",
+  "reduccion-dimensionalidad",
+  "desbalanceo",
+  "series-temporales",
+  "supervisado",
+  "regresion-lineal",
+  "regresion-logistica",
+  "knn",
+  "naive-bayes",
+  "svm",
+  "arboles-decision",
+  "bagging-random-forest",
+  "boosting",
+  "clustering",
+  "kmeans",
+  "clustering-jerarquico",
+  "dbscan",
+  "gmm",
+  "evaluacion-clustering",
+  "del-ml-al-dl",
+  "perceptron",
+  "mlp",
+  "funciones-activacion",
+  "backpropagation",
+  "optimizadores",
+  "entrenamiento-dl",
+  "keras-tensorflow",
+  "flujo-dl-por-dato",
+  "cnn",
+  "cnn-arquitecturas",
+  "rnn",
+  "lstm-gru",
+  "autoencoders",
+  "gans",
+  "transfer-learning",
+  "rl-fundamentos",
+  "mdp",
+  "politica-valor-bellman",
+  "taxonomia-rl",
+  "programacion-dinamica",
+  "monte-carlo-rl",
+  "td-learning",
+  "sarsa-qlearning",
+  "policy-gradient",
+  "actor-critico",
+  "rl-aplicaciones",
+  "nlp-intro",
+  "limpieza-texto",
+  "tokenizacion",
+  "bow-tfidf",
+  "word-embeddings",
+  "modelos-lenguaje",
+  "embeddings-contextuales",
+  "atencion",
+  "transformer",
+  "bert-encoders",
+  "gpt-t5-generativos",
+  "fine-tuning",
+  "dl-para-nlp",
+  "huggingface-practico",
+  "llms",
+  "prompting",
+  "evaluacion-llm",
+  "rag",
+  "rlhf",
+  "llm-aplicaciones",
+  "representacion-conocimiento",
+  "ontologias-grafos",
+  "sistemas-expertos",
+  "motores-inferencia",
+  "logica-difusa",
+  "redes-bayesianas",
+  "teoria-posibilidad",
+  "hibridos-tendencias-simbolico",
+  "despliegue",
+  "monitorizacion-drift",
+  "mlops",
+  "optimizacion-inferencia",
+  "desafios-tecnicos",
+  "sesgos-equidad",
+  "explicabilidad",
+  "privacidad-responsabilidad",
+  "regulacion",
+  "impacto-social",
+  "aplicaciones-sectoriales",
+  "tendencias"
+ ],
+ "lotes": {
+  "L01": [
+   "vectores",
+   "producto-escalar-similitud",
+   "espacio-vectorial",
+   "matrices",
+   "datos-como-matrices",
+   "determinante-inversa",
+   "sistemas-lineales"
+  ],
+  "L02": [
+   "autovalores-svd",
+   "funciones",
+   "no-linealidad",
+   "derivada",
+   "regla-cadena",
+   "gradiente",
+   "integral-monte-carlo",
+   "probabilidad"
+  ],
+  "L03": [
+   "prob-condicional",
+   "bayes",
+   "variable-aleatoria",
+   "dist-normal",
+   "dist-binomial",
+   "dist-poisson",
+   "estadistica-descriptiva",
+   "graficos-estadisticos"
+  ],
+  "L04": [
+   "muestreo-intervalos",
+   "contraste-hipotesis",
+   "correlacion"
+  ],
+  "L05": [
+   "que-es-ia",
+   "historia-ia",
+   "paradigmas-ia",
+   "ia-debil-general"
+  ],
+  "L06": [
+   "resolucion-problemas",
+   "automatizacion-seleccion",
+   "que-es-ml",
+   "tipos-aprendizaje"
+  ],
+  "L07": [
+   "componentes-ml",
+   "ciclo-proyecto-ml",
+   "funciones-perdida",
+   "descenso-gradiente",
+   "generalizacion",
+   "validacion"
+  ],
+  "L08": [
+   "regularizacion",
+   "metricas-regresion",
+   "metricas-clasificacion",
+   "hiperparametros"
+  ],
+  "L09": [
+   "tipos-datos",
+   "eda",
+   "preprocesamiento",
+   "outliers",
+   "valores-ausentes",
+   "multicolinealidad",
+   "escalado"
+  ],
+  "L10": [
+   "codificacion-categoricas",
+   "seleccion-caracteristicas",
+   "reduccion-dimensionalidad",
+   "desbalanceo",
+   "series-temporales",
+   "supervisado"
+  ],
+  "L11": [
+   "regresion-lineal",
+   "regresion-logistica",
+   "knn",
+   "naive-bayes",
+   "svm"
+  ],
+  "L12": [
+   "arboles-decision",
+   "bagging-random-forest",
+   "boosting",
+   "clustering",
+   "kmeans"
+  ],
+  "L13": [
+   "clustering-jerarquico",
+   "dbscan",
+   "gmm",
+   "evaluacion-clustering"
+  ],
+  "L14": [
+   "del-ml-al-dl",
+   "perceptron",
+   "mlp",
+   "funciones-activacion",
+   "backpropagation",
+   "optimizadores",
+   "entrenamiento-dl"
+  ],
+  "L15": [
+   "keras-tensorflow",
+   "flujo-dl-por-dato"
+  ],
+  "L16": [
+   "cnn",
+   "cnn-arquitecturas",
+   "rnn"
+  ],
+  "L17": [
+   "lstm-gru",
+   "autoencoders",
+   "gans",
+   "transfer-learning"
+  ],
+  "L18": [
+   "rl-fundamentos",
+   "mdp",
+   "politica-valor-bellman",
+   "taxonomia-rl"
+  ],
+  "L19": [
+   "programacion-dinamica",
+   "monte-carlo-rl",
+   "td-learning"
+  ],
+  "L20": [
+   "sarsa-qlearning",
+   "policy-gradient",
+   "actor-critico",
+   "rl-aplicaciones"
+  ],
+  "L21": [
+   "nlp-intro",
+   "limpieza-texto",
+   "tokenizacion"
+  ],
+  "L22": [
+   "bow-tfidf"
+  ],
+  "L23": [
+   "word-embeddings"
+  ],
+  "L24": [
+   "modelos-lenguaje",
+   "embeddings-contextuales",
+   "atencion",
+   "transformer",
+   "bert-encoders",
+   "gpt-t5-generativos"
+  ],
+  "L25": [
+   "fine-tuning",
+   "dl-para-nlp",
+   "huggingface-practico",
+   "llms"
+  ],
+  "L26": [
+   "prompting",
+   "evaluacion-llm",
+   "rag",
+   "rlhf",
+   "llm-aplicaciones"
+  ],
+  "L27": [
+   "representacion-conocimiento",
+   "ontologias-grafos",
+   "sistemas-expertos"
+  ],
+  "L28": [
+   "motores-inferencia",
+   "logica-difusa",
+   "redes-bayesianas",
+   "teoria-posibilidad"
+  ],
+  "L29": [
+   "hibridos-tendencias-simbolico"
+  ],
+  "L30": [
+   "despliegue",
+   "monitorizacion-drift",
+   "mlops",
+   "optimizacion-inferencia",
+   "desafios-tecnicos",
+   "sesgos-equidad",
+   "explicabilidad",
+   "privacidad-responsabilidad"
+  ],
+  "L31": [
+   "regulacion",
+   "impacto-social",
+   "aplicaciones-sectoriales",
+   "tendencias"
+  ]
+ }
+}

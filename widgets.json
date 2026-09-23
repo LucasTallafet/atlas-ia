@@ -1,0 +1,190 @@
+{
+ "_contrato": "Cada motor es un archivo docs/motores/<motor>.js que llama a Motores.registrar('<motor>', function (el, p, api) {...}). el = contenedor vacío; p = parámetros del bloque ```widget de la ficha (ya validados); api = {colores(), tex(el), num(x, dec), slider(opts), boton(txt, fn), aleatorio(semilla)}. El motor dibuja con SVG o Canvas, sin librerías externas, responde a cambios de tema (evento 'tema') y funciona a 360 px de ancho. Un modo o algoritmo nuevo se añade a 'modos' aquí ANTES de implementarlo. Tipos de parámetro: num, int, bool, str, lista, lista-num, objeto. 'modo' es obligatorio si el motor declara modos.",
+ "funcion": {
+  "desc": "Gráfica de una o varias funciones y = f(x) con deslizadores para sus parámetros. También barras y series de datos.",
+  "modos": ["familias", "tangente", "rectas", "pdf-cdf", "densidad", "discreta", "region", "perdidas", "activaciones", "series", "barras", "pertenencia"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "funciones": {"tipo": "lista", "req": false, "desc": "[{\"expr\": \"a*x^2+b\", \"etiqueta\": \"...\"}] expresiones en JS-math: + - * / ^, sin cos exp log sqrt abs max min, pi, e"},
+   "parametros": {"tipo": "lista", "req": false, "desc": "[{\"nombre\": \"a\", \"min\": -2, \"max\": 2, \"paso\": 0.1, \"valor\": 1, \"etiqueta\": \"pendiente\"}]"},
+   "x": {"tipo": "lista-num", "req": false, "desc": "[xmin, xmax]"},
+   "y": {"tipo": "lista-num", "req": false, "desc": "[ymin, ymax]; si falta, automático"},
+   "datos": {"tipo": "objeto", "req": false, "desc": "series o barras: {\"etiquetas\": [...], \"series\": [{\"nombre\": \"...\", \"valores\": [...]}]}"},
+   "escala_log": {"tipo": "bool", "req": false},
+   "sombrear": {"tipo": "objeto", "req": false, "desc": "{\"desde\": \"expr\", \"hasta\": \"expr\"} área bajo la primera función"}
+  }
+ },
+ "vectores2d": {
+  "desc": "Plano con vectores o puntos arrastrables y cálculos en vivo.",
+  "modos": ["operaciones", "similitud", "base", "etiquetas"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "vectores": {"tipo": "lista", "req": false, "desc": "[{\"nombre\": \"u\", \"xy\": [2, 1]}]"},
+   "puntos": {"tipo": "lista", "req": false, "desc": "modo etiquetas: [{\"etiqueta\": \"rey\", \"xy\": [0.8, 0.6]}]"},
+   "analogias": {"tipo": "lista", "req": false, "desc": "[[\"rey\", \"hombre\", \"mujer\", \"reina\"]]"},
+   "mostrar": {"tipo": "lista", "req": false, "desc": "subset de: suma, resta, escalar, producto, coseno, euclidea, manhattan, proyeccion"}
+  }
+ },
+ "transformacion2d": {
+  "desc": "Matriz 2x2 editable que deforma una cuadrícula; determinante y autovectores.",
+  "modos": ["rejilla", "determinante", "autovectores"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "matriz": {"tipo": "lista", "req": true, "desc": "[[a, b], [c, d]] valores iniciales"},
+   "presets": {"tipo": "lista", "req": false, "desc": "[{\"nombre\": \"rotación 45°\", \"matriz\": [[...]]}]"}
+  }
+ },
+ "dispersion2d": {
+  "desc": "Nube de puntos 2D (generada o dada) sobre la que corre un algoritmo de ML paso a paso o con deslizadores.",
+  "modos": ["correlacion", "polinomio", "ridge-lasso", "metricas-regresion", "escalado", "pca", "ols", "logistica", "knn", "svm", "arbol", "bosque", "boosting", "comparar-clustering", "kmeans", "jerarquico", "dbscan", "gmm", "silueta"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "dataset": {"tipo": "objeto", "req": true, "desc": "{\"generador\": \"blobs|lunas|circulos|lineal|xor|curva\", \"n\": 120, \"ruido\": 0.2, \"clases\": 2, \"semilla\": 7} o {\"puntos\": [[x, y, clase], ...]}"},
+   "controles": {"tipo": "lista", "req": false, "desc": "[{\"nombre\": \"k\", \"min\": 1, \"max\": 15, \"paso\": 1, \"valor\": 3}] hiperparámetros expuestos"},
+   "paso_a_paso": {"tipo": "bool", "req": false, "desc": "muestra botones Paso / Reiniciar en algoritmos iterativos"},
+   "arrastrables": {"tipo": "bool", "req": false}
+  }
+ },
+ "descenso": {
+  "desc": "Superficie de pérdida en curvas de nivel con el recorrido de un optimizador.",
+  "modos": ["gradiente", "lr", "optimizadores"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "superficie": {"tipo": "str", "req": true, "desc": "expresión f(x, y), p. ej. \"x^2 + 3*y^2\""},
+   "inicio": {"tipo": "lista-num", "req": true},
+   "lr": {"tipo": "num", "req": false},
+   "optimizadores": {"tipo": "lista", "req": false, "desc": "subset de: sgd, momentum, adam"},
+   "rango": {"tipo": "lista-num", "req": false, "desc": "[xmin, xmax, ymin, ymax]"}
+  }
+ },
+ "umbral": {
+  "desc": "Puntuaciones de un clasificador para dos clases; un deslizador de umbral recalcula la matriz de confusión, las métricas y el punto ROC.",
+  "modos": ["clasificacion", "desbalanceo", "grupos"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "positivos": {"tipo": "objeto", "req": true, "desc": "{\"n\": 100, \"media\": 0.65, \"desv\": 0.15}"},
+   "negativos": {"tipo": "objeto", "req": true, "desc": "{\"n\": 100, \"media\": 0.35, \"desv\": 0.15}"},
+   "grupos": {"tipo": "lista", "req": false, "desc": "modo grupos: [{\"nombre\": \"A\", \"positivos\": {...}, \"negativos\": {...}}]"},
+   "metricas": {"tipo": "lista", "req": false, "desc": "subset de: accuracy, precision, recall, especificidad, f1, fpr"}
+  }
+ },
+ "rejilla": {
+  "desc": "Mundo en cuadrícula: búsqueda, MDP y algoritmos de RL con valores y política visibles.",
+  "modos": ["busqueda", "mdp", "valores", "iteracion-valores", "monte-carlo", "td0", "sarsa-qlearning"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "mapa": {"tipo": "lista", "req": true, "desc": "filas de texto: '.' libre, '#' muro, 'S' inicio, 'G' meta (+1), 'X' trampa (-1), 'C' acantilado (-100)"},
+   "gamma": {"tipo": "num", "req": false},
+   "alpha": {"tipo": "num", "req": false},
+   "epsilon": {"tipo": "num", "req": false},
+   "recompensa_paso": {"tipo": "num", "req": false},
+   "estocastico": {"tipo": "num", "req": false, "desc": "probabilidad de resbalar"}
+  }
+ },
+ "probabilidad": {
+  "desc": "Probabilidad visual: Venn, tabla de contingencia, test diagnóstico con 1000 puntos, Naive Bayes y softmax con temperatura.",
+  "modos": ["venn", "tabla", "test", "naive-bayes", "softmax"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "valores": {"tipo": "objeto", "req": false, "desc": "test: {\"prevalencia\": 0.01, \"sensibilidad\": 0.95, \"especificidad\": 0.9}; tabla: {\"filas\": [...], \"columnas\": [...], \"conteos\": [[...]]}"},
+   "vocabulario": {"tipo": "lista", "req": false, "desc": "naive-bayes: [{\"palabra\": \"gratis\", \"p_spam\": 0.3, \"p_ham\": 0.01}]"},
+   "logits": {"tipo": "lista", "req": false, "desc": "softmax: [{\"token\": \"gato\", \"logit\": 2.1}]"}
+  }
+ },
+ "datos1d": {
+  "desc": "Puntos en una recta, arrastrables: media, mediana, moda, histograma, boxplot, detección de atípicos e imputación.",
+  "modos": ["centralidad", "graficos", "outliers", "imputacion"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "valores": {"tipo": "lista-num", "req": true},
+   "unidad": {"tipo": "str", "req": false}
+  }
+ },
+ "simulacion": {
+  "desc": "Simulaciones aleatorias con semilla: Monte Carlo, intervalos de confianza, bandido multibrazo y gradiente de la política.",
+  "modos": ["pi", "intervalos", "bandido", "policy-gradient"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "config": {"tipo": "objeto", "req": false, "desc": "parámetros propios del modo (n, confianza, brazos: [0.2, 0.5, 0.7], epsilon, lr...)"},
+   "semilla": {"tipo": "int", "req": false}
+  }
+ },
+ "serie": {
+  "desc": "Serie temporal con ventana deslizante (pares X, y) o deriva de una distribución entre entrenamiento y producción.",
+  "modos": ["ventana", "drift"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "serie": {"tipo": "objeto", "req": true, "desc": "{\"generador\": \"seno|tendencia|estacional\", \"n\": 120, \"ruido\": 0.1, \"semilla\": 3} o {\"valores\": [...]}"},
+   "ventana": {"tipo": "int", "req": false}
+  }
+ },
+ "red": {
+  "desc": "Red neuronal pequeña dibujada con sus valores: perceptrón, XOR, propagación hacia delante y retropropagación numérica.",
+  "modos": ["perceptron", "xor", "forward", "backprop"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "capas": {"tipo": "lista-num", "req": true, "desc": "neuronas por capa, p. ej. [2, 2, 1]"},
+   "activacion": {"tipo": "str", "req": false, "desc": "sigmoide|tanh|relu|escalon"},
+   "pesos": {"tipo": "lista", "req": false},
+   "entrada": {"tipo": "lista-num", "req": false},
+   "objetivo": {"tipo": "lista-num", "req": false}
+  }
+ },
+ "convolucion": {
+  "desc": "Kernel deslizándose sobre una imagen pixelada, con padding, stride y pooling.",
+  "modos": [],
+  "params": {
+   "imagen": {"tipo": "lista", "req": true, "desc": "matriz de 0-9 (hasta 12x12)"},
+   "kernel": {"tipo": "lista", "req": true},
+   "padding": {"tipo": "int", "req": false},
+   "stride": {"tipo": "int", "req": false},
+   "pooling": {"tipo": "str", "req": false, "desc": "max|media|ninguno"}
+  }
+ },
+ "texto": {
+  "desc": "Procesamiento de texto en vivo: limpieza, tokenización, BoW/TF-IDF y n-gramas.",
+  "modos": ["limpieza", "tokenizacion", "bow-tfidf", "ngramas"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "textos": {"tipo": "lista", "req": true, "desc": "uno o varios textos de ejemplo editables"},
+   "stopwords": {"tipo": "lista", "req": false},
+   "pasos": {"tipo": "lista", "req": false, "desc": "limpieza: subset ordenado de minusculas, puntuacion, numeros, espacios, stopwords, stemming"},
+   "n": {"tipo": "int", "req": false}
+  }
+ },
+ "matriz-calor": {
+  "desc": "Mapa de calor interactivo: pesos de atención, máscaras, búsqueda de hiperparámetros o tabla con enlaces.",
+  "modos": ["atencion", "mascaras", "busqueda", "tabla-enlaces"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "filas": {"tipo": "lista", "req": true},
+   "columnas": {"tipo": "lista", "req": true},
+   "valores": {"tipo": "lista", "req": false, "desc": "matriz numérica; tabla-enlaces: matriz de ids de ficha o null"}
+  }
+ },
+ "grafo": {
+  "desc": "Grafo de nodos y aristas clicable: diagramas de proceso, grafos de conocimiento y redes bayesianas con inferencia exacta.",
+  "modos": ["diagrama", "conocimiento", "red-bayesiana"],
+  "params": {
+   "modo": {"tipo": "str", "req": true},
+   "nodos": {"tipo": "lista", "req": true, "desc": "[{\"id\": \"a\", \"etiqueta\": \"...\", \"enlace\": \"id-ficha opcional\", \"nota\": \"...\"}]; red-bayesiana: + \"tabla\": {...}"},
+   "aristas": {"tipo": "lista", "req": true, "desc": "[[\"a\", \"b\", \"etiqueta opcional\"]]"},
+   "direccion": {"tipo": "str", "req": false, "desc": "horizontal|vertical"}
+  }
+ },
+ "linea-tiempo": {
+  "desc": "Línea temporal navegable con periodos y hitos.",
+  "modos": [],
+  "params": {
+   "periodos": {"tipo": "lista", "req": false, "desc": "[{\"desde\": 1974, \"hasta\": 1980, \"etiqueta\": \"primer invierno\"}]"},
+   "hitos": {"tipo": "lista", "req": true, "desc": "[{\"año\": 1956, \"titulo\": \"...\", \"texto\": \"...\"}]"}
+  }
+ },
+ "pasos": {
+  "desc": "Secuencia de fotogramas con Anterior/Siguiente. Cada fotograma: texto Markdown breve (admite $LaTeX$) y opcionalmente una tabla con celdas resaltadas o un diagrama de cajas. Motor comodín para procesos que no necesitan simulación.",
+  "modos": [],
+  "params": {
+   "fotogramas": {"tipo": "lista", "req": true, "desc": "[{\"texto\": \"...\", \"tabla\": {\"cabecera\": [...], \"filas\": [[...]], \"resaltar\": [[fila, col]]}, \"cajas\": [\"entrada\", \"capa\", \"salida\"], \"activa\": 1}]"}
+  }
+ }
+}
