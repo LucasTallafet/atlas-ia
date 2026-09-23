@@ -1,6 +1,6 @@
 ---
 id: derivada
-estado: borrador
+estado: revisada
 ---
 
 ## En una frase

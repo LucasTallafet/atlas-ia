@@ -1,6 +1,6 @@
 ---
 id: metricas-clasificacion
-estado: borrador
+estado: revisada
 ---
 
 ## En una frase

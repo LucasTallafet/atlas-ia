@@ -1,6 +1,6 @@
 ---
 id: kmeans
-estado: borrador
+estado: revisada
 ---
 
 ## En una frase
