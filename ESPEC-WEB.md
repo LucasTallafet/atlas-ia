@@ -56,7 +56,7 @@ Rutas predefinidas (calculadas, no escritas a mano): "De las matemáticas a las 
 2. **En una frase** destacada como entradilla.
 3. Panel lateral (a la derecha en escritorio; plegable arriba en móvil): Requisitos (con ✓ si están dominados), Desbloquea, Conexiones, Desambiguación y "Ruta completa hasta aquí (N conceptos)".
 4. Cuerpo: Intuición → Explicación → Formalización → **Interactivo** (panel propio, a todo el ancho del texto) → En código (con botón Copiar) → Errores típicos → **A fondo** (`<details>` cerrado) → **Autoevaluación** (interactiva: al responder muestra si acierta y la explicación; con ≥ 80 % de aciertos marca la ficha como dominada) → Glosario de la ficha → **Fuentes** (enlaces permanentes a GitHub, con el rol principal/fusionada, y las fuentes externas de la ampliación).
-5. Selector de vista: **Completa** / **Esencial** (Esencial muestra solo En una frase, Intuición, los títulos `###` de Explicación, Errores típicos y Autoevaluación).
+5. Selector de vista: **Completa** / **Esencial**. Esencial es un resumen práctico que se entiende solo: En una frase → **En resumen** (la chuleta, destacada) → Interactivo → Errores típicos → Autoevaluación. No muestra títulos sueltos. En Completa, "En resumen" aparece como recuadro "Para llevar" después de Errores típicos.
 6. Pie: anterior / siguiente según `INDICE.orden` y "Siguiente recomendado" (primer concepto desbloqueado aún no dominado).
 7. Estilos específicos: `div.ampliacion` con etiqueta visible "Ampliación · no está en el curso" y color propio; `div.nota-fuente` como nota al margen; `a.xref` con subrayado punteado y vista previa de la frase al pasar el ratón.
 8. Al terminar de pintar (HTML + MathJax + motor), `document.body.dataset.listo = id`. Lo usa `tools/probar_web.py`.

@@ -406,20 +406,27 @@
     const bCompleta = h('button', { type: 'button', 'aria-pressed': String(modoVista === 'completa') }, 'Completa');
     const bEsencial = h('button', { type: 'button', 'aria-pressed': String(modoVista === 'esencial') }, 'Esencial');
     const selector = h('div', { class: 'selector-vista', role: 'group', 'aria-label': 'Nivel de detalle' }, bCompleta, bEsencial);
-    const ponModo = (m) => { art.classList.toggle('esencial', m === 'esencial'); bCompleta.setAttribute('aria-pressed', String(m === 'completa')); bEsencial.setAttribute('aria-pressed', String(m === 'esencial')); pref('atlas-ia-modo', m); };
+    const ponModo = (m) => {
+      art.classList.toggle('esencial', m === 'esencial');
+      if (resumen) {  // Esencial: la chuleta justo tras la frase; Completa: "Para llevar" tras Errores típicos (ESPEC-WEB §5.5)
+        resumen.querySelector('h2').textContent = m === 'esencial' ? 'En resumen' : 'Para llevar';
+        if (m === 'esencial' || !errores) cuerpo.prepend(resumen); else errores.after(resumen);
+      }
+      bCompleta.setAttribute('aria-pressed', String(m === 'completa')); bEsencial.setAttribute('aria-pressed', String(m === 'esencial')); pref('atlas-ia-modo', m);
+    };
     bCompleta.addEventListener('click', () => ponModo('completa'));
     bEsencial.addEventListener('click', () => ponModo('esencial'));
     art.append(selector);
 
     const cuerpo = h('div', { class: 'ficha-cuerpo' });
     const sec = (titulo, contenido, clase) => h('section', { class: clase || '' }, h('h2', { text: titulo }), contenido);
-    if (S['Intuición']) cuerpo.append(sec('Intuición', h('div', { html: S['Intuición'] })));
-    if (S['Explicación']) cuerpo.append(h('section', { class: 'sec-explicacion', html: '<h2>Explicación</h2>' + S['Explicación'] }));
+    if (S['Intuición']) cuerpo.append(sec('Intuición', h('div', { html: S['Intuición'] }), 'solo-completa'));
+    if (S['Explicación']) cuerpo.append(h('section', { class: 'sec-explicacion solo-completa', html: '<h2>Explicación</h2>' + S['Explicación'] }));
     if (S['Formalización']) cuerpo.append(sec('Formalización', h('div', { html: S['Formalización'] }), 'solo-completa'));
     let widgetEl = null;
     if (F.widget) {
       widgetEl = h('div', { class: 'widget' });
-      cuerpo.append(sec('Interactivo', [h('div', { class: 'panel-interactivo' }, widgetEl), h('div', { html: S['Interactivo'] || '' })], 'solo-completa'));
+      cuerpo.append(sec('Interactivo', [h('div', { class: 'panel-interactivo' }, widgetEl), h('div', { html: S['Interactivo'] || '' })]));
     }
     if (S['En código']) {
       const cod = h('div', { html: S['En código'] });
@@ -431,7 +438,10 @@
       });
       cuerpo.append(sec('En código', cod, 'solo-completa'));
     }
-    if (S['Errores típicos']) cuerpo.append(sec('Errores típicos', h('div', { class: 'errores-tipicos', html: S['Errores típicos'] })));
+    const errores = S['Errores típicos'] ? sec('Errores típicos', h('div', { class: 'errores-tipicos', html: S['Errores típicos'] })) : null;
+    if (errores) cuerpo.append(errores);
+    const resumen = S['En resumen'] ? sec('Para llevar', h('div', { html: S['En resumen'] }), 'en-resumen') : null;
+    if (resumen) cuerpo.append(resumen);
     if (S['A fondo']) cuerpo.append(h('section', { class: 'solo-completa' }, h('details', { class: 'a-fondo' }, h('summary', { text: 'A fondo' }), h('div', { html: S['A fondo'] }))));
     if (F.quiz && F.quiz.length) cuerpo.append(sec('Autoevaluación', quiz(id, F.quiz)));
     if (F.glosario && F.glosario.length) {

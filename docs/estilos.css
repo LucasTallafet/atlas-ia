@@ -285,9 +285,16 @@ a.xref { text-decoration: underline dotted; text-underline-offset: 3px; }
 .pie-ficha small { display: block; color: var(--texto-suave); }
 .pie-ficha .siguiente { text-align: right; }
 .pie-ficha .recomendado { grid-column: 1 / -1; border-color: var(--acento); }
-/* Vista esencial */
+/* "En resumen": recuadro "Para llevar" en Completa; chuleta destacada en Esencial */
+.ficha-cuerpo > section.en-resumen { background: var(--acento-suave); border: 1px solid var(--acento); border-radius: var(--radio); padding: .2rem 1.1rem .4rem; }
+.en-resumen h2 { border: 0; font-size: .82rem; text-transform: uppercase; letter-spacing: .06em; color: var(--acento); margin: .7rem 0 .3rem; padding: 0; }
+.en-resumen ul { padding-left: 1.2rem; margin: 0 0 .5rem; }
+.en-resumen li { margin-bottom: .45rem; }
+.en-resumen li::marker { color: var(--acento); }
+/* Vista esencial: frase → En resumen → Interactivo → Errores típicos → Autoevaluación */
 .esencial .solo-completa { display: none !important; }
-.esencial .sec-explicacion > :not(h2):not(h3) { display: none; }
+.esencial .en-resumen { box-shadow: var(--sombra); font-size: 1.03rem; }
+.esencial .en-resumen h2 { font-size: .9rem; }
 
 /* ───────────── Autoevaluación ───────────── */
 .pregunta { background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); padding: .8rem 1rem; margin-bottom: .9rem; }

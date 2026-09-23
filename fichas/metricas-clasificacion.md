@@ -134,6 +134,15 @@ print("AUC", round(roc_auc_score(y_real, prob), 3))
 - **Error**: creer que el AUC depende del umbral elegido. → **Correcto**: el AUC resume todos los umbrales; el umbral solo elige un punto de la curva ROC.
 - **Error**: pensar que el umbral siempre debe ser $0{,}5$. → **Correcto**: se elige según el coste de cada error; si un falso negativo es grave, se baja para ganar recall.
 
+## En resumen
+
+- **Qué hace:** mide cómo acierta y cómo falla un clasificador, separando los dos tipos de error en vez de dar un único porcentaje.
+- **Cómo funciona:** comparas predicciones y etiquetas reales en el conjunto de prueba, cuentas TP, FP, FN y TN (la matriz de confusión) y calculas las métricas a partir de esos cuatro números.
+- **Regla clave:** precisión $= TP/(TP+FP)$ divide entre lo *predicho* positivo; recall $= TP/(TP+FN)$, entre lo *real* positivo.
+- **Qué métrica elegir:** exactitud si las clases están equilibradas; F1 si están desbalanceadas; precisión si un falso positivo es caro; recall si lo caro es un falso negativo.
+- **Decisión clave, el umbral $t$:** bajarlo sube el recall y también los falsos positivos. La curva ROC muestra todos los umbrales y el AUC la resume ($0{,}5$ = azar, $1$ = perfecto).
+- **Trampa:** una exactitud alta con clases desbalanceadas puede venir de predecir siempre la clase mayoritaria.
+
 ## A fondo
 
 Qué métrica mirar según el escenario, como resume el curso:

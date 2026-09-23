@@ -121,6 +121,16 @@ for k in (1, 2, 3):
 - **Error**: fiarse de una sola ejecución. → **Correcto**: el resultado depende del inicio; usa K-Means++ y varias inicializaciones (`n_init`) y quédate con la de menor inercia.
 - **Error**: usar K-Means para grupos con forma de anillo o de luna. → **Correcto**: K-Means asume grupos esféricos; para formas no convexas usa DBSCAN o clustering jerárquico.
 
+## En resumen
+
+- **Qué hace:** reparte datos sin etiquetas en $k$ grupos disjuntos, cada uno resumido por su centroide (el "miembro típico" del grupo).
+- **Algoritmo:** eliges $k$ centroides iniciales → asignas cada punto al más cercano → mueves cada centroide a la media de sus puntos → repites hasta que nada cambia.
+- **Qué minimiza:** la inercia o WCSS, $J = \sum_i \sum_{\mathbf{x}_j \in C_i} \lVert \mathbf{x}_j - \boldsymbol{\mu}_i \rVert^2$.
+- **Cómo elegir $k$:** método del codo (dibuja $J$ frente a $k$ y busca dónde se aplana), complementado con el coeficiente de silueta. Nunca el $k$ de menor inercia: siempre baja al subir $k$.
+- **Antes de usarlo:** estandariza las variables; si no, la de mayor escala decide los grupos.
+- **Cuándo no:** clústeres no esféricos (anillos, lunas) o de tamaños muy distintos, y datos con atípicos, que arrastran los centroides.
+- **Trampa:** el resultado depende del inicio; usa K-Means++ y varias inicializaciones (`n_init`) y quédate con la de menor inercia.
+
 ## A fondo
 
 ### La clase `KMeans` de scikit-learn

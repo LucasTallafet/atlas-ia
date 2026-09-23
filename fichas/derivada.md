@@ -105,6 +105,15 @@ print("f'(1) =", derivada)
 - **Error**: confundir la tasa de variación media con la derivada. → **Correcto**: la tasa media depende del tramo $h$ elegido; la derivada es su límite cuando $h$ tiende a cero.
 - **Error**: leer el signo al revés al optimizar. → **Correcto**: para bajar el valor de la función te mueves en sentido contrario al signo de la derivada.
 
+## En resumen
+
+- **Qué es:** la pendiente de una función en un punto, es decir, cuánto cambia la salida por cada unidad que cambia la entrada.
+- **Cómo se obtiene:** calculas la tasa de variación media en un tramo $h$ y haces $h \to 0$; la secante se convierte en la tangente. En la práctica se usan las reglas de derivación.
+- **Regla clave:** $(x^n)' = n x^{n-1}$; la derivada de una constante es $0$ y la de una suma, la suma de derivadas.
+- **Cómo leerla:** positiva, la función sube; negativa, baja; cero, la función se aplana (posible mínimo o máximo).
+- **Para qué sirve en IA:** mide cuánto cambia el error al mover un parámetro; para bajar el error, mueves el parámetro en sentido contrario al signo de la derivada.
+- **Trampa:** una derivada grande no significa un valor grande, sino un cambio rápido; y $f'(x) = 0$ no garantiza un mínimo.
+
 ## A fondo
 
 ### Por qué la derivada es cero en un máximo o un mínimo

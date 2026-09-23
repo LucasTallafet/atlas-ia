@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "defaultMode": "acceptEdits",
+    "allow": [
+      "Bash(python tools/*)",
+      "Bash(python -c *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "PowerShell(python tools/*)",
+      "PowerShell(python tools\\*)",
+      "PowerShell(python -c *)",
+      "PowerShell(git add *)",
+      "PowerShell(git commit *)",
+      "PowerShell(git push *)",
+      "PowerShell(git status *)",
+      "PowerShell(git diff *)",
+      "WebSearch",
+      "WebFetch"
+    ],
+    "deny": [
+      "Read(fuentes/**)",
+      "Read(docs/vendor/**)",
+      "Read(docs/datos/**)"
+    ]
+  }
+}

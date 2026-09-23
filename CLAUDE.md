@@ -52,6 +52,7 @@ Secciones `## ` en este orden exacto (las marcadas con * son opcionales):
 | **Interactivo*** | Un bloque ```widget y de 1 a 3 retos que empiecen por "Prueba a…". | Obligatorio si el inventario asigna motor; prohibido si no. |
 | **En código*** | Un ejemplo mínimo en Python que funcione tal cual. | ≤ 20 líneas por bloque. Con salida comentada. |
 | **Errores típicos** | Malentendidos frecuentes. | ≥ 3 viñetas con este formato: `- **Error**: … → **Correcto**: …` |
+| **En resumen** | Chuleta práctica: es lo que muestra la vista "Esencial". Tiene que entenderse sola, sin haber leído el resto. | 4-8 viñetas, ≤ 180 palabras. Cubre: qué hace y para qué sirve; cómo funciona en 2-4 pasos; la fórmula o regla clave (como mucho una); cuándo usarlo y cuándo no; los hiperparámetros o decisiones que importan; la trampa principal. Nada de títulos vacíos ni "ver arriba". |
 | **A fondo*** | Detalle valioso de la fuente que no es imprescindible (casos, variantes, historia, matices). | Se muestra plegado en la web. Así la ficha es densa sin abrumar. |
 | **Autoevaluación** | Comprobar la comprensión, no la memoria. | 3-6 preguntas con el formato de abajo. |
 | **Glosario** | Términos que esta ficha introduce. | `- **término**: definición` (≤ 30 palabras). Solo términos nuevos aquí. |

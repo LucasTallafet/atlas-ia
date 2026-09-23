@@ -79,6 +79,15 @@ for h in [1, 0.1, 0.01, 0.001]:
 - **Error**: asumir que $f'(x)=0$ siempre es un mínimo. → **Correcto**: también puede ser un máximo o una meseta; hay que mirar alrededor.
 - **Error**: usar un $h$ enorme para aproximar la derivada. → **Correcto**: con $h$ grande obtienes la tasa *media* del tramo, no la instantánea.
 
+## En resumen
+
+- **Qué es:** la pendiente de una función en un punto, es decir, cuánto cambia la salida por cada unidad que cambia la entrada.
+- **Cómo se obtiene:** se calcula la tasa de variación media en un tramo $h$ y se hace $h \to 0$. En la práctica se usan las reglas de derivación.
+- **Regla clave:** $(x^n)' = n x^{n-1}$; la derivada de una suma es la suma de derivadas.
+- **Cómo leerla:** positiva, la función sube; negativa, baja; cero, zona plana (mínimo, máximo o meseta).
+- **Para qué sirve en IA:** mide la sensibilidad del error a cada parámetro y así indica hacia dónde moverlo al entrenar.
+- **Trampa:** una derivada grande no significa un valor grande; significa un cambio rápido.
+
 ## A fondo
 
 La idea de "hacerse recta al ampliar" es la que da sentido a la tangente: si haces zoom sobre una curva suave alrededor de un punto, cada vez se parece más a una línea recta, y la pendiente de esa línea es $f'(x)$. Por eso decimos que la derivada es la mejor aproximación lineal de la función en ese punto.

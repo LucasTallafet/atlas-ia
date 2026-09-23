@@ -3,9 +3,9 @@ import json
 import re
 
 SECCIONES = ['En una frase', 'Intuición', 'Explicación', 'Formalización', 'Interactivo',
-             'En código', 'Errores típicos', 'A fondo', 'Autoevaluación', 'Glosario']
+             'En código', 'Errores típicos', 'En resumen', 'A fondo', 'Autoevaluación', 'Glosario']
 OBLIGATORIAS = {'En una frase', 'Intuición', 'Explicación', 'Formalización', 'Errores típicos',
-                'Autoevaluación', 'Glosario'}
+                'En resumen', 'Autoevaluación', 'Glosario'}
 CUERPO = ('Explicación', 'Formalización', 'A fondo')  # cuentan para objetivo_palabras
 PROHIBIDO = re.compile(r'\b(TODO|XXX|FIXME|lorem ipsum)\b|<!--', re.I)
 BLOQUE_CODIGO = re.compile(r'^```([\w-]*)[^\n]*\n(.*?)^```\s*$', re.S | re.M)

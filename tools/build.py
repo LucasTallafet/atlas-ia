@@ -184,6 +184,13 @@ def validar(ruta, ejecutar):
                         E.append('El código Python tarda más de 120 s')
 
     # Errores típicos, quiz, glosario
+    if 'En resumen' in sec:
+        n_vi = len(re.findall(r'^- ', sec['En resumen'], re.M))
+        n_pal = FI.contar(sec['En resumen'])
+        if not 4 <= n_vi <= 8:
+            E.append(f'"En resumen" necesita 4-8 viñetas (tiene {n_vi})')
+        if n_pal > 220:
+            A.append(f'"En resumen" tiene {n_pal} palabras (objetivo ≤180)')
     if 'Errores típicos' in sec and len(re.findall(r'^- ', sec['Errores típicos'], re.M)) < 3:
         E.append('"Errores típicos" necesita ≥3 viñetas')
     quiz, errs = FI.parse_quiz(sec.get('Autoevaluación', ''))
