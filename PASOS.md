@@ -67,6 +67,53 @@ claude
 
 Desde la app de escritorio, abre Claude Code y elige la carpeta `atlas-ia`. `CLAUDE.md` se carga solo en ambos casos. Para ver la web, abre `docs\index.html` con doble clic.
 
+## Modo autónomo (autopiloto)
+
+`tools/autopiloto.py` encadena las sesiones sin ti. Cada sesión arranca con el contexto limpio (equivale a `/clear`). Al terminar, comprueba el resultado con los scripts: que estén las fichas o los motores y que el build pase. Si algo falla, reintenta una vez pidiendo solo lo pendiente; si vuelve a fallar, se para y lo explica en `autopiloto.log`. Si se agota el cupo de 5 horas, espera y reintenta; si se agota el semanal, se para. Hace commit y push de cada paso, así que puedes seguir el avance desde GitHub en el móvil.
+
+Lo único que **no** hace solo es tu revisión del piloto (Paso 4): se niega a escribir lotes hasta que las 3 fichas piloto estén marcadas como revisadas. Es a propósito, porque todo lo demás copia ese formato.
+
+**Antes de usarlo, una vez:** deja el ordenador encendido y sin suspender mientras trabaja (Configuración → Sistema → Inicio/apagado y suspensión → Suspender: Nunca, al menos cuando está enchufado). Las tareas programadas solo se ejecutan con tu sesión de Windows iniciada.
+
+**1. Fase 1A y 1B mientras duermes (Opus).** En PowerShell, programa el arranque para justo después de que se renueve tu cupo de 5 horas (cambia la hora si hace falta):
+
+```powershell
+schtasks /create /tn "AtlasIA-fase1" /sc once /st 23:55 /tr "C:\Users\luck9\atlas-ia\autopiloto-fase1.cmd"
+```
+
+**2. Por la mañana, tu revisión (Paso 4).** Mira `autopiloto.log`, abre `docs\index.html` y lee las 3 fichas. Los ajustes se hacen en una sesión normal de Claude Code (`Ajustes de formato: …`). Cuando te gusten: `Marca revisadas: derivada metricas-clasificacion kmeans`.
+
+**3. Primer tramo, con control de calidad.** Doble clic en `autopiloto.cmd` hace todo lo pendiente. La primera vez limítalo al bloque 1 (motores M1-M9, lotes L01-L04 y la revisión del bloque). En PowerShell:
+
+```powershell
+cd $HOME\atlas-ia
+.\autopiloto.cmd --hasta L04
+```
+
+Cuando acabe, lee algunas fichas del bloque 1. Si hay algo sistemático que corregir, hazlo con `Ajustes de formato` antes de seguir.
+
+**4. El resto, solo.** Programa un arranque diario. Si hay una ejecución en marcha, la nueva no arranca; si no queda nada pendiente, termina al instante:
+
+```powershell
+schtasks /create /tn "AtlasIA-diario" /sc daily /st 09:00 /tr "C:\Users\luck9\atlas-ia\autopiloto.cmd"
+```
+
+Para quitarlo cuando termine: `schtasks /delete /tn "AtlasIA-diario" /f`.
+
+**Opciones útiles:**
+- `--simular`: muestra la cola sin ejecutar nada.
+- `--max 3`: como mucho 3 sesiones.
+- `--modelo-motores opus`: usa Opus solo para los motores si con Sonnet no quedan bien.
+- `--orden "Lote L07"`: ejecuta una orden suelta.
+
+**Dónde mirar:**
+- `autopiloto.log`: qué ha hecho y por qué ha parado.
+- `ESTADO.md`: fichas hechas.
+- `DECISIONES.md`: las `PROPUESTA` que el modo autónomo dejó para ti.
+- `logs\`: la salida completa de cada sesión.
+
+Los pasos 2 a 7 siguientes describen lo mismo hecho a mano, sesión a sesión.
+
 ## Paso 2 · Fase 1A: la web y la primera ficha (Opus)
 
 ```

@@ -3,3 +3,7 @@ capturas/
 __pycache__/
 *.pyc
 .DS_Store
+logs/
+autopiloto.log
+autopiloto.lock
+autopiloto-consola.txt

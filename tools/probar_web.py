@@ -6,6 +6,7 @@ e interactivos vacíos. Guarda capturas en capturas/ (ignorada por git).
   python tools/probar_web.py --id kmeans --movil  una ficha, también a 390 px
   python tools/probar_web.py --todas
   python tools/probar_web.py --demo [motor]    página de demostración de motores (docs/demo.html)
+  python tools/probar_web.py --vistas --movil  inicio, mapa, rutas, glosario y repaso (espera body[data-listo=<vista>])
 
 Requiere una vez:  pip install playwright  &&  python -m playwright install chromium
 """
@@ -29,6 +30,7 @@ def main():
     g.add_argument('--id')
     g.add_argument('--todas', action='store_true')
     g.add_argument('--demo', nargs='?', const='*', help='prueba docs/demo.html (todos los motores o uno)')
+    g.add_argument('--vistas', action='store_true', help='prueba las vistas generales: inicio, mapa, rutas, glosario, repaso')
     ap.add_argument('--movil', action='store_true')
     a = ap.parse_args()
     inv = F.inventario()
@@ -39,6 +41,10 @@ def main():
         motores = sorted(x.stem for x in (F.RAIZ / 'docs' / 'motores').glob('*.js') if x.stem != 'nucleo')
         ids = motores if a.demo == '*' else [a.demo]
         motor = {m: m for m in ids}
+    elif a.vistas:
+        index = (F.RAIZ / 'docs' / 'index.html').resolve()
+        ids = ['inicio', 'mapa', 'rutas', 'glosario', 'repaso']
+        motor = {v: None for v in ids}
     else:
         index = (F.RAIZ / 'docs' / 'index.html').resolve()
         ids = inv['lotes'][a.lote] if a.lote else [a.id] if a.id else inv['orden']

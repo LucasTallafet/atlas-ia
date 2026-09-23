@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Atlas de IA</title>
+  <meta name="description" content="Atlas de IA: fichas de estudio densas, explorables e interactivas sobre matemáticas, machine learning, deep learning, NLP y más.">
+  <link rel="stylesheet" href="estilos.css">
+  <script>
+    try { var t = localStorage.getItem('atlas-ia-tema'); if (t === 'claro' || t === 'oscuro') document.documentElement.dataset.tema = t; } catch (e) {}
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+      svg: { fontCache: 'global' },
+      startup: { typeset: false }
+    };
+  </script>
+  <script src="vendor/tex-svg-full.js" defer></script>
+</head>
+<body>
+  <a class="oculto-visual" href="#vista">Saltar al contenido</a>
+  <header class="cabecera">
+    <div class="cabecera-in">
+      <a class="marca" href="#inicio">Atlas <span>de IA</span></a>
+      <nav class="nav" aria-label="Secciones">
+        <a href="#mapa">Mapa</a>
+        <a href="#rutas">Rutas</a>
+        <a href="#glosario">Glosario</a>
+        <a href="#repaso">Repaso</a>
+      </nav>
+      <div class="buscador" role="search">
+        <label class="oculto-visual" for="buscar">Buscar conceptos y términos</label>
+        <input id="buscar" type="search" placeholder="Buscar concepto o término" autocomplete="off"
+               role="combobox" aria-expanded="false" aria-controls="resultados" aria-autocomplete="list">
+        <kbd aria-hidden="true">/</kbd>
+        <ul id="resultados" class="resultados" role="listbox" hidden></ul>
+      </div>
+      <button class="boton boton-tema" id="boton-tema" type="button" aria-label="Cambiar tema">◐ Tema</button>
+    </div>
+  </header>
+  <main id="vista" tabindex="-1"></main>
+  <footer class="pie">Atlas de IA · apuntes de <a href="https://github.com/sebamendoza-eusa">sebamendoza-eusa</a> reorganizados en fichas. El progreso se guarda solo en este navegador.</footer>
+
+  <script src="datos/indice.js"></script>
+  <script src="motores/nucleo.js"></script>
+  <script src="mapa.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

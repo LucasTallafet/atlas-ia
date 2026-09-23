@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Banco de pruebas de motores · Atlas de IA</title>
+  <link rel="stylesheet" href="estilos.css">
+  <script>
+    try { var t = localStorage.getItem('atlas-ia-tema'); if (t === 'claro' || t === 'oscuro') document.documentElement.dataset.tema = t; } catch (e) {}
+    window.MathJax = {
+      tex: { inlineMath: [['\\(', '\\)']], displayMath: [['\\[', '\\]']] },
+      svg: { fontCache: 'global' },
+      startup: { typeset: false }
+    };
+  </script>
+  <script src="vendor/tex-svg-full.js" defer></script>
+</head>
+<body>
+  <header class="cabecera">
+    <div class="cabecera-in">
+      <a class="marca" href="index.html">Atlas <span>de IA</span></a>
+      <nav class="nav" aria-label="Demo"><a href="#">Motores</a></nav>
+      <button class="boton boton-tema" id="boton-tema" type="button">◐ Tema</button>
+    </div>
+  </header>
+  <main id="vista" class="estrecho" style="max-width:52rem"></main>
+  <script src="motores/nucleo.js"></script>
+  <script>
+  (function () {
+    'use strict';
+    // Todos los motores de widgets.json; los que no tienen archivo aparecen como pendientes.
+    var MOTORES = ['funcion', 'vectores2d', 'transformacion2d', 'dispersion2d', 'descenso', 'umbral', 'rejilla', 'probabilidad',
+      'datos1d', 'simulacion', 'serie', 'red', 'convolucion', 'texto', 'matriz-calor', 'grafo', 'linea-tiempo', 'pasos'];
+    var H = Motores.api.html, vista = document.getElementById('vista');
+    var raiz = document.documentElement;
+    var mq = matchMedia('(prefers-color-scheme: dark)');
+    raiz.dataset.temaEfectivo = raiz.dataset.tema || (mq.matches ? 'oscuro' : 'claro');
+    document.getElementById('boton-tema').addEventListener('click', function () {
+      raiz.dataset.tema = raiz.dataset.temaEfectivo === 'oscuro' ? 'claro' : 'oscuro';
+      raiz.dataset.temaEfectivo = raiz.dataset.tema;
+      try { localStorage.setItem('atlas-ia-tema', raiz.dataset.tema); } catch (e) {}
+      document.dispatchEvent(new CustomEvent('tema'));
+    });
+
+    function indice() {
+      document.title = 'Motores · Atlas de IA';
+      vista.append(H('h1', { text: 'Banco de pruebas de motores' }),
+        H('p', { class: 'suave', text: 'Cada motor muestra un ejemplo por modo. Los motores sin archivo en docs/motores/ aparecen como pendientes.' }));
+      var lista = H('ul');
+      vista.append(lista);
+      return Promise.all(MOTORES.map(function (m) {
+        var li = H('li', {}, H('a', { href: '#' + m, text: m }), ' ');
+        lista.append(li);
+        return Motores.cargar(m).then(function (r) {
+          var n = Object.keys(r.ejemplos).length;
+          li.append(H('span', { class: 'distintivo bien', text: n + (n === 1 ? ' ejemplo' : ' ejemplos') }));
+        }, function () {
+          console.info('Motor pendiente: ' + m);
+          li.append(H('span', { class: 'distintivo', text: 'pendiente' }));
+        });
+      })).then(function () { document.body.dataset.listo = 'indice'; });
+    }
+
+    function motor(m) {
+      document.title = m + ' · Motores · Atlas de IA';
+      vista.append(H('p', { class: 'migas' }, H('a', { href: '#', text: 'Motores' }), ' › ' + m), H('h1', { text: 'Motor ' + m }));
+      return Motores.cargar(m).then(function (r) {
+        var claves = Object.keys(r.ejemplos);
+        if (!claves.length) vista.append(H('p', { class: 'aviso', text: 'Este motor no declara ejemplos.' }));
+        return claves.reduce(function (prom, k) {
+          return prom.then(function () {
+            var params = r.ejemplos[k];
+            var w = H('div', { class: 'widget' });
+            vista.append(H('section', { class: 'demo-ejemplo' },
+              H('h2', { text: k === '-' ? 'Ejemplo' : 'Modo ' + k }),
+              H('div', { class: 'panel-interactivo' }, w),
+              H('details', {}, H('summary', { text: 'Parámetros' }), H('pre', { text: JSON.stringify(params, null, 1) }))));
+            return Motores.montar(w, m, JSON.parse(JSON.stringify(params)));
+          });
+        }, Promise.resolve());
+      }, function (e) {
+        vista.append(H('p', { class: 'motor-error', text: 'Motor no implementado: ' + e.message }));
+      }).then(function () { return Motores.api.tex(vista); }).then(function () { document.body.dataset.listo = m; });
+    }
+
+    function pintar() {
+      delete document.body.dataset.listo;
+      Motores.desmontar(vista);
+      vista.innerHTML = '';
+      var m = decodeURIComponent(location.hash.slice(1));
+      (m ? motor(m) : indice()).catch(function (e) { console.error(e); });
+    }
+    window.addEventListener('hashchange', pintar);
+    pintar();
+  })();
+  </script>
+</body>
+</html>

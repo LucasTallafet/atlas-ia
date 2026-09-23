@@ -141,3 +141,10 @@ Siguiente: Lote Lyy
 - **Un concepto parece mal ubicado o duplicado:** no lo cambies; apúntalo en `DECISIONES.md` como `PROPUESTA:` para que lo decida el usuario.
 - **El build falla por algo que crees correcto:** no desactives la comprobación; explica el caso en `DECISIONES.md` y pregunta.
 - **El usuario pide cambiar el formato o el estilo:** actualiza `PLANTILLA-FICHA.md` y este archivo en la misma sesión, y apúntalo en `DECISIONES.md`.
+
+## 10. Modo autónomo
+
+Si la orden empieza por `[AUTO]`, la lanza `tools/autopiloto.py` y nadie va a responder:
+- No preguntes ni esperes respuesta. Ante una duda, elige la opción más conservadora que respete este archivo, anótala en `DECISIONES.md` como `PROPUESTA` y sigue.
+- No modifiques `CLAUDE.md`, `PLANTILLA-FICHA.md`, `inventario.json` ni `tools/`. En `widgets.json` solo puedes añadir un modo que vayas a implementar.
+- Termina siempre con el build en 0 errores y con commit. Si no lo consigues, deja escrito en `DECISIONES.md` qué falta y por qué.
