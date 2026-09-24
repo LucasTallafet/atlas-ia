@@ -1,4 +1,4 @@
-// @modos: kmeans
+// @modos: kmeans, correlacion, ols, polinomio, ridge-lasso, metricas-regresion, escalado, pca, logistica
 // Motor "dispersion2d": nube de puntos 2D sobre la que corre un algoritmo de ML.
 // Infraestructura común: generadores con semilla, ejes con la misma escala en x e y, asas arrastrables
 // (ratón, táctil y teclado), deslizadores a partir de "controles" y botones de paso a paso.
@@ -9,7 +9,43 @@
   'use strict';
   const MODOS = {};
   const BASE = document.currentScript ? document.currentScript.src.replace(/dispersion2d\.js(\?.*)?$/, '') : 'motores/';
-  window.Dispersion2d = { modo: (nombre, def) => { MODOS[nombre] = def; }, MODOS, generar };
+
+  // ───────────── Ayudas numéricas compartidas por los modos de regresión/estadística ─────────────
+  function mediaDe(v) { return v.reduce((a, b) => a + b, 0) / v.length; }
+  function regresionSimple(xs, ys) {
+    const n = xs.length, mx = mediaDe(xs), my = mediaDe(ys);
+    let sxy = 0, sxx = 0, syy = 0;
+    for (let i = 0; i < n; i++) { const dx = xs[i] - mx, dy = ys[i] - my; sxy += dx * dy; sxx += dx * dx; syy += dy * dy; }
+    const b1 = sxx ? sxy / sxx : 0, b0 = my - b1 * mx;
+    const r = (sxx && syy) ? sxy / Math.sqrt(sxx * syy) : 0;
+    return { b0, b1, r, mx, my, sxx, syy, sxy, n };
+  }
+  function estadisticos(v) {
+    const n = v.length, media = mediaDe(v);
+    const sd = Math.sqrt(v.reduce((a, b) => a + (b - media) ** 2, 0) / n);
+    const s = v.slice().sort((a, b) => a - b);
+    const pct = (q) => { const i = (s.length - 1) * q, lo = Math.floor(i), hi = Math.ceil(i); return s[lo] + (s[hi] - s[lo]) * (i - lo); };
+    return { media, sd, min: s[0], max: s[n - 1], mediana: pct(0.5), q1: pct(0.25), q3: pct(0.75) };
+  }
+  // Resuelve A·w = b (A cuadrada) por eliminación de Gauss con pivoteo parcial.
+  function resolver(A, b) {
+    const n = A.length, M = A.map((f, i) => f.concat([b[i]]));
+    for (let c = 0; c < n; c++) {
+      let piv = c;
+      for (let f = c + 1; f < n; f++) if (Math.abs(M[f][c]) > Math.abs(M[piv][c])) piv = f;
+      [M[c], M[piv]] = [M[piv], M[c]];
+      const d = Math.abs(M[c][c]) > 1e-12 ? M[c][c] : 1e-12;
+      for (let k = c; k <= n; k++) M[c][k] /= d;
+      for (let f = 0; f < n; f++) {
+        if (f === c) continue;
+        const factor = M[f][c];
+        for (let k = c; k <= n; k++) M[f][k] -= factor * M[c][k];
+      }
+    }
+    return M.map(f => f[n]);
+  }
+
+  window.Dispersion2d = { modo: (nombre, def) => { MODOS[nombre] = def; }, MODOS, generar, mediaDe, regresionSimple, estadisticos, resolver };
 
   // ───────────── Generadores de datos (reproducibles) ─────────────
   function generar(d, api) {
@@ -378,6 +414,14 @@
   }, {
     ejemplos: {
       kmeans: { modo: 'kmeans', dataset: { generador: 'blobs', n: 150, ruido: 0.28, clases: 4, semilla: 5 }, controles: [{ nombre: 'k', min: 1, max: 8, paso: 1, valor: 4 }], paso_a_paso: true },
+      correlacion: { modo: 'correlacion', dataset: { generador: 'lineal', n: 25, ruido: 0.5, clases: 1, semilla: 8 }, arrastrables: true },
+      ols: { modo: 'ols', dataset: { generador: 'lineal', n: 16, ruido: 0.35, clases: 1, semilla: 9 }, arrastrables: true },
+      polinomio: { modo: 'polinomio', dataset: { generador: 'curva', n: 14, ruido: 0.25, semilla: 3 }, controles: [{ nombre: 'grado', min: 1, max: 9, paso: 1, valor: 2 }], arrastrables: true },
+      'ridge-lasso': { modo: 'ridge-lasso', dataset: { generador: 'curva', n: 40, ruido: 0.35, semilla: 4 }, controles: [{ nombre: 'lambda', min: 0, max: 3, paso: 0.05, valor: 0 }], arrastrables: true },
+      'metricas-regresion': { modo: 'metricas-regresion', dataset: { generador: 'lineal', n: 16, ruido: 0.3, clases: 1, semilla: 9 }, arrastrables: true },
+      escalado: { modo: 'escalado', dataset: { generador: 'blobs', n: 30, ruido: 0.25, clases: 1, semilla: 6 }, arrastrables: true },
+      pca: { modo: 'pca', dataset: { generador: 'lineal', n: 60, ruido: 0.3, clases: 1, semilla: 2 }, arrastrables: true },
+      logistica: { modo: 'logistica', dataset: { generador: 'blobs', n: 60, ruido: 0.35, clases: 2, semilla: 11 }, controles: [{ nombre: 'eta', min: 0.05, max: 2, paso: 0.05, valor: 0.5 }], paso_a_paso: true },
     },
   });
 })();
