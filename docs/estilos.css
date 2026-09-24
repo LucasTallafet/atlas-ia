@@ -417,6 +417,8 @@ a.xref { text-decoration: underline dotted; text-underline-offset: 3px; }
 .motor-tabla td { text-align: right; }
 .motor-tabla th[scope="row"] { white-space: nowrap; }
 .motor-error { color: var(--mal); background: var(--mal-fondo); padding: .6rem .8rem; border-radius: 8px; margin: 0; }
+.motor-textarea { width: 100%; min-height: 3.4rem; font: inherit; background: var(--superficie); color: var(--texto); border: 1px solid var(--linea); border-radius: 8px; padding: .5rem .6rem; resize: vertical; }
+.motor-textarea:focus { outline: 2px solid var(--acento); outline-offset: 1px; }
 .pasos-marco { min-height: 6rem; padding: .6rem .2rem; }
 .pasos-marco:focus { outline: none; }
 .pasos-texto > :last-child { margin-bottom: .4rem; }
