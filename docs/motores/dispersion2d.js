@@ -1,4 +1,4 @@
-// @modos: kmeans, correlacion, ols, polinomio, ridge-lasso, metricas-regresion, escalado, pca, logistica
+// @modos: kmeans, correlacion, ols, polinomio, ridge-lasso, metricas-regresion, escalado, pca, logistica, knn, svm, arbol, bosque, boosting, comparar-clustering, jerarquico, dbscan, gmm, silueta
 // Motor "dispersion2d": nube de puntos 2D sobre la que corre un algoritmo de ML.
 // Infraestructura común: generadores con semilla, ejes con la misma escala en x e y, asas arrastrables
 // (ratón, táctil y teclado), deslizadores a partir de "controles" y botones de paso a paso.
@@ -45,7 +45,73 @@
     return M.map(f => f[n]);
   }
 
-  window.Dispersion2d = { modo: (nombre, def) => { MODOS[nombre] = def; }, MODOS, generar, mediaDe, regresionSimple, estadisticos, resolver };
+  // Rejilla coloreada por clase: aproxima una región de decisión evaluando `evaluar(x, y)` en el
+  // centro de cada celda (usada por knn, bosque y boosting). `evaluar` puede devolver null para no pintar.
+  function grilla(ctx, g, filas, columnas, evaluar) {
+    const { x0, x1, y0, y1 } = ctx.vista;
+    const anchoC = (x1 - x0) / columnas, altoF = (y1 - y0) / filas;
+    for (let i = 0; i < filas; i++) {
+      for (let j = 0; j < columnas; j++) {
+        const cx = x0 + (j + 0.5) * anchoC, cy = y0 + (i + 0.5) * altoF;
+        const k = evaluar(cx, cy);
+        if (k === null || k === undefined) continue;
+        const xA = ctx.X(cx - anchoC / 2), xB = ctx.X(cx + anchoC / 2);
+        const yA = ctx.Y(cy - altoF / 2), yB = ctx.Y(cy + altoF / 2);
+        ctx.api.el('rect', { x: Math.min(xA, xB), y: Math.min(yA, yB), width: Math.abs(xB - xA), height: Math.abs(yB - yA), fill: ctx.colorClase(k), 'fill-opacity': 0.14 }, g);
+      }
+    }
+  }
+
+  // Árbol de decisión sencillo por particiones de eje (impureza de Gini, admite muestras con peso),
+  // usado por arbol, bosque (bagging) y boosting (tocones ponderados, profundidad 1).
+  function giniDe(conteo, total) { let g = 1; for (const c in conteo) g -= (conteo[c] / total) ** 2; return g; }
+  function construirArbol(P, profundidad, pesos) {
+    const W = pesos || P.map(() => 1);
+    function nodo(idx, prof) {
+      const conteo = {};
+      let total = 0;
+      idx.forEach(i => { conteo[P[i].c] = (conteo[P[i].c] || 0) + W[i]; total += W[i]; });
+      let clase = 0, mejor = -1;
+      for (const c in conteo) if (conteo[c] > mejor) { mejor = conteo[c]; clase = +c; }
+      const hoja = { hoja: true, clase, n: idx.length };
+      if (prof >= profundidad || idx.length < 2 || Object.keys(conteo).length < 2) return hoja;
+      let mejorGan = 0, mejorEje = null, mejorUmbral = null;
+      const giniTotal = giniDe(conteo, total);
+      ['x', 'y'].forEach(eje => {
+        const vals = [...new Set(idx.map(i => P[i][eje]))].sort((a, b) => a - b);
+        for (let k = 0; k < vals.length - 1; k++) {
+          const umbral = (vals[k] + vals[k + 1]) / 2, iz = [], de = [];
+          idx.forEach(i => (P[i][eje] <= umbral ? iz : de).push(i));
+          if (!iz.length || !de.length) continue;
+          const cIz = {}, cDe = {};
+          let tIz = 0, tDe = 0;
+          iz.forEach(i => { cIz[P[i].c] = (cIz[P[i].c] || 0) + W[i]; tIz += W[i]; });
+          de.forEach(i => { cDe[P[i].c] = (cDe[P[i].c] || 0) + W[i]; tDe += W[i]; });
+          const ganancia = giniTotal - (tIz * giniDe(cIz, tIz) + tDe * giniDe(cDe, tDe)) / total;
+          if (ganancia > mejorGan) { mejorGan = ganancia; mejorEje = eje; mejorUmbral = umbral; }
+        }
+      });
+      if (!mejorEje || mejorGan < 1e-9) return hoja;
+      const iz = [], de = [];
+      idx.forEach(i => (P[i][mejorEje] <= mejorUmbral ? iz : de).push(i));
+      return { hoja: false, eje: mejorEje, umbral: mejorUmbral, izq: nodo(iz, prof + 1), der: nodo(de, prof + 1), n: idx.length };
+    }
+    return nodo(P.map((_, i) => i), 0);
+  }
+  function evaluarArbol(nodo, x, y) {
+    while (!nodo.hoja) nodo = (nodo.eje === 'x' ? x : y) <= nodo.umbral ? nodo.izq : nodo.der;
+    return nodo.clase;
+  }
+  function regionesArbol(nodo, caja) {
+    if (nodo.hoja) return [Object.assign({ clase: nodo.clase }, caja)];
+    if (nodo.eje === 'x') return regionesArbol(nodo.izq, Object.assign({}, caja, { x1: nodo.umbral })).concat(regionesArbol(nodo.der, Object.assign({}, caja, { x0: nodo.umbral })));
+    return regionesArbol(nodo.izq, Object.assign({}, caja, { y1: nodo.umbral })).concat(regionesArbol(nodo.der, Object.assign({}, caja, { y0: nodo.umbral })));
+  }
+
+  window.Dispersion2d = {
+    modo: (nombre, def) => { MODOS[nombre] = def; }, MODOS, generar, mediaDe, regresionSimple, estadisticos, resolver,
+    grilla, construirArbol, evaluarArbol, regionesArbol,
+  };
 
   // ───────────── Generadores de datos (reproducibles) ─────────────
   function generar(d, api) {
@@ -422,6 +488,16 @@
       escalado: { modo: 'escalado', dataset: { generador: 'blobs', n: 30, ruido: 0.25, clases: 1, semilla: 6 }, arrastrables: true },
       pca: { modo: 'pca', dataset: { generador: 'lineal', n: 60, ruido: 0.3, clases: 1, semilla: 2 }, arrastrables: true },
       logistica: { modo: 'logistica', dataset: { generador: 'blobs', n: 60, ruido: 0.35, clases: 2, semilla: 11 }, controles: [{ nombre: 'eta', min: 0.05, max: 2, paso: 0.05, valor: 0.5 }], paso_a_paso: true },
+      knn: { modo: 'knn', dataset: { generador: 'blobs', n: 70, ruido: 0.3, clases: 2, semilla: 6 }, controles: [{ nombre: 'k', min: 1, max: 15, paso: 1, valor: 5, etiqueta: 'k vecinos más cercanos' }], arrastrables: true },
+      svm: { modo: 'svm', dataset: { generador: 'blobs', n: 50, ruido: 0.3, clases: 2, semilla: 3 }, controles: [{ nombre: 'C', min: 0.1, max: 10, paso: 0.1, valor: 1, etiqueta: 'C (rigidez frente al margen)' }], paso_a_paso: true },
+      arbol: { modo: 'arbol', dataset: { generador: 'blobs', n: 70, ruido: 0.3, clases: 3, semilla: 4 }, controles: [{ nombre: 'profundidad', min: 1, max: 5, paso: 1, valor: 2, etiqueta: 'profundidad máxima' }], arrastrables: true },
+      bosque: { modo: 'bosque', dataset: { generador: 'lunas', n: 80, ruido: 0.22, semilla: 2 }, controles: [{ nombre: 'n_arboles', min: 1, max: 20, paso: 1, valor: 7, etiqueta: 'número de árboles' }] },
+      boosting: { modo: 'boosting', dataset: { generador: 'xor', n: 70, ruido: 0.15, semilla: 5 }, paso_a_paso: true },
+      'comparar-clustering': { modo: 'comparar-clustering', dataset: { generador: 'lunas', n: 70, ruido: 0.12, semilla: 1 }, controles: [{ nombre: 'k', min: 2, max: 6, paso: 1, valor: 2, etiqueta: 'k (k-means y jerárquico)' }] },
+      jerarquico: { modo: 'jerarquico', dataset: { generador: 'blobs', n: 30, ruido: 0.28, clases: 3, semilla: 8 }, controles: [{ nombre: 'k', min: 1, max: 10, paso: 1, valor: 3, etiqueta: 'clústeres objetivo' }], arrastrables: true, paso_a_paso: true },
+      dbscan: { modo: 'dbscan', dataset: { generador: 'lunas', n: 90, ruido: 0.12, semilla: 9 }, controles: [{ nombre: 'eps', min: 0.05, max: 1.2, paso: 0.05, valor: 0.3, etiqueta: 'ε (radio de vecindad)' }, { nombre: 'minPts', min: 1, max: 10, paso: 1, valor: 4, etiqueta: 'mínimo de vecinos' }], arrastrables: true },
+      gmm: { modo: 'gmm', dataset: { generador: 'blobs', n: 90, ruido: 0.3, clases: 3, semilla: 7 }, controles: [{ nombre: 'k', min: 1, max: 6, paso: 1, valor: 3, etiqueta: 'número de componentes' }], paso_a_paso: true },
+      silueta: { modo: 'silueta', dataset: { generador: 'blobs', n: 90, ruido: 0.3, clases: 4, semilla: 10 }, controles: [{ nombre: 'k', min: 2, max: 8, paso: 1, valor: 4, etiqueta: 'número de clústeres k' }] },
     },
   });
 })();
