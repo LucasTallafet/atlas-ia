@@ -104,7 +104,7 @@ print("pi estimado:", 4 * dentro / N)  # 3.12
 
 ### Bootstrap: Monte Carlo aplicado a la inferencia
 
-Una aplicación directa de esta idea es el **bootstrap**: para estimar el intervalo de confianza de una media poblacional a partir de una sola muestra, se generan miles de nuevas muestras tomando datos **con reemplazo** de la muestra original, se calcula la media de cada una, y se observa la distribución resultante. Por ejemplo, con las alturas (en cm) de 10 estudiantes cuya media muestral es $168{,}8$, generar 10.000 remuestreos con reemplazo produce una distribución de medias cuyo percentil 2,5 y 97,5 da directamente un intervalo de confianza del 95%, sin necesidad de asumir que los datos siguen una distribución normal. Es la misma lógica que estimar $\pi$ lanzando dardos: no hay fórmula cerrada cómoda, así que se deja que la repetición aleatoria revele el patrón.
+Una aplicación directa de esta idea es el [[muestreo-intervalos|bootstrap]]: para estimar el intervalo de confianza de una media poblacional a partir de una sola muestra, se generan miles de nuevas muestras tomando datos **con reemplazo** de la muestra original, se calcula la media de cada una, y se observa la distribución resultante. Por ejemplo, con las alturas (en cm) de 10 estudiantes cuya media muestral es $168{,}8$, generar 10.000 remuestreos con reemplazo produce una distribución de medias cuyo percentil 2,5 y 97,5 da directamente un intervalo de confianza del 95%, sin necesidad de asumir que los datos siguen una distribución normal. Es la misma lógica que estimar $\pi$ lanzando dardos: no hay fórmula cerrada cómoda, así que se deja que la repetición aleatoria revele el patrón.
 
 ## Autoevaluación
 
@@ -134,4 +134,3 @@ Una aplicación directa de esta idea es el **bootstrap**: para estimar el interv
 - **Maldición de la dimensionalidad**: crecimiento exponencial ($N^d$) del coste de una cuadrícula determinista al aumentar el número de variables.
 - **Método de Monte Carlo**: técnica que aproxima una integral o un valor esperado promediando evaluaciones en puntos aleatorios.
 - **Ley de los Grandes Números**: garantiza que el promedio de muchas repeticiones de un experimento aleatorio converge al valor esperado teórico.
-- **Bootstrap**: técnica de remuestreo con reemplazo sobre una muestra observada, usada para estimar la variabilidad de un estimador.

@@ -49,7 +49,7 @@ $$
 
 donde:
 
-- $\sigma_{\bar X}$ es la desviación estándar de la distribución de medias muestrales (el error estándar).
+- $\sigma_{\bar X}$ es la desviación estándar de la distribución de medias muestrales (el [[muestreo-intervalos|error estándar]]).
 - $\sigma$ es la desviación estándar de la población original.
 - $n$ es el tamaño de cada muestra.
 
@@ -137,5 +137,4 @@ Es importante no sobrestimar lo que da el TCL: garantiza la forma de la distribu
 
 - **Distribución normal (campana de Gauss)**: distribución de probabilidad simétrica definida por su media $\mu$ y su desviación estándar $\sigma$.
 - **Teorema Central del Límite (TCL)**: resultado que garantiza que la distribución de las medias de muchas muestras tiende a una normal, sea cual sea la distribución original de la población.
-- **Error estándar**: desviación estándar de la distribución de medias muestrales, $\sigma/\sqrt{n}$.
 - **Ruido gaussiano**: variación aleatoria que sigue una distribución normal, habitual como modelo de imperfecciones en sensores o señales.

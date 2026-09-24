@@ -29,7 +29,7 @@ Mientras el histograma describe una única variable, el **diagrama de dispersió
 
 ### El coeficiente de correlación de Pearson
 
-Para cuantificar la fuerza de una relación lineal vista en un diagrama de dispersión se usa el **coeficiente de correlación de Pearson** ($\rho$), que va de $-1$ (correlación negativa perfecta) a $1$ (positiva perfecta), con $0$ indicando ausencia de correlación lineal. El diagrama de dispersión da una idea visual del signo y la magnitud de $\rho$ antes incluso de calcularlo.
+Para cuantificar la fuerza de una relación lineal vista en un diagrama de dispersión se usa el [[correlacion|coeficiente de correlación de Pearson]] ($\rho$), que va de $-1$ (correlación negativa perfecta) a $1$ (positiva perfecta), con $0$ indicando ausencia de correlación lineal. El diagrama de dispersión da una idea visual del signo y la magnitud de $\rho$ antes incluso de calcularlo.
 
 ## Formalización
 
@@ -134,4 +134,3 @@ Al dibujar un boxplot por categoría para una misma variable numérica, la separ
 - **Sesgo (positivo/negativo)**: asimetría de una distribución según hacia qué lado se extiende su cola larga.
 - **Boxplot (diagrama de caja)**: representación de $Q_1$, mediana, $Q_3$ y valores atípicos según la regla de Tukey.
 - **Diagrama de dispersión**: gráfico que mapea dos variables, una por eje, para revelar su relación.
-- **Coeficiente de correlación de Pearson**: medida entre $-1$ y $1$, denotada $\rho$, de la fuerza de una relación lineal entre dos variables.
