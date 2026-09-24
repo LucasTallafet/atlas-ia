@@ -1,10 +1,10 @@
 # Estado del proyecto
 
-3/138 fichas válidas · generado por tools/build.py
+10/138 fichas válidas · generado por tools/build.py
 
 | Lote | Bloque | Fichas | Hechas |
 |---|---|---|---|
-| L01 | B1 | `vectores` `producto-escalar-similitud` `espacio-vectorial` `matrices` `datos-como-matrices` `determinante-inversa` `sistemas-lineales` | 0/7 |
+| L01 | B1 | vectores producto-escalar-similitud espacio-vectorial matrices datos-como-matrices determinante-inversa sistemas-lineales | 7/7 |
 | L02 | B1 | `autovalores-svd` `funciones` `no-linealidad` derivada `regla-cadena` `gradiente` `integral-monte-carlo` `probabilidad` | 1/8 |
 | L03 | B1 | `prob-condicional` `bayes` `variable-aleatoria` `dist-normal` `dist-binomial` `dist-poisson` `estadistica-descriptiva` `graficos-estadisticos` | 0/8 |
 | L04 | B1 | `muestreo-intervalos` `contraste-hipotesis` `correlacion` | 0/3 |
