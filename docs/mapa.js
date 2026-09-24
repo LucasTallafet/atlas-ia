@@ -118,12 +118,13 @@
     const { N, E, vb } = L;
     const marco = document.createElement('div');
     marco.className = 'constelacion';
-    const svg = el('svg', { class: 'const-svg', viewBox: `${vb.x} ${vb.y} ${vb.w} ${vb.h}`, preserveAspectRatio: 'xMidYMid meet', role: 'group', 'aria-label': 'Constelación de conceptos: usa Tab para recorrerlos y Enter para abrir una ficha' });
+    const svg = el('svg', { class: 'const-svg', viewBox: `${vb.x} ${vb.y} ${vb.w} ${vb.h}`, preserveAspectRatio: 'xMidYMid meet', role: 'group', 'aria-label': 'Constelación de conceptos: Tab recorre los conceptos, Enter o espacio selecciona, Enter otra vez abre la ficha y Esc quita la selección' });
     const capa = el('g', {}, svg);
     const gA = el('g', { class: 'const-aristas' }, capa);
+    const gC = el('g', { class: 'const-conexiones', 'aria-hidden': 'true' }, capa);
     const gB = el('g', { class: 'const-bloques', 'aria-hidden': 'true' }, capa);
     const gN = el('g', { class: 'const-nodos' }, capa);
-    L.centros.forEach(c => el('text', { x: c.x, y: c.y, class: 'const-bloque', 'text-anchor': c.ancla, style: `--c: var(--${c.b})`, text: `${c.b} · ${I.bloques[c.b]}` }, gB));
+    L.centros.forEach(c => el('text', { x: c.x, y: c.y, class: 'const-bloque', 'data-b': c.b, 'text-anchor': c.ancla, style: `--c: var(--${c.b})`, text: `${c.b} · ${I.bloques[c.b]}` }, gB));
     const aristas = E.map(([a, b]) => {
       const p = N[a], q = N[b], mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2;
       const cx = mx - (q.y - p.y) * 0.18, cy = my + (q.x - p.x) * 0.18;
@@ -222,37 +223,64 @@
     svg.addEventListener('click', (e) => { if (movido) { e.preventDefault(); e.stopPropagation(); movido = false; } }, true);
     svg.addEventListener('dragstart', (e) => e.preventDefault());
 
-    // ── Resaltado: cadena de requisitos + lo que desbloquea ──
-    let fijado = null, ruta = null;
-    function ancestros(id) {
-      const s = new Set(), pila = [...C[id].prerequisitos];
-      while (pila.length) { const x = pila.pop(); if (!s.has(x) && C[x]) { s.add(x); pila.push(...C[x].prerequisitos); } }
-      return s;
-    }
+    // ── Resaltado del nodo seleccionado (o del que está bajo el puntero si no hay selección) ──
+    // Requisitos: cadena de ancestros, más intensos cuanto más cerca; desbloquea: directos y, más tenues, indirectos;
+    // conexiones y desambiguaciones: trazo discontinuo propio. `ctx.relaciones` da las distancias y la opacidad.
+    let sel = null, rutaSel = null, ruta = null, bloquesVis = null;
     function limpiar() {
-      svg.classList.remove('resaltando');
-      Object.values(nodos).forEach(a => a.classList.remove('act', 'foco'));
-      aristas.forEach(x => x.e.classList.remove('anc', 'des', 'ruta'));
+      svg.classList.remove('resaltando', 'seleccion');
+      Object.values(nodos).forEach(a => { a.classList.remove('act', 'foco'); a.style.removeProperty('--o'); });
+      aristas.forEach(x => { x.e.classList.remove('anc', 'des', 'ruta'); x.e.style.removeProperty('--o'); });
+      gC.innerHTML = '';
     }
     function resaltar(id) {
       limpiar();
-      const anc = ancestros(id), des = new Set(C[id].desbloquea);
-      svg.classList.add('resaltando');
-      Object.entries(nodos).forEach(([x, a]) => a.classList.toggle('act', x === id || anc.has(x) || des.has(x)));
+      const R = ctx.relaciones(id), o = (x) => R.opacidad(x).toFixed(2);
+      svg.classList.add('resaltando', 'seleccion');
+      Object.entries(nodos).forEach(([x, a]) => { if (R.opacidad(x)) { a.classList.add('act'); a.style.setProperty('--o', o(x)); } });
       nodos[id].classList.add('foco');
       aristas.forEach(x => {
-        if ((x.b === id || anc.has(x.b)) && anc.has(x.a)) x.e.classList.add('anc');
-        else if (x.a === id && des.has(x.b)) x.e.classList.add('des');
+        const da = x.b === id ? 0 : R.anc.get(x.b), dd = x.a === id ? 0 : R.des.get(x.a);
+        if (da !== undefined && R.anc.get(x.a) === da + 1) { x.e.classList.add('anc'); x.e.style.setProperty('--o', o(x.a)); }
+        else if (dd !== undefined && R.des.get(x.b) === dd + 1) { x.e.classList.add('des'); x.e.style.setProperty('--o', o(x.b)); }
+      });
+      const p = N[L.idx[id]];
+      R.con.forEach(x => {
+        const q = N[L.idx[x]], mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2;
+        const cx = mx + (q.y - p.y) * 0.22, cy = my - (q.x - p.x) * 0.22;
+        const f = !!bloquesVis && (!bloquesVis.has(C[id].bloque) || !bloquesVis.has(C[x].bloque));
+        el('path', { d: `M${p.x.toFixed(1)},${p.y.toFixed(1)} Q${cx.toFixed(1)},${cy.toFixed(1)} ${q.x.toFixed(1)},${q.y.toFixed(1)}`, class: 'const-con' + (f ? ' fuera' : '') }, gC);
       });
     }
-    function marcarRuta() {
+    function marcarRuta(ids, foco) {
       limpiar();
-      if (!ruta) return;
+      if (!ids) return;
       svg.classList.add('resaltando');
-      Object.entries(nodos).forEach(([x, a]) => a.classList.toggle('act', ruta.has(x)));
-      aristas.forEach(x => x.e.classList.toggle('ruta', ruta.has(x.a) && ruta.has(x.b)));
+      Object.entries(nodos).forEach(([x, a]) => a.classList.toggle('act', ids.has(x)));
+      aristas.forEach(x => x.e.classList.toggle('ruta', ids.has(x.a) && ids.has(x.b)));
+      if (foco) nodos[foco].classList.add('foco');
     }
-    const restaurar = () => { if (fijado) resaltar(fijado); else marcarRuta(); };
+    const restaurar = () => { if (sel && rutaSel) marcarRuta(rutaSel, sel); else if (sel) resaltar(sel); else marcarRuta(ruta); };
+    // Filtro por bloques: los bloques ocultos quedan como puntos muy tenues, sin etiquetas ni interacción.
+    function filtrar(s) {
+      bloquesVis = s;
+      Object.entries(nodos).forEach(([x, a]) => {
+        const f = !!s && !s.has(C[x].bloque);
+        a.classList.toggle('fuera', f);
+        if (f) a.setAttribute('tabindex', '-1'); else a.removeAttribute('tabindex');
+      });
+      aristas.forEach(x => x.e.classList.toggle('fuera', !!s && (!s.has(C[x.a].bloque) || !s.has(C[x.b].bloque))));
+      gB.querySelectorAll('.const-bloque').forEach(t => t.classList.toggle('fuera', !!s && !s.has(t.dataset.b)));
+      restaurar();
+    }
+    function encuadrar() {
+      const ps = N.filter(p => !bloquesVis || bloquesVis.has(p.b));
+      if (!ps.length || ps.length === N.length) { centrar(); return; }
+      const x0 = Math.min(...ps.map(p => p.x - p.rad)) - 60, x1 = Math.max(...ps.map(p => p.x + p.rad)) + 60;
+      const y0 = Math.min(...ps.map(p => p.y - p.rad)) - 30, y1 = Math.max(...ps.map(p => p.y + p.rad)) + 40;
+      const k2 = Math.max(0.6, Math.min(4, vb.w / (x1 - x0), vb.h / (y1 - y0)));
+      animarA(k2, centro.x - k2 * (x0 + x1) / 2, centro.y - k2 * (y0 + y1) / 2);
+    }
     function mostrarTip(id) {
       const c = C[id], a = nodos[id], r = a.querySelector('.const-punto').getBoundingClientRect(), base = marco.getBoundingClientRect();
       tip.innerHTML = '';
@@ -272,10 +300,11 @@
       api.tex(tip);
     }
     const ocultarTip = () => { tip.hidden = true; };
+    // Sin selección, pasar por un nodo previsualiza sus relaciones; con selección, solo muestra la tarjeta.
     svg.addEventListener('pointerover', (e) => {
       if (e.pointerType === 'touch') return;
       const a = e.target.closest('.const-nodo');
-      if (a) { resaltar(a.dataset.id); mostrarTip(a.dataset.id); }
+      if (a) { if (!sel) resaltar(a.dataset.id); mostrarTip(a.dataset.id); }
     });
     svg.addEventListener('pointerout', (e) => {
       const a = e.target.closest('.const-nodo');
@@ -286,12 +315,26 @@
       if (!a) return;
       const r = a.getBoundingClientRect(), s = svg.getBoundingClientRect();
       if (r.left < s.left || r.right > s.right || r.top < s.top || r.bottom > s.bottom) irA(a.dataset.id, Math.max(k, 1.4));
-      resaltar(a.dataset.id); mostrarTip(a.dataset.id);
+      if (!sel) resaltar(a.dataset.id);
+      mostrarTip(a.dataset.id);
     });
     svg.addEventListener('focusout', (e) => { if (!svg.contains(e.relatedTarget)) { ocultarTip(); restaurar(); } });
+    // Un clic selecciona (o suelta, en el fondo); doble clic, o Enter sobre el nodo ya seleccionado, abre la ficha.
+    svg.addEventListener('click', (e) => {
+      const a = e.target.closest('.const-nodo');
+      e.preventDefault();
+      if (a && a.classList.contains('fuera') && !a.classList.contains('foco')) return;
+      opc.elegir(a ? a.dataset.id : null);
+    });
+    svg.addEventListener('dblclick', (e) => {
+      const a = e.target.closest('.const-nodo');
+      if (a) { e.preventDefault(); opc.abrir(a.dataset.id); }
+    });
     svg.addEventListener('keydown', (e) => {
       const a = e.target.closest && e.target.closest('.const-nodo');
-      if (a && e.key === 'Enter') { e.preventDefault(); location.hash = '#' + a.dataset.id; }
+      if (!a || (e.key !== 'Enter' && e.key !== ' ')) return;
+      e.preventDefault();
+      if (e.key === 'Enter' && opc.actual() === a.dataset.id) opc.abrir(a.dataset.id); else opc.elegir(a.dataset.id);
     });
 
     const ro = window.ResizeObserver ? new ResizeObserver(aplicar) : null;
@@ -299,8 +342,16 @@
     aplicar();
     return {
       centrar,
-      buscar(id) { fijado = id; resaltar(id); irA(id, 2.6); },
-      soltar() { fijado = null; restaurar(); },
+      encuadrar,
+      filtro: filtrar,
+      // centrar: true (mantiene el zoom, como mínimo 1,6) o un número (zoom exacto).
+      marcar(id, o) {
+        sel = id || null; rutaSel = null;
+        if (!sel) ocultarTip();
+        restaurar();
+        if (sel && o && o.centrar) irA(sel, typeof o.centrar === 'number' ? o.centrar : Math.max(k, 1.6));
+      },
+      verRuta(ids) { rutaSel = ids ? new Set(ids) : null; restaurar(); },
       ruta(ids) { ruta = ids ? new Set(ids) : null; restaurar(); },
     };
   }

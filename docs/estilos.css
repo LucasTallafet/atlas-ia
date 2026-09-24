@@ -236,6 +236,70 @@ main { max-width: 76rem; margin: 0 auto; padding: 1.2rem 1rem 4rem; min-height: 
   .red-ruta { border-radius: 12px; }
 }
 
+/* ───────────── Mapa: filtro por bloques, selección y panel de detalle ───────────── */
+.chips-bloques { display: flex; flex-wrap: wrap; gap: .35rem; margin: 0 0 .8rem; }
+.chip { font: inherit; font-size: .84rem; padding: .22rem .65rem; border-radius: 99px; border: 1.5px solid var(--linea); background: var(--superficie); color: var(--texto); cursor: pointer; white-space: nowrap; line-height: 1.35; }
+.chip:hover { border-color: var(--c, var(--acento)); }
+.chip[aria-pressed="true"] { border-color: var(--c, var(--acento)); background: color-mix(in srgb, var(--c, var(--acento)) 16%, var(--superficie)); font-weight: 650; }
+.leyendas-mapa { display: flex; flex-wrap: wrap; gap: .4rem 1.6rem; align-items: center; margin: .7rem 0 .8rem; }
+.leyendas-mapa .leyenda-mapa { margin: 0; }
+.leyenda-rel { display: flex; gap: .3rem 1rem; flex-wrap: wrap; font-size: .85rem; color: var(--texto-suave); }
+.leyenda-rel i, .panel-grupo h3 i { display: inline-block; width: 1.6em; height: 0; border-top: 2.5px solid var(--texto-suave); vertical-align: middle; margin-right: .35em; }
+.leyenda-rel i.lr-req, .panel-grupo h3 i.lr-req { border-top-color: var(--serie-2); }
+.leyenda-rel i.lr-des, .panel-grupo h3 i.lr-des { border-top-color: var(--serie-3); }
+.leyenda-rel i.lr-con, .panel-grupo h3 i.lr-con { border-top: 2.5px dashed var(--acento); }
+
+/* Constelación: requisitos en naranja, lo que desbloquea en verde (continuo) y conexiones en discontinuo. */
+.resaltando .const-nodo.act { opacity: var(--o, 1); }
+.seleccion .const-arista.anc { stroke: var(--serie-2); stroke-opacity: var(--o, .95); stroke-width: 1.8; }
+.seleccion .const-arista.des { stroke: var(--serie-3); stroke-opacity: var(--o, .95); stroke-dasharray: none; }
+.const-con { fill: none; stroke: var(--acento); stroke-width: 1.6; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke; opacity: .9; }
+.const-svg .const-nodo.fuera { opacity: .08; pointer-events: none; }
+.const-svg .const-nodo.fuera .const-etq, .const-bloque.fuera { display: none; }
+.const-svg .const-arista.fuera { stroke-opacity: .02; }
+.const-con.fuera { opacity: .08; }
+
+/* Por bloques */
+.mapa.seleccion .nodo:not(.rel) { opacity: .22; }
+.nodo.rel { opacity: var(--o, 1); }
+.nodo.con { outline: 2px dashed var(--acento); outline-offset: 2px; }
+.mapa-rel path { fill: none; stroke-width: 2; }
+.mapa-rel.req path { stroke: var(--serie-2); } .mapa-rel.req circle { fill: var(--serie-2); }
+.mapa-rel.desb path { stroke: var(--serie-3); } .mapa-rel.desb circle { fill: var(--serie-3); }
+.mapa-rel.con path { stroke: var(--acento); stroke-dasharray: 6 4; }
+
+/* Panel de detalle: a la derecha en escritorio, hoja deslizable abajo en móvil */
+.mapa-panel { background: var(--superficie); border: 1px solid var(--linea); border-radius: var(--radio); padding: .9rem 1rem; font-size: .93rem; }
+.mapa-panel[hidden] { display: none; }
+.panel-asa { display: none; }
+.panel-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: .5rem; }
+.panel-cab h2 { font-size: 1.15rem; margin: 0; line-height: 1.3; }
+.panel-cerrar { font-size: 1.5rem; line-height: 1; background: none; border: 0; color: var(--texto-suave); cursor: pointer; padding: 0 .25rem; border-radius: 6px; }
+.panel-cerrar:hover { color: var(--texto); background: var(--rejilla); }
+.panel-distintivos { margin: .45rem 0 .1rem; }
+.distintivo-bloque { color: var(--c); border-color: var(--c); }
+.panel-frase { margin: .35rem 0 .7rem; }
+.panel-abrir { display: inline-block; text-decoration: none; margin-bottom: .5rem; }
+.panel-datos { list-style: none; padding: 0; margin: .2rem 0 .3rem; font-size: .88rem; color: var(--texto-suave); }
+.panel-grupo h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; color: var(--texto-suave); margin: .9rem 0 .3rem; }
+.panel-grupo ul { list-style: none; padding: 0; margin: 0; display: grid; gap: .15rem; }
+.panel-nodo { font: inherit; background: none; border: 0; padding: .12rem .25rem; color: var(--texto); cursor: pointer; text-align: left; border-radius: 5px; }
+.panel-nodo:hover { background: var(--rejilla); }
+.panel-nodo .ok { color: var(--bien); font-weight: 700; }
+.panel-grupo small { display: block; color: var(--texto-suave); font-size: .8rem; margin: 0 0 .2rem 1.3rem; line-height: 1.35; }
+.panel-ruta { margin-top: .9rem; padding-top: .7rem; border-top: 1px solid var(--linea); display: flex; gap: .5rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+@media (min-width: 701px) {
+  .mapa-zona.con-panel { display: grid; grid-template-columns: minmax(0, 1fr) 20rem; gap: 1rem; align-items: start; }
+  .mapa-panel { position: sticky; top: 4.2rem; max-height: calc(100vh - 5.2rem); overflow: auto; }
+}
+@media (max-width: 700px) {
+  .mapa-panel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; max-height: 55vh; overflow: auto; border-radius: 16px 16px 0 0; border-bottom: 0; padding-top: 0; box-shadow: 0 -6px 24px rgba(0, 0, 0, .18); transition: transform .2s; }
+  .mapa-panel.plegada { transform: translateY(calc(100% - 4.4rem)); overflow: hidden; }
+  .panel-asa { display: block; width: 100%; height: 1.6rem; background: none; border: 0; cursor: grab; touch-action: none; }
+  .panel-asa::before { content: ""; display: block; width: 2.8rem; height: .3rem; border-radius: 99px; background: var(--linea); margin: .1rem auto 0; }
+  .mapa-zona.con-panel { padding-bottom: 45vh; }
+}
+
 /* ───────────── Ficha ───────────── */
 .migas { font-size: .88rem; color: var(--texto-suave); margin-bottom: .3rem; }
 .migas a { color: var(--texto-suave); }

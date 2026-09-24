@@ -24,8 +24,12 @@
   function leerProgreso() {
     try {
       const d = JSON.parse(localStorage.getItem(CLAVE) || '{}') || {};
-      return { fichas: d.fichas || {}, leitner: d.leitner || {}, ultima: d.ultima || null, ultimaRuta: d.ultimaRuta || null };
-    } catch (e) { return { fichas: {}, leitner: {}, ultima: null, ultimaRuta: null }; }
+      return normalizar(d);
+    } catch (e) { return normalizar({}); }
+  }
+  function normalizar(d) {
+    const fb = Array.isArray(d.filtroBloques) ? d.filtroBloques.filter(b => I.bloques[b]) : [];
+    return { fichas: d.fichas || {}, leitner: d.leitner || {}, ultima: d.ultima || null, ultimaRuta: d.ultimaRuta || null, filtroBloques: fb.length ? fb : null };
   }
   let prog = leerProgreso();
   function guardar() { try { localStorage.setItem(CLAVE, JSON.stringify(prog)); } catch (e) { /* sin almacenamiento */ } }
@@ -221,13 +225,13 @@
       try {
         const d = JSON.parse(area.value);
         if (!d || typeof d !== 'object' || typeof d.fichas !== 'object') throw new Error('formato');
-        prog = { fichas: d.fichas || {}, leitner: d.leitner || {}, ultima: d.ultima || null, ultimaRuta: d.ultimaRuta || null };
+        prog = normalizar(d);
         guardar();
         msg.textContent = 'Progreso importado.';
       } catch (e) { msg.textContent = 'Ese texto no es un progreso válido.'; }
     });
     const borrar = api.boton('Borrar progreso', () => {
-      if (window.confirm('¿Borrar todo el progreso guardado en este navegador?')) { prog = { fichas: {}, leitner: {}, ultima: null, ultimaRuta: null }; guardar(); enrutar(); }
+      if (window.confirm('¿Borrar todo el progreso guardado en este navegador?')) { prog = normalizar({}); guardar(); enrutar(); }
     });
     return h('section', { class: 'tarjeta ajustes', style: 'margin-top:2rem', 'aria-labelledby': 'ajustes-t' },
       h('h2', { id: 'ajustes-t', style: 'margin:0', text: 'Ajustes' }),
@@ -237,8 +241,37 @@
   }
 
   // ───────────── Mapa ─────────────
-  let forzarConstelacion = false;
-  const ctxMapa = () => ({ I, C, POS, estado, dominada, api, ESTADOS });
+  let forzarConstelacion = false, mapaActual = null;
+  const CORTO = { B1: 'Matemáticas', B2: 'Fundamentos', B3: 'ML clásico', B4: 'Deep Learning', B5: 'Refuerzo', B6: 'NLP y LLMs', B7: 'Simbólico', B8: 'Producción' };
+  const CONREV = {};
+  I.conceptos.forEach(c => c.conexiones.concat(c.desambiguacion).forEach(x => { (CONREV[x.id] = CONREV[x.id] || []).push(c.id); }));
+  // Relaciones de un concepto: requisitos y lo que desbloquea con su distancia (BFS), y conexiones/desambiguaciones en los dos sentidos.
+  // `opacidad` da la intensidad del resaltado: más fuerte cuanto más cerca; 0 si no está relacionado.
+  function relaciones(id) {
+    const dist = (sig) => {
+      const m = new Map();
+      let frente = [id], d = 0;
+      while (frente.length) {
+        d++;
+        const nuevo = [];
+        frente.forEach(x => sig(x).forEach(y => { if (C[y] && y !== id && !m.has(y)) { m.set(y, d); nuevo.push(y); } }));
+        frente = nuevo;
+      }
+      return m;
+    };
+    const anc = dist(x => C[x].prerequisitos), des = dist(x => C[x].desbloquea);
+    const con = new Set(C[id].conexiones.concat(C[id].desambiguacion).map(x => x.id).concat(CONREV[id] || []).filter(x => C[x] && x !== id));
+    const opacidad = (x) => x === id ? 1
+      : anc.has(x) ? Math.max(0.35, 1 - 0.2 * (anc.get(x) - 1))
+      : des.has(x) ? (des.get(x) === 1 ? 1 : Math.max(0.3, 0.6 - 0.1 * (des.get(x) - 2)))
+      : con.has(x) ? 1 : 0;
+    return { anc, des, con, opacidad };
+  }
+  const ctxMapa = () => ({ I, C, POS, estado, dominada, api, ESTADOS, relaciones });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && mapaActual && !(e.target.closest && e.target.closest('.buscador'))) mapaActual.elegir(null);
+  });
+
   function vistaMapa() {
     document.title = 'Mapa · Atlas de IA';
     let modo = forzarConstelacion ? 'constelacion' : (pref('atlas-ia-mapa') || (window.innerWidth < 700 ? 'bloques' : 'constelacion'));
@@ -246,22 +279,123 @@
     forzarConstelacion = false;
     const bC = h('button', { type: 'button' }, 'Constelación');
     const bB = h('button', { type: 'button' }, 'Por bloques');
-    const cuerpo = h('div');
+    const cuerpo = h('div', { class: 'mapa-lienzo' });
+    const panel = h('aside', { class: 'mapa-panel', 'aria-label': 'Detalle del concepto', hidden: true });
+    const zona = h('div', { class: 'mapa-zona' }, cuerpo, panel);
+    const todos = Object.keys(I.bloques);
+    let sel = null, ctl = null, turnoPanel = 0;
+    const filtro = () => (prog.filtroBloques ? new Set(prog.filtroBloques) : null);
+    function elegir(id, opc) {
+      sel = id && C[id] ? id : null;
+      // Ir a un concepto de un bloque filtrado (desde el panel o el buscador) añade su bloque al filtro.
+      if (sel && opc && opc.centrar && prog.filtroBloques && !prog.filtroBloques.includes(C[sel].bloque)) ponFiltro(prog.filtroBloques.concat(C[sel].bloque));
+      if (ctl) ctl.marcar(sel, { centrar: opc && opc.centrar });
+      pintarPanel();
+    }
+    const abrir = (id) => { location.hash = '#' + id; };
+    mapaActual = { elegir };
+
+    // Filtro por bloques (se recuerda en progreso.filtroBloques; null = todos).
+    const chips = h('div', { class: 'chips-bloques', role: 'group', 'aria-label': 'Filtrar por bloque. Mayús o Ctrl más clic añade o quita bloques' });
+    const pintarChips = () => chips.querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.b ? !!prog.filtroBloques && prog.filtroBloques.includes(b.dataset.b) : !prog.filtroBloques)));
+    function ponFiltro(lista) {
+      prog.filtroBloques = lista && lista.length && lista.length < todos.length ? todos.filter(b => lista.includes(b)) : null;
+      guardar();
+      pintarChips();
+      if (ctl) ctl.filtro(filtro());
+    }
+    chips.append(h('button', { type: 'button', class: 'chip chip-todos', onclick: () => ponFiltro(null) }, 'Todos'),
+      ...todos.map(b => h('button', {
+        type: 'button', class: 'chip', 'data-b': b, style: colorBloque(b), title: `${b} · ${I.bloques[b]} (Mayús o Ctrl + clic para combinar)`,
+        onclick: (e) => {
+          const act = prog.filtroBloques || [];
+          if (e.shiftKey || e.ctrlKey || e.metaKey) ponFiltro(act.includes(b) ? act.filter(x => x !== b) : act.concat(b));
+          else ponFiltro(act.length === 1 && act[0] === b ? null : [b]);
+        },
+      }, h('span', { class: 'punto-bloque' }), CORTO[b] || I.bloques[b])));
+    pintarChips();
+    const leyendaRel = h('div', { class: 'leyenda-rel' },
+      h('span', {}, h('i', { class: 'lr-req' }), 'requisitos (más intenso = más cercano)'),
+      h('span', {}, h('i', { class: 'lr-des' }), 'desbloquea (tenue = indirecto)'),
+      h('span', {}, h('i', { class: 'lr-con' }), 'conexiones y desambiguaciones'));
+
+    // Panel de detalle: a la derecha en escritorio; hoja deslizable abajo en móvil.
+    async function pintarPanel() {
+      const mio = ++turnoPanel;
+      panel.innerHTML = '';
+      panel.hidden = !sel;
+      panel.classList.remove('plegada');
+      panel.style.transform = '';
+      zona.classList.toggle('con-panel', !!sel);
+      if (!sel) return;
+      const id = sel, c = C[id], e = estado(id), R = relaciones(id);
+      const nota = (x) => {
+        const d = c.desambiguacion.find(y => y.id === x) || C[x].desambiguacion.find(y => y.id === id);
+        if (d) return 'No confundir' + (d.nota ? ': ' + d.nota : '');
+        const k = c.conexiones.find(y => y.id === x) || C[x].conexiones.find(y => y.id === id);
+        return k && k.nota ? k.nota : null;
+      };
+      const item = (x, n) => h('li', {}, h('button', { type: 'button', class: 'panel-nodo', style: colorBloque(C[x].bloque), onclick: () => elegir(x, { centrar: true }) },
+        h('span', { class: 'punto-bloque' }), C[x].nombre, dominada(x) ? h('span', { class: 'ok', 'aria-label': 'dominada' }, ' ✓') : null), n ? h('small', { text: n }) : null);
+      const grupo = (titulo, clase, ids, conNota) => ids.length
+        ? h('section', { class: 'panel-grupo' }, h('h3', {}, h('i', { class: clase }), `${titulo} (${ids.length})`), h('ul', {}, ids.map(x => item(x, conNota ? nota(x) : null))))
+        : null;
+      const ruta = rutaHacia(id);
+      const bRuta = api.boton('Ver ruta', () => {
+        const on = bRuta.getAttribute('aria-pressed') !== 'true';
+        bRuta.setAttribute('aria-pressed', String(on));
+        if (ctl) ctl.verRuta(on ? ruta : null);
+      }, { 'aria-pressed': 'false' });
+      const extra = h('div', { class: 'panel-extra' });
+      const asa = h('button', { type: 'button', class: 'panel-asa', 'aria-label': 'Plegar o desplegar el panel (desliza hacia abajo para cerrarlo)' });
+      panel.append(...[asa,
+        h('header', { class: 'panel-cab' }, h('h2', { text: c.nombre }), h('button', { type: 'button', class: 'panel-cerrar', 'aria-label': 'Cerrar el panel (Esc)', onclick: () => elegir(null) }, '×')),
+        h('div', { class: 'panel-distintivos' },
+          h('span', { class: 'distintivo distintivo-bloque', style: colorBloque(c.bloque) }, h('span', { class: 'punto-bloque' }), `${c.bloque} · ${I.bloques[c.bloque]}`),
+          h('span', { class: 'distintivo' + (c.tipo.includes('ampliacion') ? ' amp' : ''), text: TIPOS[c.tipo] || c.tipo }),
+          h('span', { class: 'distintivo' + (e === 'dominada' ? ' bien' : ''), text: ESTADOS[e] })),
+        c.frase ? h('p', { class: 'panel-frase', html: c.frase }) : h('p', { class: 'panel-frase suave', text: `Pendiente · lote ${c.lote}` }),
+        h('a', { href: '#' + id, class: 'boton boton-principal panel-abrir' }, 'Abrir ficha'),
+        extra,
+        grupo('Requisitos', 'lr-req', c.prerequisitos.filter(x => C[x])),
+        grupo('Desbloquea', 'lr-des', c.desbloquea.filter(x => C[x])),
+        grupo('Conexiones', 'lr-con', [...R.con], true),
+        h('div', { class: 'panel-ruta' }, h('span', { text: `Ruta completa hasta aquí: ${ruta.length} conceptos` }), bRuta)].filter(Boolean));
+      // Deslizar el asa hacia abajo cierra la hoja; un toque la pliega o despliega.
+      let y0 = null, dy = 0;
+      asa.addEventListener('pointerdown', (ev) => { y0 = ev.clientY; dy = 0; try { asa.setPointerCapture(ev.pointerId); } catch (x) { /* nada */ } });
+      asa.addEventListener('pointermove', (ev) => { if (y0 === null) return; dy = Math.max(0, ev.clientY - y0); panel.style.transform = dy ? `translateY(${dy}px)` : ''; });
+      asa.addEventListener('pointerup', () => { if (y0 === null) return; y0 = null; panel.style.transform = ''; if (dy > 80) elegir(null); else if (dy < 6) panel.classList.toggle('plegada'); });
+      asa.addEventListener('click', (ev) => { if (ev.detail === 0) panel.classList.toggle('plegada'); });
+      tex(panel);
+      if (!c.escrita) return;
+      await cargarBloque(c.bloque);
+      const F = ficha(id);
+      if (mio !== turnoPanel || !F) return;
+      const nq = F.quiz ? F.quiz.length : 0;
+      extra.append(h('ul', { class: 'panel-datos' },
+        h('li', {}, h('b', { text: 'Interactivo: ' }), F.widget ? F.widget.motor : 'no tiene'),
+        h('li', {}, h('b', { text: 'Autoevaluación: ' }), `${nq} ${nq === 1 ? 'pregunta' : 'preguntas'}`)));
+    }
+
+    const m = { elegir, abrir, actual: () => sel, chips, leyendaRel };
     const pintar = () => {
       cuerpo.innerHTML = '';
       bC.setAttribute('aria-pressed', String(modo === 'constelacion'));
       bB.setAttribute('aria-pressed', String(modo === 'bloques'));
-      if (modo === 'constelacion') vistaConstelacion(cuerpo); else vistaBloques(cuerpo);
+      ctl = modo === 'constelacion' ? vistaConstelacion(cuerpo, m) : vistaBloques(cuerpo, m);
+      ctl.filtro(filtro());
+      if (sel) ctl.marcar(sel, { centrar: modo === 'constelacion' });
       return tex(cuerpo);
     };
-    bC.addEventListener('click', () => { modo = 'constelacion'; pref('atlas-ia-mapa', modo); pintar(); });
-    bB.addEventListener('click', () => { modo = 'bloques'; pref('atlas-ia-mapa', modo); pintar(); });
+    bC.addEventListener('click', () => { modo = 'constelacion'; pref('atlas-ia-mapa', modo); pintar(); pintarPanel(); });
+    bB.addEventListener('click', () => { modo = 'bloques'; pref('atlas-ia-mapa', modo); pintar(); pintarPanel(); });
     vista.append(h('div', { class: 'mapa-cabecera' }, h('h1', { text: 'Mapa de conceptos' }),
-      window.AtlasMapa ? h('div', { class: 'selector-vista', role: 'group', 'aria-label': 'Vista del mapa' }, bC, bB) : null), cuerpo);
+      window.AtlasMapa ? h('div', { class: 'selector-vista', role: 'group', 'aria-label': 'Vista del mapa' }, bC, bB) : null), zona);
     return pintar();
   }
 
-  function vistaConstelacion(cont) {
+  function vistaConstelacion(cont, m) {
     const buscador = h('input', { type: 'search', class: 'campo', list: 'const-lista', placeholder: 'Buscar en el mapa…', 'aria-label': 'Buscar un concepto en el mapa' });
     const lista = h('datalist', { id: 'const-lista' }, I.orden.map(id => h('option', { value: C[id].nombre })));
     const lienzo = h('div');
@@ -269,19 +403,21 @@
     let ctl = null;
     const elegir = () => {
       const t = norm(buscador.value.trim());
-      if (!t) { ctl.soltar(); return; }
+      if (!t) { m.elegir(null); return; }
       const c = I.conceptos.find(x => norm(x.nombre) === t) || I.conceptos.find(x => norm(x.nombre).startsWith(t)) || I.conceptos.find(x => norm(x.nombre).includes(t));
-      if (c) ctl.buscar(c.id);
+      if (c) m.elegir(c.id, { centrar: 2.6 });
     };
     buscador.addEventListener('change', elegir);
     buscador.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); elegir(); } });
-    buscador.addEventListener('input', () => { if (!buscador.value) ctl.soltar(); });
+    buscador.addEventListener('input', () => { if (!buscador.value) m.elegir(null); });
     cont.append(
-      h('p', { class: 'suave estrecho', text: 'Cada punto es un concepto y cada cúmulo, un bloque. El tamaño indica cuántos conceptos desbloquea. Pasa el ratón o el foco por un punto para ver toda su cadena de requisitos (línea continua) y lo que desbloquea (discontinua); haz clic para ir a la ficha. Rueda o pellizco para acercar; arrastra para moverte.' }),
-      h('div', { class: 'filtros' }, buscador, lista, api.boton('Centrar', () => ctl.centrar())),
+      h('p', { class: 'suave estrecho', text: 'Cada punto es un concepto y cada cúmulo, un bloque. El tamaño indica cuántos conceptos desbloquea. Haz clic en un punto para seleccionarlo: verás sus requisitos, lo que desbloquea y sus conexiones, y un panel con su detalle. Doble clic o «Abrir ficha» para entrar. Clic en el fondo o Esc para soltar. Rueda o pellizco para acercar; arrastra para moverte.' }),
+      h('div', { class: 'filtros' }, buscador, lista, api.boton('Centrar', () => ctl.centrar()), api.boton('Encuadrar selección', () => ctl.encuadrar(), { title: 'Ajusta el zoom a los bloques elegidos' })),
+      m.chips,
       avisoRuta, lienzo,
-      h('div', { class: 'leyenda-mapa leyenda-const' }, h('span', { class: 'l-pendiente', text: 'pendiente de escribir' }), h('span', { class: 'l-escrita', text: 'escrita' }), h('span', { class: 'l-vista', text: 'vista' }), h('span', { class: 'l-dominada', text: 'dominada' })));
-    ctl = AtlasMapa.constelacion(lienzo, ctxMapa());
+      h('div', { class: 'leyendas-mapa' }, m.leyendaRel,
+        h('div', { class: 'leyenda-mapa leyenda-const' }, h('span', { class: 'l-pendiente', text: 'pendiente de escribir' }), h('span', { class: 'l-escrita', text: 'escrita' }), h('span', { class: 'l-vista', text: 'vista' }), h('span', { class: 'l-dominada', text: 'dominada' }))));
+    ctl = AtlasMapa.constelacion(lienzo, ctxMapa(), { elegir: m.elegir, abrir: m.abrir, actual: m.actual });
     const r = prog.ultimaRuta;
     if (r && C[r.destino]) {
       const ids = rutaHacia(r.destino);
@@ -289,9 +425,10 @@
       avisoRuta.append(h('div', { class: 'aviso aviso-ruta' }, h('span', {}, `Ruta resaltada: ${r.nombre || 'Ruta hacia ' + C[r.destino].nombre} · ${ids.length} conceptos. `),
         api.boton('Quitar resaltado', () => { prog.ultimaRuta = null; guardar(); ctl.ruta(null); avisoRuta.innerHTML = ''; })));
     }
+    return ctl;
   }
 
-  function vistaBloques(cont) {
+  function vistaBloques(cont, m) {
     const prof = {};
     const profundidad = (id) => {
       if (prof[id] !== undefined) return prof[id];
@@ -300,7 +437,6 @@
       prof[id] = ps.length ? 1 + Math.max(...ps.map(profundidad)) : 0;
       return prof[id];
     };
-    const fBloque = h('select', { 'aria-label': 'Filtrar por bloque' }, h('option', { value: '', text: 'Todos los bloques' }), Object.entries(I.bloques).map(([b, n]) => h('option', { value: b, text: `${b} · ${n}` })));
     const fEstado = h('select', { 'aria-label': 'Filtrar por estado' }, h('option', { value: '', text: 'Todos los estados' }), Object.entries(ESTADOS).map(([k, t]) => h('option', { value: k, text: t })));
     const fTexto = h('input', { type: 'search', placeholder: 'Filtrar por nombre', 'aria-label': 'Filtrar por nombre' });
     const mapa = h('div', { class: 'mapa' });
@@ -325,52 +461,100 @@
       mapa.append(col);
     });
     const filtrar = () => {
-      const b = fBloque.value, e = fEstado.value, t = norm(fTexto.value.trim());
-      mapa.querySelectorAll('.mapa-col').forEach(col => { col.hidden = !!b && col.dataset.bloque !== b; });
+      const e = fEstado.value, t = norm(fTexto.value.trim());
       Object.entries(nodos).forEach(([id, a]) => a.classList.toggle('atenuado', (!!e && estado(id) !== e) || (!!t && !norm(C[id].nombre).includes(t))));
     };
-    [fBloque, fEstado].forEach(x => x.addEventListener('change', filtrar));
+    fEstado.addEventListener('change', filtrar);
     fTexto.addEventListener('input', filtrar);
 
+    // Resaltado del nodo seleccionado (o del que está bajo el puntero si no hay selección), o de la ruta hasta él.
+    let sel = null, rutaSel = null;
     function limpiar() {
       aristas.innerHTML = '';
-      Object.values(nodos).forEach(a => a.classList.remove('foco', 'req', 'desb'));
+      mapa.classList.remove('seleccion');
+      Object.values(nodos).forEach(a => { a.classList.remove('foco', 'rel', 'req', 'desb', 'con'); a.style.removeProperty('--o'); });
+    }
+    const visible = (x) => nodos[x] && !nodos[x].closest('[hidden]');
+    const conLineas = () => {
+      if (getComputedStyle(aristas).display === 'none') return false;
+      aristas.setAttribute('width', mapa.scrollWidth); aristas.setAttribute('height', mapa.scrollHeight);
+      return true;
+    };
+    function linea(de, a, clase, o) {
+      if (!visible(de) || !visible(a)) return;
+      const base = mapa.getBoundingClientRect();
+      const caja = (el) => { const r = el.getBoundingClientRect(); return { l: r.left - base.left + mapa.scrollLeft, r: r.right - base.left + mapa.scrollLeft, y: r.top - base.top + mapa.scrollTop + r.height / 2 }; };
+      const p = caja(nodos[de]), q = caja(nodos[a]);
+      let x1, x2, d;
+      if (Math.abs(p.l - q.l) < 5) { x1 = p.r - 6; x2 = q.r - 6; d = `M${x1},${p.y} C${x1 + 22},${p.y} ${x2 + 22},${q.y} ${x2},${q.y}`; }
+      else if (p.l < q.l) { x1 = p.r; x2 = q.l; const mm = (x1 + x2) / 2; d = `M${x1},${p.y} C${mm},${p.y} ${mm},${q.y} ${x2},${q.y}`; }
+      else { x1 = p.l; x2 = q.r; const mm = (x1 + x2) / 2; d = `M${x1},${p.y} C${mm},${p.y} ${mm},${q.y} ${x2},${q.y}`; }
+      const g = api.el('g', { class: 'mapa-rel ' + clase, style: `opacity:${o}` }, aristas);
+      api.el('path', { d }, g);
+      if (clase !== 'con') api.el('circle', { cx: x2, cy: q.y, r: 3.5 }, g);
     }
     function resaltar(id) {
       limpiar();
-      if (getComputedStyle(aristas).display === 'none') { marcar(); return; }
-      const c = api.colores(), base = mapa.getBoundingClientRect();
-      aristas.setAttribute('width', mapa.scrollWidth); aristas.setAttribute('height', mapa.scrollHeight);
-      const caja = (el) => { const r = el.getBoundingClientRect(); return { l: r.left - base.left + mapa.scrollLeft, r: r.right - base.left + mapa.scrollLeft, y: r.top - base.top + mapa.scrollTop + r.height / 2 }; };
-      const linea = (de, a, color) => {
-        if (!nodos[de] || !nodos[a] || nodos[de].closest('[hidden]') || nodos[a].closest('[hidden]')) return;
-        const p = caja(nodos[de]), q = caja(nodos[a]);
-        let x1, x2, d;
-        if (Math.abs(p.l - q.l) < 5) { x1 = p.r - 6; x2 = q.r - 6; d = `M${x1},${p.y} C${x1 + 22},${p.y} ${x2 + 22},${q.y} ${x2},${q.y}`; }
-        else if (p.l < q.l) { x1 = p.r; x2 = q.l; const m = (x1 + x2) / 2; d = `M${x1},${p.y} C${m},${p.y} ${m},${q.y} ${x2},${q.y}`; }
-        else { x1 = p.l; x2 = q.r; const m = (x1 + x2) / 2; d = `M${x1},${p.y} C${m},${p.y} ${m},${q.y} ${x2},${q.y}`; }
-        api.el('path', { d, fill: 'none', stroke: color, 'stroke-width': 2, 'stroke-opacity': 0.85 }, aristas);
-        api.el('circle', { cx: x2, cy: q.y, r: 3.5, fill: color }, aristas);
-      };
-      C[id].prerequisitos.forEach(p => linea(p, id, c.series[1]));
-      C[id].desbloquea.forEach(d => linea(id, d, c.series[2]));
-      marcar();
-      function marcar() {
-        nodos[id].classList.add('foco');
-        C[id].prerequisitos.forEach(p => nodos[p] && nodos[p].classList.add('req'));
-        C[id].desbloquea.forEach(d => nodos[d] && nodos[d].classList.add('desb'));
-      }
+      const R = relaciones(id), o = (x) => R.opacidad(x).toFixed(2);
+      mapa.classList.add('seleccion');
+      Object.keys(nodos).forEach(x => {
+        if (!R.opacidad(x)) return;
+        nodos[x].classList.add('rel', x === id ? 'foco' : R.anc.has(x) ? 'req' : R.des.has(x) ? 'desb' : 'con');
+        if (R.con.has(x)) nodos[x].classList.add('con');
+        nodos[x].style.setProperty('--o', o(x));
+      });
+      if (!conLineas()) return;
+      // Cada arista de la cadena une nodos a distancias consecutivas del seleccionado.
+      Object.keys(nodos).forEach(x => {
+        const da = x === id ? 0 : R.anc.get(x), dd = x === id ? 0 : R.des.get(x);
+        if (da !== undefined) C[x].prerequisitos.forEach(p => { if (R.anc.get(p) === da + 1) linea(p, x, 'req', o(p)); });
+        if (dd !== undefined) C[x].desbloquea.forEach(d => { if (R.des.get(d) === dd + 1) linea(x, d, 'desb', o(d)); });
+      });
+      R.con.forEach(x => linea(id, x, 'con', 1));
     }
-    mapa.addEventListener('mouseover', (e) => { const a = e.target.closest('.nodo'); if (a) resaltar(a.dataset.id); });
-    mapa.addEventListener('focusin', (e) => { const a = e.target.closest('.nodo'); if (a) resaltar(a.dataset.id); });
-    mapa.addEventListener('mouseleave', limpiar);
-    mapa.addEventListener('focusout', (e) => { if (!mapa.contains(e.relatedTarget)) limpiar(); });
+    function marcarRuta(ids, foco) {
+      limpiar();
+      mapa.classList.add('seleccion');
+      ids.forEach(x => nodos[x] && nodos[x].classList.add('rel', x === foco ? 'foco' : 'req'));
+      if (conLineas()) ids.forEach(x => C[x].prerequisitos.forEach(p => { if (ids.has(p)) linea(p, x, 'req', 1); }));
+    }
+    const restaurar = () => { if (sel && rutaSel) marcarRuta(rutaSel, sel); else if (sel) resaltar(sel); else limpiar(); };
+
+    // Clic selecciona (en el fondo, suelta); doble clic, o Enter sobre el nodo ya seleccionado, abre la ficha.
+    mapa.addEventListener('mouseover', (e) => { const a = e.target.closest('.nodo'); if (a && !sel) resaltar(a.dataset.id); });
+    mapa.addEventListener('mouseleave', () => { if (!sel) limpiar(); });
+    mapa.addEventListener('click', (e) => {
+      const a = e.target.closest('.nodo');
+      if (a) { e.preventDefault(); if (e.detail === 0 && m.actual() === a.dataset.id) m.abrir(a.dataset.id); else m.elegir(a.dataset.id); }
+      else m.elegir(null);
+    });
+    mapa.addEventListener('dblclick', (e) => { const a = e.target.closest('.nodo'); if (a) { e.preventDefault(); m.abrir(a.dataset.id); } });
+    mapa.addEventListener('keydown', (e) => { const a = e.target.closest('.nodo'); if (a && e.key === ' ') { e.preventDefault(); m.elegir(a.dataset.id); } });
+    if (window.ResizeObserver) new ResizeObserver(() => { if (sel) restaurar(); }).observe(mapa);
 
     cont.append(
-      h('p', { class: 'suave estrecho', text: 'Cada columna es un bloque; dentro, los conceptos bajan según la longitud de su cadena de requisitos. Pasa el ratón o el foco por un concepto para ver de qué depende (naranja) y qué desbloquea (verde).' }),
-      h('div', { class: 'filtros' }, fBloque, fEstado, fTexto),
-      h('div', { class: 'leyenda-mapa' }, h('span', { class: 'l-pendiente', text: 'pendiente de escribir' }), h('span', { class: 'l-escrita', text: 'escrita' }), h('span', { class: 'l-vista', text: 'vista' }), h('span', { class: 'l-dominada', text: 'dominada' })),
-      mapa);
+      h('p', { class: 'suave estrecho', text: 'Cada columna es un bloque; dentro, los conceptos bajan según la longitud de su cadena de requisitos. Haz clic en un concepto para seleccionarlo: verás sus requisitos, lo que desbloquea y sus conexiones, y un panel con su detalle. Doble clic o «Abrir ficha» para entrar. Clic en el fondo o Esc para soltar.' }),
+      h('div', { class: 'filtros' }, fEstado, fTexto),
+      m.chips,
+      mapa,
+      h('div', { class: 'leyendas-mapa' }, m.leyendaRel,
+        h('div', { class: 'leyenda-mapa' }, h('span', { class: 'l-pendiente', text: 'pendiente de escribir' }), h('span', { class: 'l-escrita', text: 'escrita' }), h('span', { class: 'l-vista', text: 'vista' }), h('span', { class: 'l-dominada', text: 'dominada' }))));
+    return {
+      filtro(s) {
+        mapa.querySelectorAll('.mapa-col').forEach(col => { col.hidden = !!s && !s.has(col.dataset.bloque); });
+        restaurar();
+      },
+      // centrar: desplaza el mapa hasta el nodo y le pasa el foco.
+      marcar(id, o) {
+        sel = id || null; rutaSel = null;
+        if (sel && o && o.centrar && nodos[sel]) {
+          nodos[sel].scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'smooth' });
+          nodos[sel].focus({ preventScroll: true });
+        }
+        restaurar();
+      },
+      verRuta(ids) { rutaSel = ids ? new Set(ids) : null; restaurar(); },
+    };
   }
 
   // ───────────── Ficha ─────────────
