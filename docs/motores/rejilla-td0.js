@@ -1,7 +1,11 @@
 // Modo "td0" del motor rejilla: predicción TD(0) de V(s) bajo una política aleatoria uniforme,
 // paso a paso (no espera a que acabe el episodio, a diferencia de Monte Carlo).
+// Si se carga suelto (p. ej. el banco de pruebas de motores) antes que rejilla.js, esperamos a que
+// registre window.Rejilla en vez de asumir que ya existe.
 (function () {
   'use strict';
+  if (window.Rejilla) registrar(); else Motores.cargar('rejilla').then(registrar);
+  function registrar() {
   const key = (x, y) => x + ',' + y;
   Rejilla.modo('td0', function (el, p, api) {
     const H = api.html, num = api.num;
@@ -68,4 +72,5 @@
     dibujar();
     return { redibujar: dibujar, destruir: parar };
   });
+  }
 })();

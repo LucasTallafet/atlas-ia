@@ -1,7 +1,11 @@
 // Modo "sarsa-qlearning" del motor rejilla: compara el control on-policy (SARSA) con el off-policy
 // (Q-learning) sobre el mismo mundo, típicamente un "paseo por el acantilado".
+// Si se carga suelto (p. ej. el banco de pruebas de motores) antes que rejilla.js, esperamos a que
+// registre window.Rejilla en vez de asumir que ya existe.
 (function () {
   'use strict';
+  if (window.Rejilla) registrar(); else Motores.cargar('rejilla').then(registrar);
+  function registrar() {
   const key = (x, y) => x + ',' + y;
   Rejilla.modo('sarsa-qlearning', function (el, p, api) {
     const H = api.html, num = api.num;
@@ -92,4 +96,5 @@
     dibujar();
     return { redibujar: dibujar, destruir: parar };
   });
+  }
 })();

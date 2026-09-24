@@ -267,17 +267,35 @@
     const s = document.querySelector('script[src$="motores/nucleo.js"]');
     return s ? s.getAttribute('src').replace(/nucleo\.js$/, '') : 'motores/';
   }
+  function cargarArchivo(nombre) {
+    return new Promise((ok, ko) => {
+      const s = document.createElement('script');
+      s.src = base() + nombre + '.js';
+      s.onload = () => (registro[nombre] ? ok(registro[nombre]) : ko(new Error(`El archivo no registró el motor "${nombre}"`)));
+      s.onerror = () => ko(new Error(`No se pudo cargar motores/${nombre}.js`));
+      document.head.appendChild(s);
+    });
+  }
+  // Un motor puede repartir sus modos más pesados en motores/<motor>-<modo>.js (p. ej. "rejilla"),
+  // cargados bajo demanda por el motor base. Si alguien pide ese archivo como motor de primer nivel
+  // (el banco de pruebas de motores lo hace: recorre todos los .js de esta carpeta), el archivo no
+  // se registra a sí mismo: aquí lo resolvemos como "<modo> del motor base" reutilizando su ejemplo.
   function cargar(nombre) {
     if (registro[nombre]) return Promise.resolve(registro[nombre]);
     if (!/^[\w-]+$/.test(nombre)) return Promise.reject(new Error('Nombre de motor no válido'));
     if (!cargas[nombre]) {
-      cargas[nombre] = new Promise((ok, ko) => {
-        const s = document.createElement('script');
-        s.src = base() + nombre + '.js';
-        s.onload = () => (registro[nombre] ? ok(registro[nombre]) : ko(new Error(`El archivo no registró el motor "${nombre}"`)));
-        s.onerror = () => { delete cargas[nombre]; ko(new Error(`No se pudo cargar motores/${nombre}.js`)); };
-        document.head.appendChild(s);
-      });
+      cargas[nombre] = cargarArchivo(nombre).catch((e) => {
+        const i = nombre.indexOf('-');
+        if (i < 0) throw e;
+        const base_ = nombre.slice(0, i), modo = nombre.slice(i + 1);
+        return cargar(base_).then((m) => {
+          const ejemplo = m.ejemplos && m.ejemplos[modo];
+          if (typeof m.fn !== 'function' || !ejemplo) throw e;
+          const entrada = { fn: (el, p, api) => m.fn(el, Object.assign({ modo }, p), api), ejemplos: { '-': ejemplo } };
+          registro[nombre] = entrada;
+          return entrada;
+        }, () => { throw e; });
+      }).catch((e) => { delete cargas[nombre]; throw e; });
     }
     return cargas[nombre];
   }

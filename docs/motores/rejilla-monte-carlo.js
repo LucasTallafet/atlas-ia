@@ -1,6 +1,10 @@
 // Modo "monte-carlo" del motor rejilla: control de Monte Carlo cada-visita con política ε-greedy.
+// Si se carga suelto (p. ej. el banco de pruebas de motores) antes que rejilla.js, esperamos a que
+// registre window.Rejilla en vez de asumir que ya existe.
 (function () {
   'use strict';
+  if (window.Rejilla) registrar(); else Motores.cargar('rejilla').then(registrar);
+  function registrar() {
   const key = (x, y) => x + ',' + y;
   Rejilla.modo('monte-carlo', function (el, p, api) {
     const H = api.html, num = api.num;
@@ -87,4 +91,5 @@
     dibujar();
     return { redibujar: dibujar, destruir: parar };
   });
+  }
 })();
