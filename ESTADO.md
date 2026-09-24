@@ -1,13 +1,13 @@
 # Estado del proyecto
 
-25/138 fichas válidas · generado por tools/build.py
+28/138 fichas válidas · generado por tools/build.py
 
 | Lote | Bloque | Fichas | Hechas |
 |---|---|---|---|
 | L01 | B1 | vectores producto-escalar-similitud espacio-vectorial matrices datos-como-matrices determinante-inversa sistemas-lineales | 7/7 |
 | L02 | B1 | autovalores-svd funciones no-linealidad derivada regla-cadena gradiente integral-monte-carlo probabilidad | 8/8 |
 | L03 | B1 | prob-condicional bayes variable-aleatoria dist-normal dist-binomial dist-poisson estadistica-descriptiva graficos-estadisticos | 8/8 |
-| L04 | B1 | `muestreo-intervalos` `contraste-hipotesis` `correlacion` | 0/3 |
+| L04 | B1 | muestreo-intervalos contraste-hipotesis correlacion | 3/3 |
 | L05 | B2 | `que-es-ia` `historia-ia` `paradigmas-ia` `ia-debil-general` | 0/4 |
 | L06 | B2 | `resolucion-problemas` `automatizacion-seleccion` `que-es-ml` `tipos-aprendizaje` | 0/4 |
 | L07 | B2 | `componentes-ml` `ciclo-proyecto-ml` `funciones-perdida` `descenso-gradiente` `generalizacion` `validacion` | 0/6 |
