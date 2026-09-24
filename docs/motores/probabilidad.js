@@ -93,9 +93,10 @@
     const E = { tipo: null, i: -1 };
 
     const grafica = H('div', { class: 'motor-grafica' });
+    const barras = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
+    el.append(grafica, barras, lectura, controles);
 
     const grupo = H('div', { class: 'motor-selector', role: 'group', 'aria-label': 'Condicionar por' });
     const botTodas = api.boton('Sin condición', () => { E.tipo = null; marcar(); dibujar(); });
@@ -126,6 +127,31 @@
       }).join('');
       const filaTotal = `<tr><th scope="row">Total</th>${columnas.map((cn, j) => `<td${E.tipo === 'columna' && E.i === j ? ` style="color:${c.acento}"` : ''}>${totC[j]}</td>`).join('')}<td>${N}</td></tr>`;
       grafica.innerHTML = `<div class="tabla-scroll"><table class="motor-tabla"><thead><tr><th></th>${columnas.map(cn => `<th scope="col">${cn}</th>`).join('')}<th>Total</th></tr></thead><tbody>${filasHtml}${filaTotal}</tbody></table></div>`;
+
+      let etiquetasBarra, valoresBarra;
+      if (E.tipo === 'fila') {
+        etiquetasBarra = columnas;
+        valoresBarra = columnas.map((_, j) => conteos[E.i][j] / totF[E.i]);
+      } else if (E.tipo === 'columna') {
+        etiquetasBarra = filas;
+        valoresBarra = filas.map((_, i) => conteos[i][E.i] / totC[E.i]);
+      } else {
+        etiquetasBarra = [];
+        valoresBarra = [];
+        filas.forEach((f, i) => columnas.forEach((cn, j) => { etiquetasBarra.push(f + ' ∩ ' + cn); valoresBarra.push(conteos[i][j] / N); }));
+      }
+      barras.innerHTML = '';
+      const Wb = Math.max(280, Math.min(el.clientWidth || 520, 640));
+      const filaAltoB = 26, Lb = 130, altoB = etiquetasBarra.length * filaAltoB + 8;
+      const sb = api.svg(Wb, altoB);
+      const Xb = api.escala(0, Math.max(0.0001, Math.max(...valoresBarra)), Lb, Wb - 8);
+      etiquetasBarra.forEach((et, i) => {
+        const y = i * filaAltoB + 4;
+        api.el('text', { x: Lb - 8, y: y + filaAltoB - 11, 'text-anchor': 'end', 'font-size': 11, fill: c.texto, text: et }, sb);
+        api.el('rect', { x: Lb, y, width: Math.max(1, Xb(valoresBarra[i]) - Lb), height: filaAltoB - 8, fill: c.acento }, sb);
+        api.el('text', { x: Xb(valoresBarra[i]) + 6, y: y + filaAltoB - 11, 'font-size': 11, fill: c.suave, text: num(100 * valoresBarra[i], 1) + ' %' }, sb);
+      });
+      barras.append(sb);
 
       const lineas = [];
       if (E.tipo === null) {
