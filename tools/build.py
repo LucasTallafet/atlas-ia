@@ -61,9 +61,9 @@ def md(texto, errores, inline=False):
         return token(f'<a class="xref" href="#{cid}" data-id="{cid}">{html.escape(txt or BY[cid]["nombre"])}</a>')
 
     t = re.sub(r'\[\[([\w-]+)(?:\|([^\]]+))?\]\]', xref, t)
-    t = re.sub(r'^:::\s*ampliacion\s*$', '<div class="ampliacion" markdown="1">', t, flags=re.M)
-    t = re.sub(r'^:::\s*nota-fuente\s*$', '<div class="nota-fuente" markdown="1">', t, flags=re.M)
-    t = re.sub(r'^:::\s*$', '</div>', t, flags=re.M)
+    t = re.sub(r'^:::[ \t]*ampliacion[ \t]*$', '<div class="ampliacion" markdown="1">', t, flags=re.M)
+    t = re.sub(r'^:::[ \t]*nota-fuente[ \t]*$', '<div class="nota-fuente" markdown="1">', t, flags=re.M)
+    t = re.sub(r'^:::[ \t]*$', '</div>', t, flags=re.M)
     h = markdown.markdown(t, extensions=['tables', 'sane_lists', 'md_in_html'])
     for k, v in guard.items():
         h = h.replace(f'<p>{k}</p>', v).replace(k, v)
@@ -103,7 +103,7 @@ def validar(ruta, ejecutar):
         E.append('Contiene TODO/XXX/FIXME/lorem')
     for nombre, s in sec.items():
         E += FI.comprobar_mates(nombre, s)
-    if todo.count(':::') and len(re.findall(r'^:::\s*$', todo, re.M)) != len(re.findall(r'^:::\s*\w', todo, re.M)):
+    if todo.count(':::') and len(re.findall(r'^:::[ \t]*$', todo, re.M)) != len(re.findall(r'^:::[ \t]*\w', todo, re.M)):
         E.append('Bloques ::: desemparejados (cada ":::ampliacion" o ":::nota-fuente" se cierra con ":::")')
 
     # Longitudes
@@ -199,7 +199,7 @@ def validar(ruta, ejecutar):
     E += errs
 
     # Ampliación
-    bloques_amp = re.findall(r'^:::\s*ampliacion\s*$(.*?)^:::\s*$', todo, re.M | re.S)
+    bloques_amp = re.findall(r'^:::[ \t]*ampliacion[ \t]*$(.*?)^:::[ \t]*$', todo, re.M | re.S)
     if c['tipo'] in ('ampliacion', 'original+ampliacion') and not bloques_amp:
         E.append('Tipo con ampliación: falta al menos un bloque ":::ampliacion" con su "Fuente:"')
     if c['tipo'] in ('original', 'fusion') and bloques_amp:

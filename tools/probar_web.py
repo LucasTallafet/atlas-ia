@@ -6,6 +6,7 @@ e interactivos vacíos. Guarda capturas en capturas/ (ignorada por git).
   python tools/probar_web.py --id kmeans --movil  una ficha, también a 390 px
   python tools/probar_web.py --todas
   python tools/probar_web.py --demo [motor]    página de demostración de motores (docs/demo.html)
+  python tools/probar_web.py --id kmeans --esencial --oscuro   vista Esencial en tema oscuro
   python tools/probar_web.py --vistas --movil  inicio, mapa, rutas, glosario y repaso (espera body[data-listo=<vista>])
 
 Requiere una vez:  pip install playwright  &&  python -m playwright install chromium
@@ -32,6 +33,8 @@ def main():
     g.add_argument('--demo', nargs='?', const='*', help='prueba docs/demo.html (todos los motores o uno)')
     g.add_argument('--vistas', action='store_true', help='prueba las vistas generales: inicio, mapa, rutas, glosario, repaso')
     ap.add_argument('--movil', action='store_true')
+    ap.add_argument('--oscuro', action='store_true', help='captura en tema oscuro')
+    ap.add_argument('--esencial', action='store_true', help='en fichas, pulsa el selector "Esencial" antes de capturar')
     a = ap.parse_args()
     inv = F.inventario()
     escritas = {p.stem for p in (F.RAIZ / 'fichas').glob('*.md') if not p.stem.startswith('_')}
@@ -58,7 +61,9 @@ def main():
     with sync_playwright() as pw:
         nav = pw.chromium.launch()
         for ancho, etiqueta in anchos:
-            pag = nav.new_page(viewport={'width': ancho, 'height': 900})
+            pag = nav.new_page(viewport={'width': ancho, 'height': 900}, color_scheme='dark' if a.oscuro else 'light')
+            etiqueta += '-oscuro' if a.oscuro else ''
+            etiqueta += '-esencial' if a.esencial else ''
             actual = {'errores': []}
             pag.on('console', lambda m: m.type == 'error' and actual['errores'].append(m.text))
             pag.on('pageerror', lambda ex: actual['errores'].append(str(ex)))
@@ -70,6 +75,13 @@ def main():
                     pag.wait_for_selector(f'body[data-listo="{cid}"]', timeout=15000)
                 except Exception:
                     errores.append('La ficha no terminó de cargar (falta body[data-listo]) en 15 s')
+                if a.esencial:
+                    boton = pag.get_by_text('Esencial', exact=True)
+                    if boton.count():
+                        boton.first.click()
+                        pag.wait_for_timeout(600)
+                    else:
+                        errores.append('No encuentro el selector "Esencial"')
                 if motor[cid]:
                     n = pag.eval_on_selector_all('.widget svg, .widget canvas', 'els => els.length')
                     if not n:

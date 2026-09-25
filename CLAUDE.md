@@ -27,7 +27,7 @@ Este archivo se carga en cada sesión. Síguelo al pie de la letra. Si algo choc
 3. **El inventario manda.** El `id`, el motor, el modo, los requisitos y el tipo vienen del inventario. Si crees que está mal, anótalo en `DECISIONES.md` y sigue con lo que dice.
 4. **Nada se da por hecho sin `tools/build.py`.** Una ficha está terminada cuando el build pasa con 0 errores.
 5. **Ampliaciones marcadas.** Todo contenido que no esté en el curso va dentro de `:::ampliacion` … `:::` e incluye una línea `Fuente:` con una referencia real. Si corriges un error de la fuente, usa `:::nota-fuente` … `:::` para decir qué cambiaste.
-6. **Cálculos verificados.** Todo número de un ejemplo lo calculas antes con Python. Todo bloque ```python de "En código" debe ejecutarse sin errores. Si necesita TensorFlow, transformers o descargas, pon `# no-ejecutar` en su primera línea.
+6. **Cálculos verificados.** Todo número de un ejemplo lo calculas antes con Python usando `python tools/calc.py "<código>"` (numpy, scipy, pandas y sklearn ya importados como np, sp, pd, sklearn; imprime lo que pongas en `print`). No crees scripts sueltos. Todo bloque ```python de "En código" debe ejecutarse sin errores. Si necesita TensorFlow, transformers o descargas, pon `# no-ejecutar` en su primera línea.
 7. **Sin imágenes del curso.** Las `[figura: …]` del material no se migran. Si una figura es esencial, descríbela en texto o apóyate en el interactivo.
 
 ## 3. Formato de ficha
@@ -114,7 +114,7 @@ Cuando el usuario escribe **"Lote Lxx"**:
 2. `python tools/build.py --lote Lxx` solo si el extractor avisa de algo raro o sospechas que falta un motor (§6).
 3. Escribe las fichas del lote en el orden del extractor, **omitiendo las que ya existen** (el extractor las marca con ⚠).
 4. `python tools/build.py --lote Lxx --ejecutar` y corrige hasta 0 errores. Revisa los avisos: arregla los que tengan sentido y deja constancia de los que no en `DECISIONES.md`.
-5. Si hay Playwright: `python tools/probar_web.py --lote Lxx` y corrige los errores de consola o los interactivos vacíos.
+5. Si hay Playwright: `python tools/probar_web.py --lote Lxx` (añade `--esencial` u `--oscuro` para capturar esa vista o ese tema) y corrige los errores de consola o los interactivos vacíos.
 6. `git add -A && git commit -m "Lote Lxx: <ids>"` y, si existe el remoto, `git push`.
 7. Mensaje final, sin más texto:
 

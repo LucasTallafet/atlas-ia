@@ -7,7 +7,7 @@ SECCIONES = ['En una frase', 'Intuición', 'Explicación', 'Formalización', 'In
 OBLIGATORIAS = {'En una frase', 'Intuición', 'Explicación', 'Formalización', 'Errores típicos',
                 'En resumen', 'Autoevaluación', 'Glosario'}
 CUERPO = ('Explicación', 'Formalización', 'A fondo')  # cuentan para objetivo_palabras
-PROHIBIDO = re.compile(r'\b(TODO|XXX|FIXME|lorem ipsum)\b|<!--', re.I)
+PROHIBIDO = re.compile(r'\b(TODO|XXX|FIXME)\b|(?i:lorem ipsum)|<!--')  # en mayúsculas: 'todo' en español es válido
 BLOQUE_CODIGO = re.compile(r'^```([\w-]*)[^\n]*\n(.*?)^```\s*$', re.S | re.M)
 
 
@@ -123,7 +123,7 @@ def parse_glosario(s):
     for ln in s.split('\n'):
         if not ln.strip():
             continue
-        m = re.match(r'^- \*\*(.+?)\*\*:\s*(.+)$', ln)
+        m = re.match(r'^- \*\*(.+?)\*\*(?:\s*\([^)]*\))?:\s*(.+)$', ln)
         if not m:
             errores.append(f'Glosario: línea con formato incorrecto: "{ln[:50]}" (usa "- **término**: definición")')
             continue

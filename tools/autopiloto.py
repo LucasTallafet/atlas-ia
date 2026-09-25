@@ -176,6 +176,19 @@ def verificar(tipo, clave, inv):
     return codigo == 0, out[-600:]
 
 
+def guardar(orden):
+    """Commit de lo pendiente y push; si el remoto va por delante, integra (merge) y reintenta."""
+    if not git_limpio():
+        subprocess.run(['git', 'add', '-A'], cwd=RAIZ)
+        subprocess.run(['git', 'commit', '-q', '-m', f'{orden} (autopiloto)'], cwd=RAIZ)
+    r = subprocess.run(['git', 'push', '-q'], cwd=RAIZ, capture_output=True, text=True)
+    if r.returncode != 0:
+        m = subprocess.run(['git', 'pull', '--no-rebase', '--no-edit', '-q'], cwd=RAIZ, capture_output=True, text=True)
+        r = subprocess.run(['git', 'push', '-q'], cwd=RAIZ, capture_output=True, text=True)
+        if r.returncode != 0:
+            log(f'  ⚠ push fallido (el trabajo está guardado en local): {(m.stderr + r.stderr).strip()[:300]}')
+
+
 def git_limpio():
     r = subprocess.run(['git', 'status', '--porcelain'], cwd=RAIZ, capture_output=True, text=True)
     return not r.stdout.strip()
@@ -250,16 +263,14 @@ def ejecutar(tareas, a, inv):
                 time.sleep(ESPERA_SEG)
                 esperado += ESPERA_SEG / 60
             if tipo == 'libre':
+                guardar(orden)
                 log(f'  terminado (código {codigo}). Revisa el resultado en logs/.')
                 break
             ok, detalle = verificar(tipo, clave, inv)
             if ok:
                 if tipo == 'revision':
                     log(f'REVISIÓN OK {clave}')
-                if not git_limpio():
-                    subprocess.run(['git', 'add', '-A'], cwd=RAIZ)
-                    subprocess.run(['git', 'commit', '-q', '-m', f'{orden} (autopiloto)'], cwd=RAIZ)
-                subprocess.run(['git', 'push', '-q'], cwd=RAIZ, capture_output=True)
+                guardar(orden)
                 log(f'  ✓ {orden}: {detalle.splitlines()[0] if detalle else "ok"}')
                 break
             if intento == 2:
