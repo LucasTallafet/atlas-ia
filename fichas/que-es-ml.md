@@ -33,7 +33,7 @@ No conviene, en cambio, cuando la relación ya se conoce y se puede describir co
 
 Tres rasgos distinguen al aprendizaje automático de la programación tradicional:
 
-- **Generalización**: aplicar lo aprendido con los datos de entrenamiento a datos nuevos que el modelo nunca vio. Un modelo que solo memoriza los ejemplos de entrenamiento, sin captar el patrón subyacente, no ha generalizado.
+- **[[generalizacion|Generalización]]**: aplicar lo aprendido con los datos de entrenamiento a datos nuevos que el modelo nunca vio.
 - **Automatización**: ajustar reglas y comportamientos a partir de los datos, sin que un programador tenga que codificar cada caso a mano.
 - **Adaptabilidad**: seguir mejorando cuando los datos o el entorno cambian, sin necesidad de reconstruir el sistema desde cero.
 
@@ -116,4 +116,3 @@ print(f"Aprendido de datos: {pendiente * nuevo + intercepto:.2f}")
 ## Glosario
 
 - **Aprendizaje automático (ML)**: rama de la IA en la que un sistema mejora su rendimiento en una tarea a partir de datos de experiencia, sin programación explícita para cada caso.
-- **Generalización**: capacidad de un modelo de aplicar lo aprendido en los datos de entrenamiento a datos nuevos que no ha visto antes.
