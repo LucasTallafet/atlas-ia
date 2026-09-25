@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-83/138 fichas válidas · generado por tools/build.py
+87/138 fichas válidas · generado por tools/build.py
 
 | Lote | Bloque | Fichas | Hechas |
 |---|---|---|---|
@@ -20,7 +20,7 @@
 | L14 | B4 | del-ml-al-dl perceptron mlp funciones-activacion backpropagation optimizadores entrenamiento-dl | 7/7 |
 | L15 | B4 | keras-tensorflow flujo-dl-por-dato | 2/2 |
 | L16 | B4 | cnn cnn-arquitecturas rnn | 3/3 |
-| L17 | B4 | `lstm-gru` `autoencoders` `gans` `transfer-learning` | 0/4 |
+| L17 | B4 | lstm-gru autoencoders gans transfer-learning | 4/4 |
 | L18 | B5 | `rl-fundamentos` `mdp` `politica-valor-bellman` `taxonomia-rl` | 0/4 |
 | L19 | B5 | `programacion-dinamica` `monte-carlo-rl` `td-learning` | 0/3 |
 | L20 | B5 | `sarsa-qlearning` `policy-gradient` `actor-critico` `rl-aplicaciones` | 0/4 |
