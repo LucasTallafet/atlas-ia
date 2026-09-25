@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-102/138 fichas válidas · generado por tools/build.py
+101/138 fichas válidas · generado por tools/build.py
 
 | Lote | Bloque | Fichas | Hechas |
 |---|---|---|---|
@@ -13,7 +13,7 @@
 | L07 | B2 | componentes-ml ciclo-proyecto-ml funciones-perdida descenso-gradiente generalizacion validacion | 6/6 |
 | L08 | B2 | regularizacion metricas-regresion metricas-clasificacion hiperparametros | 4/4 |
 | L09 | B3 | tipos-datos eda preprocesamiento outliers valores-ausentes multicolinealidad escalado | 7/7 |
-| L10 | B3 | codificacion-categoricas seleccion-caracteristicas reduccion-dimensionalidad desbalanceo series-temporales supervisado | 6/6 |
+| L10 | B3 | codificacion-categoricas seleccion-caracteristicas `reduccion-dimensionalidad` desbalanceo series-temporales supervisado | 5/6 |
 | L11 | B3 | regresion-lineal regresion-logistica knn naive-bayes svm | 5/5 |
 | L12 | B3 | arboles-decision bagging-random-forest boosting clustering kmeans | 5/5 |
 | L13 | B3 | clustering-jerarquico dbscan gmm evaluacion-clustering | 4/4 |
@@ -23,10 +23,10 @@
 | L17 | B4 | lstm-gru autoencoders gans transfer-learning | 4/4 |
 | L18 | B5 | rl-fundamentos mdp politica-valor-bellman taxonomia-rl | 4/4 |
 | L19 | B5 | programacion-dinamica monte-carlo-rl td-learning | 3/3 |
-| L20 | B5 | sarsa-qlearning policy-gradient actor-critico rl-aplicaciones | 4/4 |
+| L20 | B5 | `sarsa-qlearning` policy-gradient actor-critico rl-aplicaciones | 3/4 |
 | L21 | B6 | nlp-intro limpieza-texto tokenizacion | 3/3 |
 | L22 | B6 | bow-tfidf | 1/1 |
-| L23 | B6 | `word-embeddings` | 0/1 |
+| L23 | B6 | word-embeddings | 1/1 |
 | L24 | B6 | `modelos-lenguaje` `embeddings-contextuales` `atencion` `transformer` `bert-encoders` `gpt-t5-generativos` | 0/6 |
 | L25 | B6 | `fine-tuning` `dl-para-nlp` `huggingface-practico` `llms` | 0/4 |
 | L26 | B6 | `prompting` `evaluacion-llm` `rag` `rlhf` `llm-aplicaciones` | 0/5 |
