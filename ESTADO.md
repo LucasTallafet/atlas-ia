@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-101/138 fichas válidas · generado por tools/build.py
+102/138 fichas válidas · generado por tools/build.py
 
 | Lote | Bloque | Fichas | Hechas |
 |---|---|---|---|
@@ -25,7 +25,7 @@
 | L19 | B5 | programacion-dinamica monte-carlo-rl td-learning | 3/3 |
 | L20 | B5 | sarsa-qlearning policy-gradient actor-critico rl-aplicaciones | 4/4 |
 | L21 | B6 | nlp-intro limpieza-texto tokenizacion | 3/3 |
-| L22 | B6 | `bow-tfidf` | 0/1 |
+| L22 | B6 | bow-tfidf | 1/1 |
 | L23 | B6 | `word-embeddings` | 0/1 |
 | L24 | B6 | `modelos-lenguaje` `embeddings-contextuales` `atencion` `transformer` `bert-encoders` `gpt-t5-generativos` | 0/6 |
 | L25 | B6 | `fine-tuning` `dl-para-nlp` `huggingface-practico` `llms` | 0/4 |
