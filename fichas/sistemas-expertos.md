@@ -50,7 +50,7 @@ El conocimiento proviene de **expertos humanos** (entrevistas, talleres, para ca
 
 ### El motor de inferencia: cómo razona
 
-El motor de inferencia aplica las reglas de la base de conocimiento a los hechos disponibles para producir conclusiones. Usa dos estrategias que se diferencian en el punto de partida. El **encadenamiento hacia adelante** (*forward chaining*) arranca de los hechos y va aplicando reglas de forma sucesiva hasta generar conclusiones: es útil para explorar todas las posibilidades a partir de un estado inicial, como en diagnóstico o monitoreo continuo. El **encadenamiento hacia atrás** (*backward chaining*) arranca de una hipótesis y retrocede buscando qué hechos y reglas la sustentarían, descomponiéndola en subobjetivos si es necesario: es más adecuado para verificar un resultado concreto, como en sistemas legales.
+El motor de inferencia aplica las reglas de la base de conocimiento a los hechos disponibles para producir conclusiones. Usa dos estrategias que se diferencian en el punto de partida: el **encadenamiento hacia adelante** (*forward chaining*) arranca de los hechos, y el **encadenamiento hacia atrás** (*backward chaining*) arranca de una hipótesis y retrocede hasta los hechos que la sustentan. Ver [[motores-inferencia]] para cómo funciona cada estrategia y cuándo conviene cada una.
 
 Cuando varias reglas podrían aplicarse a la vez, el motor necesita una **agenda de reglas** que las priorice y un mecanismo de **control de conflictos** que decida cuál ejecutar primero (por especificidad, por orden de llegada o por un peso asignado). En dominios donde los datos son incompletos o ambiguos, el motor incorpora además un **gestor de certeza**, que calcula el grado de confianza de una conclusión con probabilidades o factores de certeza en vez de una respuesta binaria; esto distingue el **razonamiento determinista** (conclusiones absolutas) del **razonamiento con incertidumbre** (grados de confianza). El diseño detallado de estas estrategias de búsqueda y control se desarrolla en [[motores-inferencia]].
 
@@ -124,7 +124,6 @@ for producto, stock in inventario.items():
 ## Errores típicos
 
 - **Error**: creer que un sistema experto "aprende" de los datos como una red neuronal → **Correcto**: en su forma clásica solo aplica reglas fijas escritas por ingenieros del conocimiento; aprender de datos requiere integrarlo con machine learning.
-- **Error**: pensar que encadenamiento hacia adelante y hacia atrás son intercambiables → **Correcto**: hacia adelante explora todas las conclusiones posibles desde los hechos; hacia atrás verifica una hipótesis concreta retrocediendo hasta las pruebas necesarias.
 - **Error**: confundir la base de conocimiento con el motor de inferencia → **Correcto**: la base almacena qué se sabe (hechos y reglas); el motor decide cómo aplicarlo para llegar a conclusiones.
 - **Error**: suponer que añadir más reglas siempre mejora el sistema → **Correcto**: la escalabilidad se degrada por el cuello de botella de adquisición de conocimiento y por el aumento de conflictos entre reglas.
 
