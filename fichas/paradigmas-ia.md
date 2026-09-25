@@ -15,7 +15,7 @@ Imagina que quieres enseñar a alguien a identificar setas venenosas. Puedes dar
 
 ### IA simbólica: el conocimiento como reglas explícitas
 
-Parte de la **hipótesis del sistema físico de símbolos** de Newell y Simon: cualquier entidad capaz de manipular símbolos con reglas formales puede exhibir comportamiento inteligente. El conocimiento se representa de forma explícita (hechos, reglas, ontologías) y un **motor de inferencia** deriva conclusiones nuevas a partir de él, guiado por **búsqueda heurística** para no perderse en la explosión combinatoria de posibilidades. Su fuerza es la **transparencia**: cada decisión se puede rastrear hasta la regla que la produjo. Su debilidad es la rigidez: no aprende de los datos, así que le cuesta adaptarse a entornos ambiguos o cambiantes.
+Parte de la **hipótesis del sistema físico de símbolos** de Newell y Simon: cualquier entidad capaz de manipular símbolos con reglas formales puede exhibir comportamiento inteligente. El conocimiento se representa de forma explícita (hechos, reglas, ontologías) y un [[motores-inferencia|motor de inferencia]] deriva conclusiones nuevas a partir de él, guiado por **búsqueda heurística** para no perderse en la explosión combinatoria de posibilidades. Su fuerza es la **transparencia**: cada decisión se puede rastrear hasta la regla que la produjo. Su debilidad es la rigidez: no aprende de los datos, así que le cuesta adaptarse a entornos ambiguos o cambiantes.
 
 ### IA conexionista: el conocimiento como pesos ajustados
 
@@ -102,7 +102,6 @@ aristas: [["ia", "simbolico"], ["ia", "conexionista"], ["ia", "evolutivo"], ["ia
 ## Glosario
 
 - **Paradigma de IA**: enfoque general sobre cómo lograr comportamiento inteligente en una máquina (simbólico, conexionista, evolutivo, probabilístico).
-- **Motor de inferencia**: mecanismo que aplica reglas de deducción sobre conocimiento representado para obtener conclusiones nuevas.
 - **Búsqueda heurística**: estrategia que guía la exploración de un espacio de soluciones hacia las opciones más prometedoras, sin garantizar el óptimo.
 - **Función de aptitud (*fitness function*)**: criterio que mide qué tan buena es una solución candidata dentro de un algoritmo evolutivo.
 - **Modelo gráfico probabilístico**: representación de las dependencias entre variables (como una red bayesiana) usada para razonar bajo incertidumbre.
