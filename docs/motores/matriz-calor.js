@@ -44,7 +44,7 @@
         const d = celda(i, j);
         const x0 = med.anchoEtiq + j * med.cellW, y0 = med.altoCab + i * med.cellH;
         const rect = api.el('rect', { x: x0 + 1.5, y: y0 + 1.5, width: med.cellW - 3, height: med.cellH - 3, rx: 4, fill: d.fill, stroke: d.contorno || c.linea, 'stroke-width': d.grosor || 1 }, g);
-        if (d.texto) api.el('text', { x: x0 + med.cellW / 2, y: y0 + med.cellH / 2 + 4, 'text-anchor': 'middle', 'font-size': 11.5, 'font-weight': d.negrita ? 700 : 500, fill: d.colorTexto || c.texto, text: d.texto }, g);
+        if (d.texto) api.el('text', { x: x0 + med.cellW / 2, y: y0 + med.cellH / 2 + 4, 'text-anchor': 'middle', 'font-size': 11.5, 'font-weight': d.negrita ? 700 : 500, fill: d.colorTexto || c.texto, text: d.texto, 'pointer-events': 'none' }, g);
         if (d.onClick) accesible(rect, d.onClick, d.aria);
         else if (d.aria) rect.setAttribute('aria-label', d.aria);
       });

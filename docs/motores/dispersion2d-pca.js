@@ -20,7 +20,8 @@
       const vx = l - syy, vy = sxy, m = Math.hypot(vx, vy) || 1;
       return [vx / m, vy / m];
     };
-    return { mx, my, l1, l2, v1: vec(l1), v2: vec(l2) };
+    const v1 = vec(l1);
+    return { mx, my, l1, l2, v1, v2: [-v1[1], v1[0]] };
   }
 
   D.modo('pca', {

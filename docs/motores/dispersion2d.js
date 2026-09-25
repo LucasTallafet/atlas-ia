@@ -351,7 +351,7 @@
   MODOS.kmeans = {
     controles: [{ nombre: 'k', min: 1, max: 8, paso: 1, valor: 3, etiqueta: 'número de clústeres k' }],
     iniciar(ctx) {
-      ctx.estado = { metodo: 'aleatoria', semilla: 1 };
+      Object.assign(ctx.estado, { metodo: 'aleatoria', semilla: 1 });
       if (ctx.K.k === undefined) ctx.K.k = 3;
       kmReiniciar(ctx);
     },
@@ -362,8 +362,10 @@
     },
     botones(ctx) {
       const H = ctx.H, E = ctx.estado;
+      if (E.metodo === undefined) E.metodo = 'aleatoria';
+      if (E.semilla === undefined) E.semilla = 1;
       const grupo = H('div', { class: 'motor-selector', role: 'group', 'aria-label': 'Inicialización de los centroides' });
-      const marcar = () => grupo.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === E.metodo)));
+      const marcar = () => grupo.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m !== undefined && b.dataset.m === E.metodo)));
       ['aleatoria', 'k-means++'].forEach(m => {
         const b = ctx.api.boton('Inicio: ' + m, () => { E.metodo = m; marcar(); kmReiniciar(ctx); ctx.redibujar(); });
         b.dataset.m = m;

@@ -150,7 +150,7 @@
     const rect = api.el('rect', { x: cx - w / 2, y: cy - h / 2, width: w, height: h, rx: 8, fill: opts.fill || c.superficie, stroke: opts.stroke || c.linea, 'stroke-width': opts.grosor || 1.3 }, g);
     const n = lineas.length;
     lineas.forEach((linea, i) => {
-      api.el('text', { x: cx, y: cy - (n - 1) * 7 + i * 14 + 4, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': opts.negrita ? 700 : 500, fill: opts.colorTexto || c.texto, text: linea }, g);
+      api.el('text', { x: cx, y: cy - (n - 1) * 7 + i * 14 + 4, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': opts.negrita ? 700 : 500, fill: opts.colorTexto || c.texto, text: linea, 'pointer-events': 'none' }, g);
     });
     return rect;
   }
@@ -367,9 +367,9 @@
         const borde = obs ? (evidencia[n.id] === 1 ? c.acento : c.mal) : c.linea;
         const rect = dibujarCaja(api, g, c, q.x, q.y, q.w, q.h, q.lineas, { stroke: borde, grosor: obs ? 2.6 : 1.3 });
         const bw = q.w - 14, bx = q.x - bw / 2, by = q.y + q.h / 2 - 12;
-        api.el('rect', { x: bx, y: by, width: bw, height: 7, rx: 3, fill: c.rejilla }, g);
-        api.el('rect', { x: bx, y: by, width: bw * Math.max(0, Math.min(1, p1)), height: 7, rx: 3, fill: obs ? borde : c.acento }, g);
-        api.el('text', { x: q.x, y: by - 4, 'text-anchor': 'middle', 'font-size': 10, fill: c.suave, text: obs ? (vals[evidencia[n.id]] + ' (fijado)') : ('P(' + vals[1] + ') = ' + num(p1, 2)) }, g);
+        api.el('rect', { x: bx, y: by, width: bw, height: 7, rx: 3, fill: c.rejilla, 'pointer-events': 'none' }, g);
+        api.el('rect', { x: bx, y: by, width: bw * Math.max(0, Math.min(1, p1)), height: 7, rx: 3, fill: obs ? borde : c.acento, 'pointer-events': 'none' }, g);
+        api.el('text', { x: q.x, y: by - 4, 'text-anchor': 'middle', 'font-size': 10, fill: c.suave, text: obs ? (vals[evidencia[n.id]] + ' (fijado)') : ('P(' + vals[1] + ') = ' + num(p1, 2)), 'pointer-events': 'none' }, g);
         rect.setAttribute('aria-label', n.etiqueta + ': ' + (obs ? 'fijado a ' + vals[evidencia[n.id]] : 'probabilidad ' + num(p1, 2)) + '. Pulsa para cambiar la observación.');
         accesible(rect, () => ciclar(n.id));
       });

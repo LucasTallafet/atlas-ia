@@ -29,30 +29,18 @@ Mientras el histograma describe una única variable, el **diagrama de dispersió
 
 ### El coeficiente de correlación de Pearson
 
-Para cuantificar la fuerza de una relación lineal vista en un diagrama de dispersión se usa el [[correlacion|coeficiente de correlación de Pearson]] ($\rho$), que va de $-1$ (correlación negativa perfecta) a $1$ (positiva perfecta), con $0$ indicando ausencia de correlación lineal. El diagrama de dispersión da una idea visual del signo y la magnitud de $\rho$ antes incluso de calcularlo.
+La forma de la nube da una idea visual del signo y la fuerza de una relación lineal; para expresarla con un número se usa el [[correlacion|coeficiente de correlación de Pearson]].
 
 ## Formalización
 
-$$
-\rho_{X,Y} = \frac{\sum_{i=1}^n (x_i-\bar x)(y_i-\bar y)}{\sqrt{\sum_{i=1}^n (x_i-\bar x)^2}\sqrt{\sum_{i=1}^n (y_i-\bar y)^2}}
-$$
+Regla de Tukey para los bigotes del boxplot: el bigote superior llega hasta $Q_3+1{,}5\cdot\mathrm{IQR}$ como máximo, y el inferior hasta $Q_1-1{,}5\cdot\mathrm{IQR}$ como mínimo; cualquier valor fuera de ese rango se marca como atípico.
 
 donde:
 
-- $x_i, y_i$ son los valores observados de las variables $X$ e $Y$ para la observación $i$.
-- $\bar x, \bar y$ son las medias de $X$ e $Y$.
-- $n$ es el número de observaciones.
-- $\rho_{X,Y}$ toma valores entre $-1$ y $1$; su signo indica el sentido de la relación lineal y su magnitud, cuán ajustados están los puntos a una recta.
+- $Q_1, Q_3$ son el primer y el tercer cuartil (ver [[estadistica-descriptiva]]).
+- $\mathrm{IQR} = Q_3 - Q_1$ es el rango intercuartílico.
 
-Regla de Tukey para los bigotes del boxplot: el bigote superior llega hasta $Q_3+1{,}5\cdot\mathrm{IQR}$ como máximo, y el inferior hasta $Q_1-1{,}5\cdot\mathrm{IQR}$ como mínimo; cualquier valor fuera de ese rango se marca como atípico.
-
-**Ejemplo numérico:** con los pares $(x,y)$: $(1,2)$, $(2,4)$, $(3,5)$, $(4,8)$, las medias son $\bar x=2{,}5$ y $\bar y=4{,}75$. Aplicando la fórmula se obtiene
-
-$$
-\rho \approx 0{,}981
-$$
-
-un valor muy cercano a 1, coherente con que los puntos casi forman una línea ascendente.
+**Ejemplo numérico:** con los diez valores del interactivo de arriba ($2,3,4,6,7,7,9,13,15,21$), $Q_1=4{,}5$ y $Q_3=12$, así que $\mathrm{IQR}=7{,}5$. Los bigotes llegan hasta $4{,}5-1{,}5\cdot7{,}5=-6{,}75$ y $12+1{,}5\cdot7{,}5=23{,}25$: como ningún valor cae fuera de ese rango, este conjunto no tiene atípicos.
 
 ## Interactivo
 
@@ -70,15 +58,13 @@ unidad: "visitas/día"
 ## En código
 
 ```python
-from math import sqrt
+import numpy as np
 
-xs = [1, 2, 3, 4]
-ys = [2, 4, 5, 8]
-mx, my = sum(xs) / len(xs), sum(ys) / len(ys)
-
-num = sum((x - mx) * (y - my) for x, y in zip(xs, ys))
-den = sqrt(sum((x - mx)**2 for x in xs)) * sqrt(sum((y - my)**2 for y in ys))
-print(round(num / den, 3))  # 0.981
+datos = [4, 7, 7, 9, 21, 15, 13, 6, 3, 2]
+q1, q3 = np.percentile(datos, [25, 75])
+iqr = q3 - q1
+print(q1, q3, iqr)  # 4.5 12.0 7.5
+print(q1 - 1.5 * iqr, q3 + 1.5 * iqr)  # -6.75 23.25 (bigotes del boxplot)
 ```
 
 ## Errores típicos
@@ -94,7 +80,7 @@ print(round(num / den, 3))  # 0.981
 - **Histograma:** frecuencia de valores por intervalos; revela sesgo y multimodalidad.
 - **Boxplot:** caja ($Q_1$-$Q_3$), mediana y bigotes (regla de Tukey, $1{,}5\cdot\mathrm{IQR}$); detecta outliers de un vistazo.
 - **Diagrama de dispersión:** relación entre dos variables; revela correlación, no linealidad y clústeres.
-- **Fórmula clave:** el coeficiente de correlación de Pearson $\rho$, entre $-1$ y $1$, mide la fuerza de una relación lineal.
+- **Fórmula clave:** regla de Tukey para los bigotes del boxplot: $Q_1-1{,}5\cdot\mathrm{IQR}$ y $Q_3+1{,}5\cdot\mathrm{IQR}$; fuera de ese rango, atípico.
 - **Cuándo usarlos:** siempre antes de modelar, como primer diagnóstico de los datos.
 - **Trampa principal:** un $\rho$ cercano a 0 no descarta relaciones fuertes no lineales; hay que mirar también el gráfico.
 
@@ -116,11 +102,11 @@ Al dibujar un boxplot por categoría para una misma variable numérica, la separ
 - [ ] Distribución simétrica.
 > Por qué: el sesgo se nombra según hacia dónde se extiende la cola larga; si la cola apunta a valores altos (a la derecha), el sesgo es positivo, aunque la mayoría de los datos estén agrupados a la izquierda.
 
-### Un diagrama de dispersión entre dos variables muestra los puntos formando una parábola clara, y el coeficiente de Pearson calculado es $\rho \approx 0{,}05$. ¿Qué concluyes?
-- [ ] Que las variables no están relacionadas de ninguna forma.
-- [x] Que existe una relación fuerte pero no lineal, que Pearson no puede captar.
-- [ ] Que el cálculo de Pearson debe estar mal hecho.
-> Por qué: Pearson mide específicamente relaciones lineales; una parábola es una relación muy fuerte pero simétrica respecto a la línea recta, lo que puede producir un coeficiente cercano a 0 aunque las variables estén claramente vinculadas.
+### Un diagrama de dispersión entre dos variables muestra dos nubes de puntos compactas y claramente separadas, sin solaparse. ¿Qué sugiere esa forma?
+- [ ] Que las dos variables tienen una correlación lineal perfecta.
+- [x] Que los datos podrían tener una estructura de grupos (clústeres) que un algoritmo de agrupamiento no supervisado podría recoger.
+- [ ] Que uno de los dos grupos son valores atípicos que conviene eliminar.
+> Por qué: dos nubes compactas y separadas son la señal visual clásica de clústeres, no de correlación (cada nube puede tener internamente cualquier forma); tampoco son errores que eliminar, sino información real sobre cómo se agrupan los datos.
 
 ### En un boxplot, la mediana está justo pegada a $Q_1$ y el bigote superior es mucho más largo que el inferior. ¿Qué forma tiene probablemente el histograma de esa misma variable?
 - [ ] Simétrica, con las dos colas iguales.
