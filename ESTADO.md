@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-113/138 fichas válidas · generado por tools/build.py
+118/138 fichas válidas · generado por tools/build.py
 
 | Lote | Bloque | Fichas | Hechas |
 |---|---|---|---|
@@ -29,7 +29,7 @@
 | L23 | B6 | word-embeddings | 1/1 |
 | L24 | B6 | modelos-lenguaje embeddings-contextuales atencion transformer bert-encoders gpt-t5-generativos | 6/6 |
 | L25 | B6 | fine-tuning dl-para-nlp huggingface-practico llms | 4/4 |
-| L26 | B6 | `prompting` `evaluacion-llm` `rag` `rlhf` `llm-aplicaciones` | 0/5 |
+| L26 | B6 | prompting evaluacion-llm rag rlhf llm-aplicaciones | 5/5 |
 | L27 | B7 | `representacion-conocimiento` `ontologias-grafos` `sistemas-expertos` | 0/3 |
 | L28 | B7 | `motores-inferencia` `logica-difusa` `redes-bayesianas` `teoria-posibilidad` | 0/4 |
 | L29 | B7 | `hibridos-tendencias-simbolico` | 0/1 |
