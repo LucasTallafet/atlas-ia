@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-58/138 fichas válidas · generado por tools/build.py
+63/138 fichas válidas · generado por tools/build.py
 
 | Lote | Bloque | Fichas | Hechas |
 |---|---|---|---|
@@ -14,7 +14,7 @@
 | L08 | B2 | regularizacion metricas-regresion metricas-clasificacion hiperparametros | 4/4 |
 | L09 | B3 | tipos-datos eda preprocesamiento outliers valores-ausentes multicolinealidad escalado | 7/7 |
 | L10 | B3 | codificacion-categoricas seleccion-caracteristicas reduccion-dimensionalidad desbalanceo series-temporales supervisado | 6/6 |
-| L11 | B3 | `regresion-lineal` `regresion-logistica` `knn` `naive-bayes` `svm` | 0/5 |
+| L11 | B3 | regresion-lineal regresion-logistica knn naive-bayes svm | 5/5 |
 | L12 | B3 | `arboles-decision` `bagging-random-forest` `boosting` `clustering` kmeans | 1/5 |
 | L13 | B3 | `clustering-jerarquico` `dbscan` `gmm` `evaluacion-clustering` | 0/4 |
 | L14 | B4 | `del-ml-al-dl` `perceptron` `mlp` `funciones-activacion` `backpropagation` `optimizadores` `entrenamiento-dl` | 0/7 |
