@@ -165,3 +165,4 @@ Tipos: DECISIÓN (ya aplicada), PROPUESTA (la decide el usuario), AVISO (aviso d
 2026-09-24 · Fase 1A · DECISIÓN · `api.expr` admite más funciones de las que lista widgets.json (tanh, fact, comb, erf, floor, sign…) para poder escribir la binomial, la normal acumulada, Huber o las pertenencias difusas. Están documentadas en ESPEC-WEB.md §API real.
 2026-09-24 · Fase 1A · DECISIÓN · El tema elegido a mano se guarda en `localStorage['atlas-ia-tema']` y la vista Completa/Esencial en `atlas-ia-modo`, fuera de `atlas-ia-v1`, para que al exportar el progreso solo salga el progreso.
 2026-09-23 · — · DECISIÓN · Inventario v1 (138 conceptos, 31 lotes) aprobado por el usuario. Reparto exclusivo del texto fuente: cada línea pertenece a la reclamación más específica.
+2026-09-25 · L26 · DECISIÓN · git push origin main confirmado: ef82915..6303f70 (commit 6303f70, 5 fichas nuevas).
