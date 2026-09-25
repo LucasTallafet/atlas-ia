@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-94/138 fichas válidas · generado por tools/build.py
+98/138 fichas válidas · generado por tools/build.py
 
 | Lote | Bloque | Fichas | Hechas |
 |---|---|---|---|
@@ -23,7 +23,7 @@
 | L17 | B4 | lstm-gru autoencoders gans transfer-learning | 4/4 |
 | L18 | B5 | rl-fundamentos mdp politica-valor-bellman taxonomia-rl | 4/4 |
 | L19 | B5 | programacion-dinamica monte-carlo-rl td-learning | 3/3 |
-| L20 | B5 | `sarsa-qlearning` `policy-gradient` `actor-critico` `rl-aplicaciones` | 0/4 |
+| L20 | B5 | sarsa-qlearning policy-gradient actor-critico rl-aplicaciones | 4/4 |
 | L21 | B6 | `nlp-intro` `limpieza-texto` `tokenizacion` | 0/3 |
 | L22 | B6 | `bow-tfidf` | 0/1 |
 | L23 | B6 | `word-embeddings` | 0/1 |
