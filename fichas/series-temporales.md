@@ -33,7 +33,7 @@ Cuando la serie tiene estacionalidad, conviene codificarla de forma explícita: 
 
 ### Evaluar un modelo de series temporales
 
-La evaluación también debe respetar el orden temporal. Además de los errores habituales de regresión (MSE, MAE), es común usar el **error porcentual absoluto medio (MAPE)**, que expresa el error en términos relativos y facilita comparar series con escalas distintas (ver Formalización). Conviene además comparar siempre contra un **modelo ingenuo** ($y(t) = y(t-1)$, predecir que mañana será igual que hoy) y evaluar con ventanas móviles (*rolling window*) en vez de una única partición fija, para comprobar si el error se mantiene estable a lo largo del tiempo.
+La evaluación también debe respetar el orden temporal. Además de los errores habituales de regresión (MSE, MAE), es común usar el [[metricas-regresion|MAPE]], que expresa el error en términos relativos y facilita comparar series con escalas distintas. Conviene además comparar siempre contra un **modelo ingenuo** ($y(t) = y(t-1)$, predecir que mañana será igual que hoy) y evaluar con ventanas móviles (*rolling window*) en vez de una única partición fija, para comprobar si el error se mantiene estable a lo largo del tiempo.
 
 Modelos como ARIMA o las redes neuronales recurrentes (que verás en [[rnn]]) están diseñados específicamente para aprovechar esta dependencia temporal, algo que una regresión lineal solo consigue si sus variables de entrada —lags y derivadas— se han construido explícitamente con las técnicas anteriores.
 
@@ -49,16 +49,6 @@ donde:
 - $w$ es el tamaño de la ventana: cuántos valores pasados se usan como entrada.
 - $X_i$ es el vector de entrada formado por $w$ valores consecutivos de la serie.
 - $y_i$ es el valor que sigue inmediatamente a esa ventana, la salida que el modelo debe predecir.
-
-$$
-\text{MAPE} = \frac{100\%}{n} \sum_{i=1}^n \left| \frac{y_i - \hat{y}_i}{y_i} \right|
-$$
-
-donde:
-
-- $y_i$ es el valor real de la observación $i$.
-- $\hat{y}_i$ es el valor predicho por el modelo.
-- $n$ es el número de observaciones evaluadas.
 
 **Ejemplo:** con la serie $\{100, 102, 105, 110, 120\}$ y una ventana $w=2$, el ventaneo genera los pares $X=(100,102) \to y=105$, $X=(102,105) \to y=110$ y $X=(105,110) \to y=120$. La diferenciación de esa misma serie da $\{2, 3, 5, 10\}$: el incremento entre cada día y el anterior.
 
@@ -106,7 +96,7 @@ print("Diferenciada:", np.diff(serie).tolist())  # [2, 3, 5, 10]
 
 - **Qué hace**: transforma una secuencia de valores en el tiempo en variables que un modelo de machine learning puede usar, respetando el orden temporal.
 - **Cómo funciona**: el ventaneo desliza una ventana de tamaño $w$ sobre la serie, usando esos $w$ valores como entrada y el siguiente como salida a predecir.
-- **Fórmula clave**: $X_i = (y_{t_i}, \dots, y_{t_i+w-1})$, $y_i = y_{t_i+w}$; el MAPE mide el error en términos relativos, útil para comparar series de distinta escala.
+- **Fórmula clave**: $X_i = (y_{t_i}, \dots, y_{t_i+w-1})$, $y_i = y_{t_i+w}$: los $w$ valores de la ventana son la entrada, y el valor siguiente es la salida a predecir.
 - **Cuándo usarlo**: siempre que los datos tengan una dependencia temporal explícita, como sensores, precios o mediciones periódicas.
 - **Decisiones que importan**: el tamaño de la ventana $w$, si conviene diferenciar (tendencia) o suavizar (ruido), y cómo codificar la estacionalidad.
 - **Trampa principal**: evaluar o dividir los datos ignorando el orden temporal, lo que puede dar una sensación de buen rendimiento que no se sostiene al predecir el futuro real.
@@ -147,5 +137,4 @@ También existen ventanas de longitud variable, más habituales en procesamiento
 
 - **Ventaneo (*sliding window*)**: técnica que recorre una serie temporal con una ventana de tamaño fijo para generar pares de entrada (los valores de la ventana) y salida (el valor siguiente).
 - **Estacionariedad**: propiedad de una serie cuyas características estadísticas (media, varianza) no cambian con el tiempo; la diferenciación ayuda a conseguirla.
-- **MAPE (error porcentual absoluto medio)**: métrica de error relativo, útil para comparar el rendimiento de un modelo en series con escalas distintas.
 - **Modelo ingenuo (*naive*)**: modelo de referencia que predice que el valor futuro será igual al último valor observado, usado como línea base para evaluar modelos más complejos.
