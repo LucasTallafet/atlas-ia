@@ -86,10 +86,11 @@
 
     const entrada = H('div', { class: 'motor-fila' });
     const grupo = H('div', { class: 'motor-selector', role: 'group', 'aria-label': 'Pasos de limpieza activos' });
+    const grafica = H('div', { class: 'motor-grafica' });
     const etapas = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(entrada, controles, etapas, lectura);
+    el.append(entrada, controles, grafica, etapas, lectura);
     entrada.append(textoEditable(api, E.texto, v => { E.texto = v; dibujar(); }));
     orden.forEach(nombre => {
       const b = api.boton(PASO[nombre].etiqueta, () => {
@@ -104,18 +105,34 @@
 
     function dibujar() {
       let actual = E.texto;
-      const filas = [['original', escapar(E.texto) || '<span style="opacity:.6">(vacío)</span>']];
+      const etapasTxt = [['original', E.texto]];
       orden.forEach(nombre => {
         if (!E.activos.has(nombre)) return;
         actual = aplicarPaso(nombre, actual, stop);
-        filas.push([PASO[nombre].etiqueta, escapar(actual) || '<span style="opacity:.6">(vacío)</span>']);
+        etapasTxt.push([PASO[nombre].etiqueta, actual]);
       });
+      const filas = etapasTxt.map(([et, txt]) => [et, escapar(txt) || '<span style="opacity:.6">(vacío)</span>']);
       etapas.innerHTML = `<div class="tabla-scroll"><table class="motor-tabla"><tbody>${
         filas.map(f => `<tr><th scope="row">${escapar(f[0])}</th><td style="text-align:left">${f[1]}</td></tr>`).join('')
       }</tbody></table></div>`;
 
-      const tokOrig = partirEspacios(E.texto).length;
-      const tokFinal = partirEspacios(actual).length;
+      grafica.innerHTML = '';
+      const c = api.colores();
+      const valoresBarra = etapasTxt.map(([, txt]) => partirEspacios(txt).length);
+      const Wb = Math.max(280, Math.min(el.clientWidth || 520, 640));
+      const filaAltoB = 26, Lb = 130, altoB = etapasTxt.length * filaAltoB + 8;
+      const sb = api.svg(Wb, altoB);
+      const Xb = api.escala(0, Math.max(1, Math.max(...valoresBarra)), Lb, Wb - 8);
+      etapasTxt.forEach(([et], i) => {
+        const y = i * filaAltoB + 4;
+        api.el('text', { x: Lb - 8, y: y + filaAltoB - 11, 'text-anchor': 'end', 'font-size': 11, fill: c.texto, text: et }, sb);
+        api.el('rect', { x: Lb, y, width: Math.max(1, Xb(valoresBarra[i]) - Lb), height: filaAltoB - 8, fill: c.acento }, sb);
+        api.el('text', { x: Xb(valoresBarra[i]) + 6, y: y + filaAltoB - 11, 'font-size': 11, fill: c.suave, text: String(valoresBarra[i]) }, sb);
+      });
+      grafica.append(sb);
+
+      const tokOrig = valoresBarra[0];
+      const tokFinal = valoresBarra[valoresBarra.length - 1];
       const activosTxt = orden.filter(n => E.activos.has(n)).map(n => PASO[n].etiqueta).join(' → ') || 'ninguno';
       lectura.innerHTML = `<p>El texto original tiene <strong>${tokOrig}</strong> palabras (separadas por espacios); tras los pasos activos quedan <strong>${tokFinal}</strong>.</p>` +
         `<p>Cada paso activo se aplica sobre el resultado del anterior, en este orden: ${activosTxt}.</p>`;
@@ -130,10 +147,11 @@
     const E = { texto: (p.textos && p.textos[0]) || 'El Dr. Pérez, de 42 años, dijo: "¡no me lo puedo creer!"' };
 
     const entrada = H('div', { class: 'motor-fila' });
+    const grafica = H('div', { class: 'motor-grafica' });
     const columnas = H('div', { class: 'motor-fila' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(entrada, columnas, lectura, controles);
+    el.append(entrada, grafica, columnas, lectura, controles);
     entrada.append(textoEditable(api, E.texto, v => { E.texto = v; dibujar(); }));
     controles.append(api.boton('Reiniciar', () => { Motores.desmontar(el); Motores.montar(el, 'texto', JSON.parse(JSON.stringify(p))); }));
 
@@ -151,6 +169,27 @@
       const porPalabras = tokenizarPalabras(E.texto);
       const vocabEspacios = new Set(porEspacios.map(w => w.toLowerCase()));
       const vocabPalabras = new Set(porPalabras);
+
+      grafica.innerHTML = '';
+      const c = api.colores();
+      const datos = [
+        ['tokens (espacios)', porEspacios.length],
+        ['vocabulario (espacios)', vocabEspacios.size],
+        ['tokens (palabras)', porPalabras.length],
+        ['vocabulario (palabras)', vocabPalabras.size],
+      ];
+      const Wb = Math.max(280, Math.min(el.clientWidth || 520, 640));
+      const filaAltoB = 26, Lb = 150, altoB = datos.length * filaAltoB + 8;
+      const sb = api.svg(Wb, altoB);
+      const Xb = api.escala(0, Math.max(1, Math.max(...datos.map(d => d[1]))), Lb, Wb - 8);
+      datos.forEach(([et, val], i) => {
+        const y = i * filaAltoB + 4;
+        api.el('text', { x: Lb - 8, y: y + filaAltoB - 11, 'text-anchor': 'end', 'font-size': 11, fill: c.texto, text: et }, sb);
+        api.el('rect', { x: Lb, y, width: Math.max(1, Xb(val) - Lb), height: filaAltoB - 8, fill: c.acento }, sb);
+        api.el('text', { x: Xb(val) + 6, y: y + filaAltoB - 11, 'font-size': 11, fill: c.suave, text: String(val) }, sb);
+      });
+      grafica.append(sb);
+
       columnas.innerHTML = '';
       columnas.append(
         columna(`Por espacios: ${porEspacios.length} tokens, vocabulario ${vocabEspacios.size}`, porEspacios),
