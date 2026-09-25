@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-126/138 fichas válidas · generado por tools/build.py
+134/138 fichas válidas · generado por tools/build.py
 
 | Lote | Bloque | Fichas | Hechas |
 |---|---|---|---|
@@ -33,5 +33,5 @@
 | L27 | B7 | representacion-conocimiento ontologias-grafos sistemas-expertos | 3/3 |
 | L28 | B7 | motores-inferencia logica-difusa redes-bayesianas teoria-posibilidad | 4/4 |
 | L29 | B7 | hibridos-tendencias-simbolico | 1/1 |
-| L30 | B8 | `despliegue` `monitorizacion-drift` `mlops` `optimizacion-inferencia` `desafios-tecnicos` `sesgos-equidad` `explicabilidad` `privacidad-responsabilidad` | 0/8 |
+| L30 | B8 | despliegue monitorizacion-drift mlops optimizacion-inferencia desafios-tecnicos sesgos-equidad explicabilidad privacidad-responsabilidad | 8/8 |
 | L31 | B8 | `regulacion` `impacto-social` `aplicaciones-sectoriales` `tendencias` | 0/4 |
