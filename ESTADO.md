@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-32/138 fichas válidas · generado por tools/build.py
+36/138 fichas válidas · generado por tools/build.py
 
 | Lote | Bloque | Fichas | Hechas |
 |---|---|---|---|
@@ -9,7 +9,7 @@
 | L03 | B1 | prob-condicional bayes variable-aleatoria dist-normal dist-binomial dist-poisson estadistica-descriptiva graficos-estadisticos | 8/8 |
 | L04 | B1 | muestreo-intervalos contraste-hipotesis correlacion | 3/3 |
 | L05 | B2 | que-es-ia historia-ia paradigmas-ia ia-debil-general | 4/4 |
-| L06 | B2 | `resolucion-problemas` `automatizacion-seleccion` `que-es-ml` `tipos-aprendizaje` | 0/4 |
+| L06 | B2 | resolucion-problemas automatizacion-seleccion que-es-ml tipos-aprendizaje | 4/4 |
 | L07 | B2 | `componentes-ml` `ciclo-proyecto-ml` `funciones-perdida` `descenso-gradiente` `generalizacion` `validacion` | 0/6 |
 | L08 | B2 | `regularizacion` `metricas-regresion` metricas-clasificacion `hiperparametros` | 1/4 |
 | L09 | B3 | `tipos-datos` `eda` `preprocesamiento` `outliers` `valores-ausentes` `multicolinealidad` `escalado` | 0/7 |
