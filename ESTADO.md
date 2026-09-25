@@ -1,6 +1,6 @@
 # Estado del proyecto
 
-71/138 fichas válidas · generado por tools/build.py
+78/138 fichas válidas · generado por tools/build.py
 
 | Lote | Bloque | Fichas | Hechas |
 |---|---|---|---|
@@ -17,7 +17,7 @@
 | L11 | B3 | regresion-lineal regresion-logistica knn naive-bayes svm | 5/5 |
 | L12 | B3 | arboles-decision bagging-random-forest boosting clustering kmeans | 5/5 |
 | L13 | B3 | clustering-jerarquico dbscan gmm evaluacion-clustering | 4/4 |
-| L14 | B4 | `del-ml-al-dl` `perceptron` `mlp` `funciones-activacion` `backpropagation` `optimizadores` `entrenamiento-dl` | 0/7 |
+| L14 | B4 | del-ml-al-dl perceptron mlp funciones-activacion backpropagation optimizadores entrenamiento-dl | 7/7 |
 | L15 | B4 | `keras-tensorflow` `flujo-dl-por-dato` | 0/2 |
 | L16 | B4 | `cnn` `cnn-arquitecturas` `rnn` | 0/3 |
 | L17 | B4 | `lstm-gru` `autoencoders` `gans` `transfer-learning` | 0/4 |
