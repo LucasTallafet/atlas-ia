@@ -316,6 +316,19 @@ def main():
               'glosario': dict(sorted(glosario.items()))}
     (DIR_DATOS / 'indice.js').write_text('window.INDICE=' + json.dumps(indice, ensure_ascii=False) + ';\n', encoding='utf-8')
 
+    # PWA: lista de archivos para uso sin conexión (docs/sw.js la importa)
+    import hashlib
+    docs = F.RAIZ / 'docs'
+    archivos = sorted(p for p in docs.rglob('*') if p.is_file() and p.name not in ('precache.js', 'sw.js')
+                      and 'capturas' not in p.parts and not p.name.startswith('.'))
+    h = hashlib.sha1()
+    for p in archivos:
+        h.update(p.relative_to(docs).as_posix().encode())
+        h.update(p.read_bytes())
+    lista = ['./'] + [p.relative_to(docs).as_posix() for p in archivos]
+    (docs / 'precache.js').write_text('self.ATLAS_VERSION=' + json.dumps(h.hexdigest()[:12]) + ';self.ATLAS_PRECACHE='
+                                      + json.dumps(lista, ensure_ascii=False) + ';\n', encoding='utf-8')
+
     # ESTADO.md
     filas = ['# Estado del proyecto', '', f'{len(datos)}/{len(BY)} fichas válidas · generado por tools/build.py', '',
              '| Lote | Bloque | Fichas | Hechas |', '|---|---|---|---|']
