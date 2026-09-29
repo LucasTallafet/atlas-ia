@@ -381,20 +381,25 @@
     }
     const sig = ids.find(id => !dominada(id) && C[id].prerequisitos.every(dominada)) || null;
     const maxN = Math.max(...capas.map(c => c.length));
-    const R = 9, M = vertical ? 20 : 50;
+    const R = 9, M = vertical ? 12 : 50;
     // En horizontal, las columnas se estrechan (hasta 112 px) para que la red quepa en el ancho disponible.
     const disponible = (opc && opc.ancho) || 1100;
-    const PASO_CAPA = vertical ? 96 : Math.max(112, Math.min(150, (disponible - 2 * M - 90) / Math.max(1, capas.length - 1)));
-    const PASO_NODO = vertical ? Math.max(72, Math.min(104, (disponible - M) / maxN)) : 74;
-    const anchoEtq = vertical ? (PASO_NODO < 95 ? 12 : 14) : PASO_CAPA < 135 ? 17 : 20;
-    const largo = maxN * PASO_NODO;
+    // En vertical (móvil) la red ocupa exactamente el ancho disponible: como mucho `porFila` nodos por fila
+    // (≥ 88 px cada uno para que las etiquetas de 12 px quepan); una capa más ancha se apila en varias filas.
+    const porFila = vertical ? Math.max(1, Math.min(maxN, Math.floor((disponible - M) / 88))) : maxN;
+    const filas = [];
+    capas.forEach((c, l) => { for (let i = 0; i < c.length; i += porFila) filas.push(c.slice(i, i + porFila)); });
+    const PASO_CAPA = vertical ? 92 : Math.max(112, Math.min(150, (disponible - 2 * M - 90) / Math.max(1, capas.length - 1)));
+    const PASO_NODO = vertical ? Math.min(130, (disponible - M) / porFila) : 74;
+    const anchoEtq = vertical ? (PASO_NODO < 100 ? 12 : 15) : PASO_CAPA < 135 ? 17 : 20;
+    const largo = (vertical ? porFila : maxN) * PASO_NODO;
     const xy = {};
-    capas.forEach((c, l) => c.forEach((id, i) => {
+    (vertical ? filas : capas).forEach((c, l) => c.forEach((id, i) => {
       const a = M + l * PASO_CAPA + (vertical ? 24 : 30), b = M / 2 + (largo - c.length * PASO_NODO) / 2 + (i + 0.5) * PASO_NODO;
       xy[id] = vertical ? { x: b, y: a } : { x: a, y: b };
     }));
     const W = vertical ? largo + M : M + (capas.length - 1) * PASO_CAPA + 90 + M;
-    const H = vertical ? M + (capas.length - 1) * PASO_CAPA + 70 + M / 2 : largo + M;
+    const H = vertical ? M + (filas.length - 1) * PASO_CAPA + 76 + M / 2 : largo + M;
     const svg = el('svg', { class: 'red-ruta-svg' + (vertical ? ' vertical' : ''), width: W, height: H, viewBox: `0 0 ${W} ${H}`, role: 'group', 'aria-label': `Diagrama de la ruta: ${ids.length} conceptos en ${capas.length} niveles` });
     const gA = el('g', {}, svg), gN = el('g', {}, svg);
     ids.forEach(id => reqs(id).forEach(p => {
@@ -408,6 +413,8 @@
       const { x, y } = xy[id], e = estado(id), c = C[id];
       const a = el('a', { href: '#' + id, class: `red-nodo const-nodo ${e}${id === sig ? ' siguiente' : ''}`, style: `--c: var(--${c.bloque})`, 'aria-label': `${c.nombre} · ${ESTADOS[e]}${id === sig ? ' · siguiente paso recomendado' : ''}` }, gN);
       el('title', { text: `${c.nombre} · ${ESTADOS[e]}` }, a);
+      // Zona táctil invisible (≥ 48 px) alrededor del punto y su etiqueta.
+      if (vertical) el('rect', { x: x - PASO_NODO / 2 + 2, y: y - R - 18, width: PASO_NODO - 4, height: 2 * R + 66, class: 'red-toque' }, a);
       if (id === sig) el('circle', { cx: x, cy: y, r: R + 6, class: 'red-sig' }, a);
       if (e === 'dominada') el('circle', { cx: x, cy: y, r: R + 4, class: 'const-halo' }, a);
       el('circle', { cx: x, cy: y, r: R, class: 'const-punto' }, a);
@@ -415,9 +422,8 @@
       if (id === sig) el('text', { x, y: y - R - 9, class: 'red-sig-etq', 'text-anchor': 'middle', text: 'Siguiente' }, a);
     });
     if (vertical) {
-      // En móvil encoge hasta un 75 % para caber; si aun así no cabe, se desplaza en horizontal.
+      // En móvil ocupa el ancho de su caja (W ya se calculó con ese ancho): nunca desborda.
       svg.style.width = '100%'; svg.style.height = 'auto';
-      svg.style.maxWidth = W + 'px'; svg.style.minWidth = Math.round(W * 0.75) + 'px';
     }
     const envoltorio = document.createElement('div');
     envoltorio.className = 'red-ruta';
