@@ -69,11 +69,28 @@
   function tamaño(el, capas, cajas, horizontal) {
     const lado = (id) => (horizontal ? cajas[id].w : cajas[id].h);
     const ladoCruzado = (id) => (horizontal ? cajas[id].h : cajas[id].w);
-    const maxLado = Math.max(...capas.flat().map(lado));
-    const gap = 22, gapCruzado = 14, margen = 18 + maxLado / 2;
-    const principal = capas.length === 1 ? margen * 2 + maxLado : margen * 2 + (capas.length - 1) * (maxLado + gap);
-    const cruzado = Math.max(...capas.map(ids => ids.reduce((s, id) => s + ladoCruzado(id) + gapCruzado, 0) + gapCruzado));
     const base = Math.max(320, Math.min(el.clientWidth || 640, 760));
+    const gap = 22, gapCruzado = 14;
+    let maxLado, margen, principal, cruzado;
+    function medir() {
+      maxLado = Math.max(...capas.flat().map(lado));
+      margen = 18 + maxLado / 2;
+      principal = capas.length === 1 ? margen * 2 + maxLado : margen * 2 + (capas.length - 1) * (maxLado + gap);
+      cruzado = Math.max(...capas.map(ids => ids.reduce((s, id) => s + ladoCruzado(id) + gapCruzado, 0) + gapCruzado));
+    }
+    medir();
+    // Si el SVG se va a escalar hacia abajo (contenedor estrecho), las cajas crecen para que sigan ≥ 44 px tras escalar.
+    const anchoIntrinseco = horizontal ? Math.max(base, principal) : Math.max(base, Math.min(cruzado, 760));
+    const escala = Math.min(1, (el.clientWidth || anchoIntrinseco) / anchoIntrinseco);
+    if (escala < 1 && window.matchMedia('(pointer: coarse), (max-width: 599.98px)').matches) {
+      let cambio = false;
+      capas.flat().forEach(id => {
+        const h = Math.max(cajas[id].h0 || cajas[id].h, Math.ceil(46 / escala));
+        cajas[id].h0 = cajas[id].h0 || cajas[id].h;
+        if (h !== cajas[id].h) { cajas[id].h = h; cambio = true; }
+      });
+      if (cambio) medir();
+    }
     if (horizontal) return { ancho: Math.max(base, principal), alto: Math.max(150, Math.min(cruzado, 420)), margen };
     return { ancho: Math.max(base, Math.min(cruzado, 760)), alto: Math.max(150, Math.min(principal, (el.clientWidth || 640) < 560 ? 720 : 480)), margen };
   }

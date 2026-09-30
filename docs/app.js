@@ -1087,7 +1087,9 @@
     if (!cuerpo || !cuerpo.clientWidth) return;
     cuerpo.querySelectorAll('mjx-container:not([display="true"])').forEach(m => {
       m.classList.remove('mjx-ancha');
-      if (m.getBoundingClientRect().width > cuerpo.clientWidth - 8) m.classList.add('mjx-ancha');
+      const caja = m.closest('li, td, th, blockquote') || cuerpo;   // en listas la columna útil es más estrecha
+      const limite = Math.min(cuerpo.clientWidth, caja.clientWidth || cuerpo.clientWidth);
+      if (m.getBoundingClientRect().width > limite - 8) m.classList.add('mjx-ancha');
     });
   }
 
