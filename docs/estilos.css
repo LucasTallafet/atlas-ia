@@ -575,6 +575,37 @@ html.hoja-abierta, html.hoja-abierta body { overflow: hidden; }
 .aviso-flotante span { flex: 1; }
 .aviso-accion { min-height: var(--tactil); border: 0; background: none; color: inherit; font-weight: 700; text-decoration: underline; cursor: pointer; }
 
+/* Aspecto de app nativa: sin resaltado azul al tocar (con estado :active propio) y sin selección accidental en controles */
+@media (pointer: coarse) {
+  html { -webkit-tap-highlight-color: transparent; }
+  button, .boton, .chip, summary, .barra-inferior a, .marca, .nav a, .hoja-cab, .hoja-asa, .aviso-flotante, .motor-cab, .slider label {
+    -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+  }
+  .boton:active, .chip:active, button:active, summary:active, .barra-inferior a:active, .marca:active, .aviso-accion:active { opacity: .7; }
+  .barra-inferior a:active svg { background: var(--acento-suave); }
+  .cabecera, .barra-inferior, .hoja-fondo { overscroll-behavior: contain; }
+}
+.hoja, .hoja-capa, .panel, .panel-detalle, .menu-area { overscroll-behavior-y: contain; }
+html.hoja-abierta, html.motor-ampliado-activo { overscroll-behavior-y: contain; }
+
+/* Horizontal en móvil (p. ej. 915 × 412): cabecera y barra inferior más bajas para dejar sitio al contenido */
+@media (orientation: landscape) and (max-height: 500px) {
+  :root { --alto-cab: 44px; --alto-barra: 52px; }
+  .barra-inferior svg { height: 26px; padding: 2px 16px; }
+  .barra-inferior a { gap: 0; font-size: .7rem; }
+  .hoja { max-height: 94vh; max-height: 94dvh; max-width: 36rem; }
+  .hoja-asa { height: 12px; }
+  .hoja-asa::before { margin-top: 4px; }
+  .hoja-cuerpo { padding-bottom: var(--esp-3); }
+  .aviso-flotante { bottom: calc(var(--alto-barra) + env(safe-area-inset-bottom) + var(--esp-2)); max-width: 28rem; }
+  main.con-pie-fijo { padding-bottom: 4.5rem; }
+  .motor.motor-ampliado { padding-top: calc(var(--esp-1) + env(safe-area-inset-top)); padding-bottom: calc(var(--esp-1) + env(safe-area-inset-bottom)); }
+  .motor-ampliado.con-zonas { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(14rem, 1fr); grid-template-rows: auto minmax(0, 1fr); column-gap: var(--esp-4); }
+  .motor-ampliado.con-zonas > .motor-cab { grid-column: 1 / -1; margin-bottom: var(--esp-1); }
+  .motor-ampliado.con-zonas > .motor-zona-controles { max-height: none; }
+  .motor-ampliado.con-zonas .slider { flex: 1 1 100%; max-width: none; }
+}
+
 @media (max-width: 1023.98px) {
   .solo-movil { display: flex; }
   .solo-ancho { display: none; }

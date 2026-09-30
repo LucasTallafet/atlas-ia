@@ -109,9 +109,19 @@
     const raiz = document.documentElement;
     if (t === 'claro' || t === 'oscuro') { raiz.dataset.tema = t; pref('atlas-ia-tema', t); } else { delete raiz.dataset.tema; pref('atlas-ia-tema', null); }
     raiz.dataset.temaEfectivo = raiz.dataset.tema || (mq.matches ? 'oscuro' : 'claro');
+    colorBarraSistema();
     document.dispatchEvent(new CustomEvent('tema'));
   }
+  // El color de la barra de estado sigue al tema elegido a mano; en automático manda el esquema del sistema (los <meta> con media).
+  function colorBarraSistema() {
+    const manual = document.documentElement.dataset.tema;
+    document.querySelectorAll('meta[name="theme-color"]').forEach(m => {
+      const oscuro = /dark/.test(m.media || '');
+      m.content = manual ? (manual === 'oscuro' ? '#111614' : '#F4F6F3') : (oscuro ? '#111614' : '#F4F6F3');
+    });
+  }
   document.documentElement.dataset.temaEfectivo = document.documentElement.dataset.tema || (mq.matches ? 'oscuro' : 'claro');
+  colorBarraSistema();
   if (mq.addEventListener) mq.addEventListener('change', () => { if (!document.documentElement.dataset.tema) aplicarTema('auto'); });
   document.getElementById('boton-tema').addEventListener('click', () => aplicarTema(document.documentElement.dataset.temaEfectivo === 'oscuro' ? 'claro' : 'oscuro'));
 
@@ -259,8 +269,18 @@
     const exportar = api.boton('Exportar progreso', () => {
       const t = JSON.stringify(prog);
       area.value = t;
+      if (UI && UI.esMovil()) { exportarProgreso(area); return; }
       copiar(t).then(ok => { msg.textContent = ok ? 'Copiado al portapapeles (también está en el cuadro).' : 'Cópialo desde el cuadro de texto.'; });
     });
+    const archivo = api.boton('Importar archivo', () => selectorArchivo((t) => {
+      msg.textContent = importarProgreso(t) ? 'Progreso importado.' : 'Ese archivo no es un progreso válido.';
+    }));
+    const bInstalar = botonInstalar();
+    const iphone = /iPhone|iPad|iPod/.test(navigator.userAgent) && !instalada();
+    const estadoApp = h('p', { class: 'suave', 'aria-live': 'polite', style: 'margin:0;font-size:.9rem' });
+    const pintarApp = () => { estadoApp.textContent = swListo ? 'Disponible sin conexión ✓' : ''; };
+    pintarApp();
+    if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.ready.then(() => { swListo = true; pintarApp(); });
     const importar = api.boton('Importar', () => {
       msg.textContent = importarProgreso(area.value) ? 'Progreso importado.' : 'Ese texto no es un progreso válido.';
     });
@@ -270,8 +290,12 @@
     return h('section', { class: 'tarjeta ajustes', style: 'margin-top:2rem', 'aria-labelledby': 'ajustes-t' },
       h('h2', { id: 'ajustes-t', style: 'margin:0', text: 'Ajustes' }),
       h('div', {}, h('p', { style: 'margin:0 0 .3rem;font-weight:600', text: 'Tema' }), grupo),
-      h('div', {}, h('p', { style: 'margin:0 0 .3rem;font-weight:600', text: 'Progreso' }), h('div', { class: 'fila-botones' }, exportar, importar, borrar)),
-      area, msg);
+      h('div', {}, h('p', { style: 'margin:0 0 .3rem;font-weight:600', text: 'Progreso' }), h('div', { class: 'fila-botones' }, exportar, archivo, importar, borrar)),
+      area, msg,
+      (bInstalar || iphone || swListo || ('serviceWorker' in navigator && location.protocol === 'https:'))
+        ? h('div', {}, h('p', { style: 'margin:0 0 .3rem;font-weight:600', text: 'App' }),
+            bInstalar, iphone ? h('p', { class: 'suave', style: 'margin:0;font-size:.9rem', text: 'Safari → Compartir → «Añadir a pantalla de inicio».' }) : null, estadoApp)
+        : null);
   }
   function importarProgreso(texto) {
     try {
@@ -307,8 +331,74 @@
     pintar();
     UI.hojaInferior([campo, lista], { titulo: 'Buscar', completa: true, foco: campo });
   }
+  // ───────────── App instalable (PWA): instalación, sin conexión y versión nueva (ESPEC-WEB §9) ─────────────
   let avisoInstalar = null;
-  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); avisoInstalar = e; });
+  const instalada = () => !!((window.matchMedia && matchMedia('(display-mode: standalone)').matches) || navigator.standalone);
+  window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); if (!instalada()) avisoInstalar = e; });
+  window.addEventListener('appinstalled', () => { avisoInstalar = null; if (window.UI) UI.aviso('Atlas de IA instalado'); });
+  function botonInstalar() {
+    if (!avisoInstalar || instalada()) return null;
+    return api.boton('Instalar app', () => {
+      const ev = avisoInstalar;
+      avisoInstalar = null;
+      ev.prompt();
+    });
+  }
+  let swListo = false;
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      swListo = !!reg.active;
+      navigator.serviceWorker.ready.then(() => { swListo = true; });
+      reg.addEventListener('updatefound', () => {
+        const nuevo = reg.installing;
+        if (!nuevo) return;
+        nuevo.addEventListener('statechange', () => {
+          if (nuevo.state === 'installed' && navigator.serviceWorker.controller) {
+            UI.aviso('Nueva versión disponible', { accion: 'Actualizar', alAccion: () => location.reload(), duracion: 20000 });
+          }
+        });
+      });
+    }).catch(() => {});
+  }
+  // Exportar el progreso: hoja de compartir de Android con el archivo si se puede; si no, descarga; y como último recurso, portapapeles.
+  function exportarProgreso(area) {
+    const texto = JSON.stringify(prog);
+    const nombre = `atlas-ia-progreso-${hoy()}.json`;
+    const descargar = () => {
+      try {
+        const url = URL.createObjectURL(new Blob([texto], { type: 'application/json' }));
+        const a = h('a', { href: url, download: nombre });
+        document.body.append(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        return true;
+      } catch (e) { return false; }
+    };
+    const respaldo = () => {
+      if (descargar()) { UI.aviso('Progreso descargado'); return; }
+      copiar(texto).then(ok => {
+        UI.aviso(ok ? 'Progreso copiado al portapapeles' : 'No se pudo copiar: cópialo del cuadro');
+        if (!ok && area) { area.hidden = false; area.value = texto; }
+      });
+    };
+    try {
+      const archivo = new File([texto], nombre, { type: 'application/json' });
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [archivo] })) {
+        navigator.share({ files: [archivo], title: 'Progreso del Atlas de IA' }).catch((e) => { if (!e || e.name !== 'AbortError') respaldo(); });
+        return;
+      }
+    } catch (e) { /* sin compartir: descarga */ }
+    respaldo();
+  }
+  function selectorArchivo(alLeer) {
+    const inp = h('input', { type: 'file', accept: 'application/json,.json', hidden: true });
+    inp.addEventListener('change', () => {
+      const f = inp.files && inp.files[0];
+      inp.remove();
+      if (f) f.text().then(alLeer, () => UI.aviso('No se pudo leer el archivo'));
+    });
+    document.body.append(inp);
+    inp.click();
+  }
   function abrirMenu() {
     const tema = UI.chips([['auto', 'Automático'], ['claro', 'Claro'], ['oscuro', 'Oscuro']].map(([valor, texto]) => ({ valor, texto })),
       { etiqueta: 'Tema', valor: pref('atlas-ia-tema') || 'auto', alCambiar: (v) => { aplicarTema(v); } });
@@ -316,23 +406,15 @@
     const bConfirmar = api.boton('Importar este progreso', () => {
       if (importarProgreso(area.value)) { UI.aviso('Progreso importado'); enrutar(); } else UI.aviso('Ese texto no es un progreso válido');
     }, { class: 'boton boton-principal', hidden: true });
-    const bExportar = api.boton('Exportar progreso', () => {
-      const t = JSON.stringify(prog);
-      copiar(t).then(ok => {
-        UI.aviso(ok ? 'Progreso copiado al portapapeles' : 'No se pudo copiar: cópialo del cuadro');
-        if (!ok) { area.hidden = false; area.value = t; }
-      });
-    });
-    const bImportar = api.boton('Importar progreso', () => { area.hidden = false; bConfirmar.hidden = false; area.value = ''; area.focus(); });
-    const bInstalar = avisoInstalar ? api.boton('Instalar app', () => {
-      const ev = avisoInstalar;
-      avisoInstalar = null;
-      ev.prompt();
-      if (ev.userChoice) ev.userChoice.then(r => { if (r && r.outcome === 'accepted') UI.aviso('Atlas de IA instalado'); });
-    }) : null;
+    const bExportar = api.boton('Exportar progreso', () => exportarProgreso(area));
+    const bArchivo = api.boton('Importar archivo', () => selectorArchivo((t) => {
+      if (importarProgreso(t)) { UI.cerrarHoja(); UI.aviso('Progreso importado'); enrutar(); } else UI.aviso('Ese archivo no es un progreso válido');
+    }));
+    const bImportar = api.boton('Pegar texto', () => { area.hidden = false; bConfirmar.hidden = false; area.value = ''; area.focus(); });
+    const bInstalar = botonInstalar();
     UI.hojaInferior([
       h('section', { class: 'menu-grupo' }, h('h3', { text: 'Tema' }), tema),
-      h('section', { class: 'menu-grupo' }, h('h3', { text: 'Progreso' }), h('div', { class: 'fila-botones' }, bExportar, bImportar), area, bConfirmar),
+      h('section', { class: 'menu-grupo' }, h('h3', { text: 'Progreso' }), h('div', { class: 'fila-botones' }, bExportar, bArchivo, bImportar), area, bConfirmar),
       bInstalar ? h('section', { class: 'menu-grupo' }, h('h3', { text: 'App' }), bInstalar) : null,
       h('section', { class: 'menu-grupo' }, h('h3', { text: 'Acerca de' }),
         h('p', {}, `Atlas de IA: ${I.conceptos.length} conceptos de inteligencia artificial, a partir de los apuntes de `, h('a', { href: 'https://github.com/sebamendoza-eusa', rel: 'noopener', target: '_blank' }, 'sebamendoza-eusa'), '. El progreso se guarda solo en este navegador: expórtalo para llevarlo a otro dispositivo.')),

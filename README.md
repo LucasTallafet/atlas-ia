@@ -26,7 +26,8 @@ El Atlas convierte unas 460.000 palabras de apuntes de un curso de especializaci
 
 ## Qué puedes hacer en la web
 
-- **Constelación.** Un mapa de fuerzas de los 138 conceptos agrupados por bloque. Al seleccionar un concepto se iluminan su cadena de requisitos, lo que desbloquea y sus conexiones. Incluye filtro por bloques, zoom y panel de detalle. También hay una vista alternativa por columnas.
+- **App Android instalable y sin conexión.** Desde Chrome puedes instalarla como app (icono, pantalla completa, atajos a Repaso, Rutas y Glosario); tras la primera visita funciona sin red y avisa cuando hay una versión nueva.
+- **Constelación** (solo escritorio; en móvil el mapa abre en «Por bloques»). Un mapa de fuerzas de los 138 conceptos agrupados por bloque. Al seleccionar un concepto se iluminan su cadena de requisitos, lo que desbloquea y sus conexiones. Incluye filtro por bloques, zoom y panel de detalle. También hay una vista alternativa por columnas.
 - **Rutas de estudio.** Diagramas de red por capas que llevan hasta un objetivo (por ejemplo, "de las matemáticas a las redes neuronales"), con el siguiente paso recomendado según tu progreso.
 - **Vista Completa / Esencial.** La ficha entera o su resumen práctico.
 - **20 motores interactivos**, escritos sin librerías: descenso de gradiente, K-Means paso a paso, umbral de clasificación con curva ROC, convolución, atención de un Transformer, Q-learning en una rejilla, redes bayesianas y muchos más.
