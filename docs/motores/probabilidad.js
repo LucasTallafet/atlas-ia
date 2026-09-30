@@ -3,6 +3,17 @@
 (function () {
   'use strict';
 
+  // Estructura común: gráfico (+ leyenda) arriba; lectura y controles debajo (§8b).
+  function armazon(el, api) {
+    const H = api.html, Z = api.zonas(el);
+    const grafica = H('div', { class: 'motor-grafica' }), leyenda = H('div', { class: 'motor-leyenda' });
+    const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' }), controles = H('div', { class: 'motor-controles' });
+    Z.grafico.append(grafica, leyenda);
+    Z.controles.append(lectura, controles);
+    return { grafica, leyenda, lectura, controles };
+  }
+  const reiniciar = (el, p, api) => api.boton('Reiniciar', () => { Motores.desmontar(el); Motores.montar(el, 'probabilidad', JSON.parse(JSON.stringify(p))); });
+
   // ───────────────────────── venn ─────────────────────────
   function venn(el, p, api) {
     const H = api.html, num = api.num;
@@ -31,10 +42,7 @@
       return (lo + hi) / 2;
     }
 
-    const grafica = H('div', { class: 'motor-grafica' });
-    const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
-    const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
+    const { grafica, lectura, controles } = armazon(el, api);
 
     let sInt;
     function ajustarInter() {
@@ -46,25 +54,28 @@
     const sA = api.slider({ etiqueta: `P(${nA})`, min: 0.05, max: 0.9, paso: 0.01, valor: E.pa, alCambiar: v2 => { E.pa = v2; ajustarInter(); dibujar(); } });
     const sB = api.slider({ etiqueta: `P(${nB})`, min: 0.05, max: 0.9, paso: 0.01, valor: E.pb, alCambiar: v2 => { E.pb = v2; ajustarInter(); dibujar(); } });
     sInt = api.slider({ etiqueta: `P(${nA}∩${nB})`, min: 0, max: Math.min(E.pa, E.pb), paso: 0.01, valor: E.pab, alCambiar: v2 => { E.pab = v2; dibujar(); } });
-    controles.append(sA, sB, sInt, api.boton('Reiniciar', () => { Motores.desmontar(el); Motores.montar(el, 'probabilidad', JSON.parse(JSON.stringify(p))); }));
+    controles.append(sA, sB, sInt, reiniciar(el, p, api));
 
     function dibujar() {
       const c = api.colores();
       const areaUnit = 9000;
       const r1 = Math.sqrt(areaUnit * E.pa / Math.PI), r2 = Math.sqrt(areaUnit * E.pb / Math.PI);
       const d = resolverD(r1, r2, areaUnit * E.pab);
-      const W = Math.max(280, Math.min(el.clientWidth || 480, 640));
-      const alto = Math.round(Math.max(r1, r2) * 2 + 100);
+      const W = api.medida(grafica, { maxAncho: 640 }).ancho;
+      const alto = Math.round(Math.max(r1, r2) * 2 + 110);
       grafica.innerHTML = ''; lectura.innerHTML = '';
       const s = api.svg(W, alto);
-      s.setAttribute('role', 'img');
+      s.setAttribute('role', 'group');
       grafica.append(s);
-      const cx = W / 2, cy = alto / 2 + 6, x1c = cx - d / 2, x2c = cx + d / 2;
-      api.el('circle', { cx: x1c, cy, r: r1, fill: c.series[0], 'fill-opacity': 0.35, stroke: c.series[0], 'stroke-width': 2 }, s);
-      api.el('circle', { cx: x2c, cy, r: r2, fill: c.series[1], 'fill-opacity': 0.35, stroke: c.series[1], 'stroke-width': 2 }, s);
-      api.el('text', { x: x1c - r1 * 0.55, y: cy - r1 - 8, 'text-anchor': 'middle', 'font-weight': 700, fill: c.series[0], text: nA }, s);
-      api.el('text', { x: x2c + r2 * 0.55, y: cy - r2 - 8, 'text-anchor': 'middle', 'font-weight': 700, fill: c.series[1], text: nB }, s);
-      if (E.pab > 0.001) api.el('text', { x: cx, y: cy + 4, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': 700, fill: c.texto, 'paint-order': 'stroke', stroke: c.superficie, 'stroke-width': 3, text: num(E.pab, 3) }, s);
+      const F = api.fuente(s, 13);
+      const cx = W / 2, cy = alto / 2 + 10, x1c = cx - d / 2, x2c = cx + d / 2;
+      const ca = api.el('circle', { cx: x1c, cy, r: r1, fill: c.series[0], 'fill-opacity': 0.35, stroke: c.series[0], 'stroke-width': 2 }, s);
+      const cb = api.el('circle', { cx: x2c, cy, r: r2, fill: c.series[1], 'fill-opacity': 0.35, stroke: c.series[1], 'stroke-width': 2 }, s);
+      api.inspeccionable(ca, `P(${nA}) = ${num(E.pa, 3)}`);
+      api.inspeccionable(cb, `P(${nB}) = ${num(E.pb, 3)}`);
+      api.el('text', { x: x1c - r1 * 0.55, y: cy - r1 - 8, 'text-anchor': 'middle', 'font-size': F, 'font-weight': 700, fill: c.series[0], text: nA }, s);
+      api.el('text', { x: x2c + r2 * 0.55, y: cy - r2 - 8, 'text-anchor': 'middle', 'font-size': F, 'font-weight': 700, fill: c.series[1], text: nB }, s);
+      if (E.pab > 0.001) api.el('text', { x: cx, y: cy + 4, 'text-anchor': 'middle', 'font-size': api.fuente(s, 13), 'font-weight': 700, fill: c.texto, 'paint-order': 'stroke', stroke: c.superficie, 'stroke-width': 3, 'pointer-events': 'none', text: num(E.pab, 3) }, s);
 
       const lineas = [];
       lineas.push(`P(${nA}) = ${num(E.pa, 3)} · P(${nB}) = ${num(E.pb, 3)} · P(${nA}∩${nB}) = ${num(E.pab, 3)}`);
@@ -87,82 +98,93 @@
     const v = p.valores || {};
     const filas = v.filas || [], columnas = v.columnas || [], conteos = v.conteos || [];
     if (!filas.length || !columnas.length || !conteos.length) throw new Error('El modo tabla necesita valores.filas, valores.columnas y valores.conteos');
-    const N = conteos.reduce((a, fila) => a + fila.reduce((x, y) => x + y, 0), 0);
-    const totF = filas.map((_, i) => conteos[i].reduce((a, b) => a + b, 0));
-    const totC = columnas.map((_, j) => conteos.reduce((a, fila) => a + fila[j], 0));
+    // Los recuentos son editables (teclado numérico); el resto se recalcula al confirmar.
+    const cont = conteos.map(fila => fila.slice());
     const E = { tipo: null, i: -1 };
 
-    const grafica = H('div', { class: 'motor-grafica' });
+    const { grafica, leyenda, lectura, controles } = armazon(el, api);
     const barras = H('div', { class: 'motor-grafica' });
-    const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
-    const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, barras, lectura, controles);
+    grafica.after(barras);
 
-    const grupo = H('div', { class: 'motor-selector', role: 'group', 'aria-label': 'Condicionar por' });
-    const botTodas = api.boton('Sin condición', () => { E.tipo = null; marcar(); dibujar(); });
-    const botsFila = filas.map((f, i) => api.boton('fila: ' + f, () => { E.tipo = 'fila'; E.i = i; marcar(); dibujar(); }));
-    const botsCol = columnas.map((cn, j) => api.boton('columna: ' + cn, () => { E.tipo = 'columna'; E.i = j; marcar(); dibujar(); }));
-    grupo.append(botTodas, ...botsFila, ...botsCol);
-    controles.append(grupo);
-    function marcar() {
-      grupo.querySelectorAll('button').forEach(b => b.removeAttribute('aria-pressed'));
-      (E.tipo === null ? botTodas : (E.tipo === 'fila' ? botsFila[E.i] : botsCol[E.i])).setAttribute('aria-pressed', 'true');
-    }
-    marcar();
+    const claveDe = () => (E.tipo === null ? 'n' : (E.tipo === 'fila' ? 'f' : 'c') + E.i);
+    const grupo = api.segmentado(
+      [{ valor: 'n', texto: 'Sin condición' }, ...filas.map((f, i) => ({ valor: 'f' + i, texto: 'fila: ' + f })), ...columnas.map((cn, j) => ({ valor: 'c' + j, texto: 'columna: ' + cn }))],
+      { valor: 'n', titulo: 'Condicionar por', etiqueta: 'Condicionar por', alCambiar: v => {
+        if (v === 'n') { E.tipo = null; E.i = -1; } else { E.tipo = v[0] === 'f' ? 'fila' : 'columna'; E.i = +v.slice(1); }
+        dibujar();
+      } });
+    controles.append(grupo, reiniciar(el, p, api));
 
     function dibujar() {
       const c = api.colores();
+      const N = cont.reduce((a, fila) => a + fila.reduce((x, y) => x + y, 0), 0) || 1;
+      const totF = filas.map((_, i) => cont[i].reduce((a, b) => a + b, 0));
+      const totC = columnas.map((_, j) => cont.reduce((a, fila) => a + fila[j], 0));
       const destacar = `background:color-mix(in srgb, ${c.acento} 18%, transparent)`;
       const filasHtml = filas.map((f, i) => {
         const celdas = columnas.map((cn, j) => {
-          const cnt = conteos[i][j];
+          const cnt = cont[i][j];
           const marcada = (E.tipo === 'fila' && E.i === i) || (E.tipo === 'columna' && E.i === j);
           let sub;
-          if (E.tipo === 'columna') sub = num(100 * cnt / totC[E.i], 1) + ' %';
-          else if (E.tipo === 'fila') sub = num(100 * cnt / totF[E.i], 1) + ' %';
+          if (E.tipo === 'columna') sub = num(100 * cnt / (totC[E.i] || 1), 1) + ' %';
+          else if (E.tipo === 'fila') sub = num(100 * cnt / (totF[E.i] || 1), 1) + ' %';
           else sub = num(100 * cnt / N, 1) + ' %';
-          return `<td${marcada ? ` style="${destacar}"` : ''}>${cnt}<br><span style="color:${c.suave};font-size:.78em">${sub}</span></td>`;
+          return `<td${marcada ? ` style="${destacar}"` : ''}><input class="prob-celda" type="text" inputmode="decimal" data-i="${i}" data-j="${j}" value="${cnt}" aria-label="Recuento: ${f}, ${cn}" style="width:4.5em;min-height:44px;font-size:16px;text-align:center"><br><span style="color:${c.suave};font-size:.95em">${sub}</span></td>`;
         }).join('');
         return `<tr><th scope="row"${E.tipo === 'fila' && E.i === i ? ` style="color:${c.acento}"` : ''}>${f}</th>${celdas}<td>${totF[i]}</td></tr>`;
       }).join('');
       const filaTotal = `<tr><th scope="row">Total</th>${columnas.map((cn, j) => `<td${E.tipo === 'columna' && E.i === j ? ` style="color:${c.acento}"` : ''}>${totC[j]}</td>`).join('')}<td>${N}</td></tr>`;
       grafica.innerHTML = `<div class="tabla-scroll"><table class="motor-tabla"><thead><tr><th></th>${columnas.map(cn => `<th scope="col">${cn}</th>`).join('')}<th>Total</th></tr></thead><tbody>${filasHtml}${filaTotal}</tbody></table></div>`;
+      grafica.querySelectorAll('.prob-celda').forEach(inp => {
+        const confirmar = () => {
+          const v = Math.max(0, Math.round(parseFloat(inp.value.replace(',', '.'))));
+          const i = +inp.dataset.i, j = +inp.dataset.j;
+          if (Number.isFinite(v) && v !== cont[i][j]) { cont[i][j] = v; dibujar(); } else inp.value = cont[i][j];
+        };
+        inp.addEventListener('change', confirmar);
+        inp.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); inp.blur(); } });
+        inp.addEventListener('focus', () => inp.select());
+      });
 
       let etiquetasBarra, valoresBarra;
       if (E.tipo === 'fila') {
         etiquetasBarra = columnas;
-        valoresBarra = columnas.map((_, j) => conteos[E.i][j] / totF[E.i]);
+        valoresBarra = columnas.map((_, j) => cont[E.i][j] / (totF[E.i] || 1));
       } else if (E.tipo === 'columna') {
         etiquetasBarra = filas;
-        valoresBarra = filas.map((_, i) => conteos[i][E.i] / totC[E.i]);
+        valoresBarra = filas.map((_, i) => cont[i][E.i] / (totC[E.i] || 1));
       } else {
         etiquetasBarra = [];
         valoresBarra = [];
-        filas.forEach((f, i) => columnas.forEach((cn, j) => { etiquetasBarra.push(f + ' ∩ ' + cn); valoresBarra.push(conteos[i][j] / N); }));
+        filas.forEach((f, i) => columnas.forEach((cn, j) => { etiquetasBarra.push(f + ' ∩ ' + cn); valoresBarra.push(cont[i][j] / N); }));
       }
       barras.innerHTML = '';
-      const Wb = Math.max(280, Math.min(el.clientWidth || 520, 640));
-      const filaAltoB = 26, Lb = 130, altoB = etiquetasBarra.length * filaAltoB + 8;
+      // Cada etiqueta va encima de su barra (a ancho completo): así no se recorta a 360 px.
+      const Wb = api.medida(barras, { maxAncho: 640 }).ancho;
+      const filaAltoB = 44, altoB = etiquetasBarra.length * filaAltoB + 4;
       const sb = api.svg(Wb, altoB);
-      const Xb = api.escala(0, Math.max(0.0001, Math.max(...valoresBarra)), Lb, Wb - 8);
-      etiquetasBarra.forEach((et, i) => {
-        const y = i * filaAltoB + 4;
-        api.el('text', { x: Lb - 8, y: y + filaAltoB - 11, 'text-anchor': 'end', 'font-size': 11, fill: c.texto, text: et }, sb);
-        api.el('rect', { x: Lb, y, width: Math.max(1, Xb(valoresBarra[i]) - Lb), height: filaAltoB - 8, fill: c.acento }, sb);
-        api.el('text', { x: Xb(valoresBarra[i]) + 6, y: y + filaAltoB - 11, 'font-size': 11, fill: c.suave, text: num(100 * valoresBarra[i], 1) + ' %' }, sb);
-      });
       barras.append(sb);
+      const Fb = api.fuente(sb, 13);
+      const Lb = 8, Xb = api.escala(0, Math.max(0.0001, Math.max(...valoresBarra)), Lb, Wb - 70);
+      etiquetasBarra.forEach((et, i) => {
+        const y = i * filaAltoB + 2;
+        api.el('text', { x: Lb, y: y + 14, 'font-size': Fb, fill: c.texto, text: et }, sb);
+        const barra = api.el('rect', { x: Lb, y: y + 20, width: Math.max(1, Xb(valoresBarra[i]) - Lb), height: 16, fill: c.acento }, sb);
+        api.inspeccionable(barra, `${et}: ${num(100 * valoresBarra[i], 1)} %`);
+        api.el('text', { x: Xb(valoresBarra[i]) + 6, y: y + 33, 'font-size': Fb, fill: c.suave, text: num(100 * valoresBarra[i], 1) + ' %' }, sb);
+      });
+      sb.setAttribute('role', 'group');
 
       const lineas = [];
       if (E.tipo === null) {
         lineas.push(`Cada celda muestra el recuento y, debajo, la probabilidad conjunta P(fila, columna) = recuento / ${N}.`);
       } else if (E.tipo === 'fila') {
         lineas.push(`Condicionando en «${filas[E.i]}»: el porcentaje de cada celda es P(columna | ${filas[E.i]}) = recuento / ${totF[E.i]}.`);
-        const mejor = columnas.map((cn, j) => [cn, conteos[E.i][j] / totF[E.i]]).sort((a, b) => b[1] - a[1])[0];
+        const mejor = columnas.map((cn, j) => [cn, cont[E.i][j] / (totF[E.i] || 1)]).sort((a, b) => b[1] - a[1])[0];
         lineas.push(`La columna más probable dado «${filas[E.i]}» es «${mejor[0]}» (${num(100 * mejor[1], 1)} %).`);
       } else {
         lineas.push(`Condicionando en «${columnas[E.i]}»: el porcentaje de cada celda es P(fila | ${columnas[E.i]}) = recuento / ${totC[E.i]}.`);
-        const mejor = filas.map((f, i) => [f, conteos[i][E.i] / totC[E.i]]).sort((a, b) => b[1] - a[1])[0];
+        const mejor = filas.map((f, i) => [f, cont[i][E.i] / (totC[E.i] || 1)]).sort((a, b) => b[1] - a[1])[0];
         lineas.push(`La fila más probable dado «${columnas[E.i]}» es «${mejor[0]}» (${num(100 * mejor[1], 1)} %).`);
       }
       lectura.innerHTML = lineas.map(t => `<p>${t}</p>`).join('');
@@ -178,28 +200,33 @@
     const E = { prev: v.prevalencia != null ? v.prevalencia : 0.01, sens: v.sensibilidad != null ? v.sensibilidad : 0.9, esp: v.especificidad != null ? v.especificidad : 0.9 };
     const FIL = 25, COL = 40, N = FIL * COL;
 
-    const grafica = H('div', { class: 'motor-grafica' });
-    const leyenda = H('div', { class: 'motor-leyenda' });
+    const { grafica, leyenda, lectura, controles } = armazon(el, api);
     const panel = H('div', { class: 'motor-fila' });
-    const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
-    const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, leyenda, panel, lectura, controles);
+    const persona = H('p', { class: 'motor-lectura', 'aria-live': 'polite', text: 'Toca un punto de la rejilla para ver quién es.' });
+    lectura.before(panel, persona);
+    let cats = [];
     controles.append(
       api.slider({ etiqueta: 'prevalencia', min: 0.005, max: 0.5, paso: 0.005, valor: E.prev, formato: v2 => num(100 * v2, 1) + ' %', alCambiar: v2 => { E.prev = v2; dibujar(); } }),
       api.slider({ etiqueta: 'sensibilidad', min: 0.5, max: 0.999, paso: 0.001, valor: E.sens, formato: v2 => num(100 * v2, 1) + ' %', alCambiar: v2 => { E.sens = v2; dibujar(); } }),
       api.slider({ etiqueta: 'especificidad', min: 0.5, max: 0.999, paso: 0.001, valor: E.esp, formato: v2 => num(100 * v2, 1) + ' %', alCambiar: v2 => { E.esp = v2; dibujar(); } }),
-      api.boton('Reiniciar', () => { Motores.desmontar(el); Motores.montar(el, 'probabilidad', JSON.parse(JSON.stringify(p))); })
+      reiniciar(el, p, api)
     );
     const canvas = H('canvas');
-    canvas.style.maxWidth = '100%';
     grafica.append(canvas);
+    const NOMBRES = ['enfermo · test positivo (verdadero positivo)', 'enfermo · test negativo (falso negativo)', 'sano · test negativo (verdadero negativo)', 'sano · test positivo (falso positivo)'];
+    canvas.addEventListener('click', (e) => {
+      const r = canvas.getBoundingClientRect(), cell = r.width / COL;
+      const col = Math.floor((e.clientX - r.left) / cell), fila = Math.floor((e.clientY - r.top) / cell), i = fila * COL + col;
+      if (col < 0 || col >= COL || i < 0 || i >= cats.length) return;
+      persona.textContent = `Persona ${i + 1}: ${NOMBRES[cats[i]]}.`;
+    });
 
     function dibujar() {
       const c = api.colores();
       const posReal = Math.round(N * E.prev), negReal = N - posReal;
       const TP = Math.round(posReal * E.sens), FN = posReal - TP;
       const TN = Math.round(negReal * E.esp), FP = negReal - TN;
-      const cats = [];
+      cats = [];
       for (let i = 0; i < TP; i++) cats.push(0);
       for (let i = 0; i < FN; i++) cats.push(1);
       for (let i = 0; i < TN; i++) cats.push(2);
@@ -207,12 +234,9 @@
       const r = api.aleatorio(11);
       for (let i = cats.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); const t = cats[i]; cats[i] = cats[j]; cats[j] = t; }
 
-      const W = Math.max(280, Math.min(el.clientWidth || 520, 640));
+      const W = api.medida(grafica, { maxAncho: 640 }).ancho;
       const cell = W / COL, H2 = Math.round(cell * FIL);
-      canvas.width = Math.round(W * 2); canvas.height = Math.round(H2 * 2);
-      canvas.style.width = W + 'px'; canvas.style.height = H2 + 'px';
-      const ctx = canvas.getContext('2d');
-      ctx.setTransform(2, 0, 0, 2, 0, 0);
+      const ctx = api.lienzoNitido(canvas, W, H2);
       ctx.clearRect(0, 0, W, H2);
       cats.forEach((cat, i) => {
         const fila = Math.floor(i / COL), col = i % COL;
@@ -250,10 +274,7 @@
     if (!vocab.length) throw new Error('El modo naive-bayes necesita "vocabulario"');
     const E = { prior: 0.5, incl: new Set(vocab.map((w, i) => i).filter(i => i < 2)) };
 
-    const grafica = H('div', { class: 'motor-grafica' });
-    const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
-    const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
+    const { grafica, lectura, controles } = armazon(el, api);
 
     const chips = H('div', { class: 'motor-selector', role: 'group', 'aria-label': 'Palabras presentes en el mensaje' });
     vocab.forEach((w, i) => {
@@ -262,23 +283,24 @@
       chips.append(b);
     });
     controles.append(chips, api.slider({ etiqueta: 'P(spam) previa', min: 0.05, max: 0.95, paso: 0.01, valor: E.prior, alCambiar: v => { E.prior = v; dibujar(); } }));
-    controles.append(api.boton('Reiniciar', () => { Motores.desmontar(el); Motores.montar(el, 'probabilidad', JSON.parse(JSON.stringify(p))); }));
+    controles.append(reiniciar(el, p, api));
 
     function dibujar() {
       const c = api.colores();
-      const W = Math.max(300, Math.min(el.clientWidth || 640, 760));
-      const filaAlto = 22, altoChart = vocab.length * filaAlto + 12, altoGauge = 60;
+      const W = api.medida(grafica, { maxAncho: 760 }).ancho;
+      const filaAlto = 28, altoChart = vocab.length * filaAlto + 12, altoGauge = 70;
       grafica.innerHTML = '';
       const s = api.svg(W, altoChart + altoGauge);
-      s.setAttribute('role', 'img');
+      s.setAttribute('role', 'group');
       grafica.append(s);
+      const F = api.fuente(s, 13);
 
       const previaLO = Math.log(E.prior / (1 - E.prior));
       const contribs = vocab.map((w, i) => E.incl.has(i) ? Math.log(w.p_spam / w.p_ham) : Math.log((1 - w.p_spam) / (1 - w.p_ham)));
       const total = previaLO + contribs.reduce((a, b) => a + b, 0);
       const pSpam = 1 / (1 + Math.exp(-total));
 
-      const L = 140, R = W - 60, mid = (L + R) / 2;
+      const L = W < 420 ? 96 : 140, R = W - 50, mid = (L + R) / 2;
       const maxAbs = Math.max(0.5, ...contribs.map(Math.abs));
       const escala = (R - L) / 2 / maxAbs;
       const X = vv => mid + vv * escala;
@@ -286,16 +308,17 @@
       vocab.forEach((w, i) => {
         const y = 6 + i * filaAlto, incluida = E.incl.has(i), val = contribs[i];
         const x0v = Math.min(X(0), X(val)), wdt = Math.max(1, Math.abs(X(val) - X(0)));
-        api.el('rect', { x: x0v, y, width: wdt, height: filaAlto - 7, fill: val >= 0 ? c.mal : c.bien, 'fill-opacity': incluida ? 1 : 0.5 }, s);
-        api.el('text', { x: L - 8, y: y + filaAlto - 12, 'text-anchor': 'end', 'font-size': 12, fill: incluida ? c.texto : c.suave, text: (incluida ? '' : 'sin ') + w.palabra }, s);
-        api.el('text', { x: X(val) + (val >= 0 ? 5 : -5), y: y + filaAlto - 12, 'text-anchor': val >= 0 ? 'start' : 'end', 'font-size': 10, fill: c.suave, text: num(val, 2) }, s);
+        const barra = api.el('rect', { x: x0v, y, width: wdt, height: filaAlto - 8, fill: val >= 0 ? c.mal : c.bien, 'fill-opacity': incluida ? 1 : 0.5 }, s);
+        api.inspeccionable(barra, `${incluida ? '' : 'Sin '}«${w.palabra}»: ${num(val, 2)} en log-odds (${val >= 0 ? 'empuja hacia spam' : 'empuja hacia no-spam'})`);
+        api.el('text', { x: L - 8, y: y + filaAlto - 12, 'text-anchor': 'end', 'font-size': F, fill: incluida ? c.texto : c.suave, text: (incluida ? '' : 'sin ') + w.palabra }, s);
+        api.el('text', { x: X(val) + (val >= 0 ? 5 : -5), y: y + filaAlto - 12, 'text-anchor': val >= 0 ? 'start' : 'end', 'font-size': F, fill: c.suave, 'pointer-events': 'none', text: num(val, 2) }, s);
       });
 
-      const gy = altoChart + 12, gx0 = L, gx1 = R;
+      const gy = altoChart + 12, gx0 = 12, gx1 = W - 12;
       api.el('rect', { x: gx0, y: gy, width: gx1 - gx0, height: 16, fill: c.rejilla, rx: 3 }, s);
       api.el('rect', { x: gx0, y: gy, width: (gx1 - gx0) * pSpam, height: 16, fill: c.acento, rx: 3 }, s);
-      api.el('text', { x: (gx0 + gx1) / 2, y: gy + 30, 'text-anchor': 'middle', 'font-size': 12, fill: c.texto, text: `P(spam | mensaje) = ${num(pSpam, 3)}` }, s);
-      api.el('text', { x: (gx0 + gx1) / 2, y: gy + 44, 'text-anchor': 'middle', 'font-size': 11, fill: c.suave, text: `previa P(spam) = ${num(E.prior, 2)}` }, s);
+      api.el('text', { x: (gx0 + gx1) / 2, y: gy + 33, 'text-anchor': 'middle', 'font-size': F, fill: c.texto, text: `P(spam | mensaje) = ${num(pSpam, 3)}` }, s);
+      api.el('text', { x: (gx0 + gx1) / 2, y: gy + 50, 'text-anchor': 'middle', 'font-size': F, fill: c.suave, text: `previa P(spam) = ${num(E.prior, 2)}` }, s);
 
       const lineas = [];
       lineas.push(`Palabras marcadas como presentes: ${vocab.filter((w, i) => E.incl.has(i)).map(w => w.palabra).join(', ') || '(ninguna)'}.`);
@@ -315,13 +338,10 @@
     if (!toks.length) throw new Error('El modo softmax necesita "logits"');
     const E = { t: 1 };
 
-    const grafica = H('div', { class: 'motor-grafica' });
-    const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
-    const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
+    const { grafica, lectura, controles } = armazon(el, api);
     controles.append(
       api.slider({ etiqueta: 'temperatura T', min: 0.1, max: 3, paso: 0.05, valor: E.t, alCambiar: v => { E.t = v; dibujar(); } }),
-      api.boton('Reiniciar', () => { Motores.desmontar(el); Motores.montar(el, 'probabilidad', JSON.parse(JSON.stringify(p))); })
+      reiniciar(el, p, api)
     );
 
     function softmaxT(logits, t) {
@@ -335,18 +355,21 @@
       const c = api.colores();
       const probs = softmaxT(toks.map(t => t.logit), E.t);
       const iMax = probs.indexOf(Math.max(...probs));
-      const W = Math.max(300, Math.min(el.clientWidth || 640, 760));
-      const filaAlto = 26, alto = toks.length * filaAlto + 12;
+      const W = api.medida(grafica, { maxAncho: 760 }).ancho;
+      const filaAlto = 44, alto = toks.length * filaAlto + 4;
       grafica.innerHTML = '';
       const s = api.svg(W, alto);
-      s.setAttribute('role', 'img');
+      s.setAttribute('role', 'group');
       grafica.append(s);
-      const L = 90, R = W - 130, X = api.escala(0, Math.max(0.05, Math.max(...probs) * 1.15), L, R);
+      const F = api.fuente(s, 13);
+      // Etiqueta (token y logit) encima de cada barra, a ancho completo: sin recortes a 360 px.
+      const L = 8, R = W - 70, X = api.escala(0, Math.max(0.05, Math.max(...probs) * 1.15), L, R);
       toks.forEach((tok, i) => {
-        const y = 6 + i * filaAlto, destacado = i === iMax;
-        api.el('text', { x: L - 8, y: y + filaAlto - 11, 'text-anchor': 'end', 'font-size': 12, 'font-weight': destacado ? 700 : 400, fill: c.texto, text: tok.token }, s);
-        api.el('rect', { x: L, y, width: Math.max(1, X(probs[i]) - L), height: filaAlto - 8, fill: destacado ? c.acento : c.series[1], 'fill-opacity': destacado ? 1 : 0.55 }, s);
-        api.el('text', { x: X(probs[i]) + 6, y: y + filaAlto - 11, 'font-size': 11, fill: c.suave, text: num(100 * probs[i], 1) + ' %  (logit ' + num(tok.logit, 2) + ')' }, s);
+        const y = 2 + i * filaAlto, destacado = i === iMax;
+        api.el('text', { x: L, y: y + 14, 'font-size': F, 'font-weight': destacado ? 700 : 400, fill: c.texto, text: `${tok.token} · logit ${num(tok.logit, 2)}` }, s);
+        const barra = api.el('rect', { x: L, y: y + 20, width: Math.max(1, X(probs[i]) - L), height: 16, fill: destacado ? c.acento : c.series[1], 'fill-opacity': destacado ? 1 : 0.55 }, s);
+        api.inspeccionable(barra, `${tok.token}: ${num(100 * probs[i], 1)} % (logit ${num(tok.logit, 2)})`);
+        api.el('text', { x: X(probs[i]) + 6, y: y + 33, 'font-size': F, fill: c.suave, text: num(100 * probs[i], 1) + ' %' }, s);
       });
 
       const entropia = -probs.reduce((a, pi) => a + (pi > 1e-12 ? pi * Math.log2(pi) : 0), 0);

@@ -20,6 +20,22 @@
     return out;
   }
 
+  // Estructura común: gráfico(s) (+ leyenda) arriba; lectura y controles debajo (§8b).
+  function armazon(el, api) {
+    const H = api.html, Z = api.zonas(el);
+    const grafica = H('div', { class: 'motor-grafica' }), grafica2 = H('div', { class: 'motor-grafica' }), leyenda = H('div', { class: 'motor-leyenda' });
+    const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' }), controles = H('div', { class: 'motor-controles' });
+    Z.grafico.append(grafica, grafica2, leyenda);
+    Z.controles.append(lectura, controles);
+    return { grafica, grafica2, leyenda, lectura, controles };
+  }
+  const reiniciar = (el, p, api) => api.boton('Reiniciar', () => { Motores.desmontar(el); Motores.montar(el, 'serie', JSON.parse(JSON.stringify(p))); });
+  // Botones ‹ › (alternativa al arrastre): mover en el tiempo sin gesto.
+  function pasoTiempo(api, nombre, _, atras, adelante) {
+    return api.html('div', { class: 'motor-selector', role: 'group', 'aria-label': 'Mover ' + nombre },
+      api.boton('‹', atras, { 'aria-label': 'Retroceder ' + nombre }), api.boton('›', adelante, { 'aria-label': 'Avanzar ' + nombre }));
+  }
+
   // ───────────────────────── ventana ─────────────────────────
   function ventana(el, p, api) {
     const H = api.html, num = api.num;
@@ -30,11 +46,7 @@
     const E = { w: Math.max(2, Math.min(p.ventana || 3, wMax)) };
     E.t = Math.min(n - 1, E.w + Math.floor((n - E.w) * 0.55));
 
-    const grafica = H('div', { class: 'motor-grafica' });
-    const leyenda = H('div', { class: 'motor-leyenda' });
-    const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
-    const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, leyenda, lectura, controles);
+    const { grafica, leyenda, lectura, controles } = armazon(el, api);
 
     let sT;
     const sW = api.slider({
@@ -42,44 +54,46 @@
       alCambiar: v => { E.w = v; if (E.t < E.w) { E.t = E.w; } sT.input.min = E.w; if (sT.valor < E.w) sT.valor = E.w; dibujar(); },
     });
     sT = api.slider({ etiqueta: 'posición t', min: E.w, max: n - 1, paso: 1, valor: E.t, alCambiar: v => { E.t = v; dibujar(); } });
-    controles.append(sW, sT, api.boton('Reiniciar', () => { Motores.desmontar(el); Motores.montar(el, 'serie', JSON.parse(JSON.stringify(p))); }));
-
-    let arrastre = null;
-    function arrastrable(s, X) { s.style.touchAction = 'pan-y'; s.style.cursor = 'ew-resize'; arrastre = { s, X }; }
-    function mover(e) {
-      const { s, X } = arrastre;
-      const r = s.getBoundingClientRect();
-      const t = Math.round(X.inversa((e.clientX - r.left) * s.viewBox.baseVal.width / r.width));
-      const tc = Math.min(n - 1, Math.max(E.w, t));
+    const mueve = (t) => {
+      const tc = Math.min(n - 1, Math.max(E.w, Math.round(t)));
       if (tc !== E.t) { E.t = tc; sT.valor = E.t; dibujar(); }
-    }
-    grafica.addEventListener('pointerdown', e => { if (!arrastre) return; grafica.setPointerCapture(e.pointerId); mover(e); });
-    grafica.addEventListener('pointermove', e => { if (arrastre && grafica.hasPointerCapture(e.pointerId)) mover(e); });
+    };
+    controles.append(sW, sT, pasoTiempo(api, 'posición', -1, () => mueve(E.t - 1), () => mueve(E.t + 1)), reiniciar(el, p, api));
 
     function dibujar() {
       const c = api.colores();
-      const W = Math.max(320, Math.min(el.clientWidth || 640, 780)), alto = 220;
+      const W = api.medida(grafica, { maxAncho: 780, minAncho: 300 }).ancho, alto = 230;
       grafica.innerHTML = ''; lectura.innerHTML = ''; leyenda.innerHTML = '';
       const s = api.svg(W, alto);
-      s.setAttribute('role', 'img');
+      s.setAttribute('role', 'group');
       grafica.append(s);
-      const caja = { l: 44, r: W - 10, t: 12, b: alto - 26 };
+      const F = api.fuente(s, 12);
+      const caja = { l: 48, r: W - 12, t: 14, b: alto - 28 };
       const X = api.escala(0, n - 1, caja.l, caja.r);
       const lo = Math.min(...valores), hi = Math.max(...valores), m = (hi - lo) * 0.12 || 1;
       const Y = api.escala(lo - m, hi + m, caja.b, caja.t);
       const g = api.el('g', {}, s);
       api.marcas(lo - m, hi + m, 5).forEach(v => {
         api.el('line', { x1: caja.l, x2: caja.r, y1: Y(v), y2: Y(v), stroke: c.rejilla }, g);
-        api.el('text', { x: caja.l - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 11, fill: c.suave, text: num(v, 2) }, g);
+        api.el('text', { x: caja.l - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': F, fill: c.suave, text: num(v, 2) }, g);
       });
+      api.el('text', { x: caja.r, y: alto - 6, 'text-anchor': 'end', 'font-size': F, fill: c.suave, text: 'tiempo →' }, g);
       const wi = E.t - E.w, wf = E.t - 1;
       api.el('rect', { x: X(wi) - 3, y: caja.t, width: X(wf) - X(wi) + 6, height: caja.b - caja.t, fill: c.acento, 'fill-opacity': 0.12 }, g);
       let d = '';
       valores.forEach((v, i) => { d += (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1); });
       api.el('path', { d, fill: 'none', stroke: c.suave, 'stroke-width': 1.6 }, g);
       for (let i = wi; i <= wf; i++) api.el('circle', { cx: X(i), cy: Y(valores[i]), r: 5, fill: c.acento }, g);
-      api.el('circle', { cx: X(E.t), cy: Y(valores[E.t]), r: 6.5, fill: c.bien, stroke: c.superficie, 'stroke-width': 1.6 }, g);
       api.el('line', { x1: caja.l, x2: caja.r, y1: caja.b, y2: caja.b, stroke: c.suave }, g);
+      const asa = api.el('circle', { cx: X(E.t), cy: Y(valores[E.t]), r: 9, fill: c.bien, stroke: c.superficie, 'stroke-width': 2 }, s);
+      asa.style.cursor = 'ew-resize';
+      // Arrastrar en horizontal recorre la serie en el tiempo; el scroll vertical sigue vivo (pan-y).
+      api.arrastrable(asa, {
+        zona: grafica, clave: 'objetivo', radio: Infinity, tactil: 'pan-y', etiqueta: 'Posición t (objetivo)',
+        valor: () => `t = ${E.t} · y = ${num(valores[E.t], 2)}`,
+        alMover: (q) => mueve(X.inversa(api.aSvg(s, q).x)),
+        alTecla: (dx) => mueve(E.t + dx),
+      });
 
       leyenda.append(
         H('span', { class: 'leyenda-item' }, H('span', { class: 'leyenda-muestra', style: `--c:${c.acento}` }), 'ventana (X)'),
@@ -89,9 +103,8 @@
       const xVentana = valores.slice(wi, wf + 1).map(v => num(v, 2)).join(', ');
       lectura.innerHTML =
         `<p>Ventana X = [${xVentana}] (posiciones ${wi}…${wf}) → objetivo y = <strong>${num(valores[E.t], 3)}</strong> (posición ${E.t}).</p>` +
-        `<p>Con w = ${E.w}, cada posición t genera un ejemplo supervisado: las w observaciones anteriores predicen la siguiente. Arrastra sobre la gráfica o mueve t para recorrer la serie.</p>`;
+        `<p>Con w = ${E.w}, cada posición t genera un ejemplo supervisado: las w observaciones anteriores predicen la siguiente. Arrastra sobre la gráfica, usa ‹ › o mueve t para recorrer la serie.</p>`;
       s.setAttribute('aria-label', 'Serie temporal con una ventana deslizante. ' + lectura.textContent);
-      arrastrable(s, X);
     }
     dibujar();
     return { redibujar: dibujar };
@@ -108,16 +121,13 @@
     const entrenamiento = valores.slice(0, wRef);
     const E = { pos: n - wProd };
 
-    const grafica = H('div', { class: 'motor-grafica' });
-    const grafica2 = H('div', { class: 'motor-grafica' });
-    const leyenda = H('div', { class: 'motor-leyenda' });
-    const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
-    const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, grafica2, leyenda, lectura, controles);
-    controles.append(
-      api.slider({ etiqueta: 'inicio de la ventana de producción', min: wRef, max: n - wProd, paso: 1, valor: E.pos, alCambiar: v => { E.pos = v; dibujar(); } }),
-      api.boton('Reiniciar', () => { Motores.desmontar(el); Motores.montar(el, 'serie', JSON.parse(JSON.stringify(p))); }),
-    );
+    const { grafica, grafica2, leyenda, lectura, controles } = armazon(el, api);
+    const sPos = api.slider({ etiqueta: 'inicio de la ventana de producción', min: wRef, max: n - wProd, paso: 1, valor: E.pos, alCambiar: v => { E.pos = v; dibujar(); } });
+    const mueve = (pos) => {
+      const pc = Math.min(n - wProd, Math.max(wRef, Math.round(pos)));
+      if (pc !== E.pos) { E.pos = pc; sPos.valor = pc; dibujar(); }
+    };
+    controles.append(sPos, pasoTiempo(api, 'la ventana de producción', 0, () => mueve(E.pos - 1), () => mueve(E.pos + 1)), reiniciar(el, p, api));
 
     function estadisticas(arr) {
       const media = arr.reduce((a, b) => a + b, 0) / arr.length;
@@ -140,36 +150,47 @@
     function dibujar() {
       const c = api.colores();
       const produccion = valores.slice(E.pos, E.pos + wProd);
-      const W = Math.max(320, Math.min(el.clientWidth || 640, 780)), alto = 170;
+      const W = api.medida(grafica, { maxAncho: 780, minAncho: 300 }).ancho, alto = 190;
       grafica.innerHTML = ''; leyenda.innerHTML = ''; lectura.innerHTML = '';
       const s = api.svg(W, alto);
-      s.setAttribute('role', 'img');
+      s.setAttribute('role', 'group');
       grafica.append(s);
-      const caja = { l: 44, r: W - 10, t: 12, b: alto - 26 };
+      const F = api.fuente(s, 12);
+      const caja = { l: 48, r: W - 12, t: 12, b: alto - 28 };
       const X = api.escala(0, n - 1, caja.l, caja.r);
       const lo = Math.min(...valores), hi = Math.max(...valores), m = (hi - lo) * 0.12 || 1;
       const Y = api.escala(lo - m, hi + m, caja.b, caja.t);
       const g = api.el('g', {}, s);
       api.marcas(lo - m, hi + m, 4).forEach(v => {
         api.el('line', { x1: caja.l, x2: caja.r, y1: Y(v), y2: Y(v), stroke: c.rejilla }, g);
-        api.el('text', { x: caja.l - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': 11, fill: c.suave, text: num(v, 2) }, g);
+        api.el('text', { x: caja.l - 6, y: Y(v) + 4, 'text-anchor': 'end', 'font-size': F, fill: c.suave, text: num(v, 2) }, g);
       });
       api.el('rect', { x: X(0), y: caja.t, width: X(wRef - 1) - X(0), height: caja.b - caja.t, fill: c.series[0], 'fill-opacity': 0.14 }, g);
-      api.el('rect', { x: X(E.pos), y: caja.t, width: X(E.pos + wProd - 1) - X(E.pos), height: caja.b - caja.t, fill: c.mal, 'fill-opacity': 0.14 }, g);
+      const banda = api.el('rect', { x: X(E.pos), y: caja.t, width: X(E.pos + wProd - 1) - X(E.pos), height: caja.b - caja.t, fill: c.mal, 'fill-opacity': 0.14, stroke: c.mal, 'stroke-width': 2 }, s);
+      banda.style.cursor = 'ew-resize';
       let d = '';
       valores.forEach((v, i) => { d += (i ? 'L' : 'M') + X(i).toFixed(1) + ',' + Y(v).toFixed(1); });
-      api.el('path', { d, fill: 'none', stroke: c.suave, 'stroke-width': 1.6 }, g);
+      api.el('path', { d, fill: 'none', stroke: c.suave, 'stroke-width': 1.6, 'pointer-events': 'none' }, s);
       api.el('line', { x1: caja.l, x2: caja.r, y1: caja.b, y2: caja.b, stroke: c.suave }, g);
+      api.el('text', { x: caja.r, y: alto - 6, 'text-anchor': 'end', 'font-size': F, fill: c.suave, text: 'tiempo →' }, g);
+      // Arrastrar en horizontal desliza la ventana de producción; el scroll vertical sigue vivo (pan-y).
+      api.arrastrable(banda, {
+        zona: grafica, clave: 'produccion', radio: Infinity, tactil: 'pan-y', etiqueta: 'Ventana de producción',
+        valor: () => `posiciones ${E.pos}–${E.pos + wProd - 1}`,
+        alMover: (q) => mueve(X.inversa(api.aSvg(s, q).x) - (wProd - 1) / 2),
+        alTecla: (dx) => mueve(E.pos + dx),
+      });
 
       grafica2.innerHTML = '';
-      const W2 = W, alto2 = 150, bins = 8;
+      const W2 = W, alto2 = 160, bins = 8;
       const gLo = Math.min(...entrenamiento), gHi = Math.max(...entrenamiento, ...produccion), gm = (gHi - gLo) * 0.05 || 1;
       const dom = [gLo - gm, gHi + gm], anchoBin = (dom[1] - dom[0]) / bins;
-      const caja2 = { l: 36, r: W2 - 10, t: 10, b: alto2 - 22 };
+      const caja2 = { l: 12, r: W2 - 12, t: 10, b: alto2 - 26 };
       const X2 = api.escala(dom[0], dom[1], caja2.l, caja2.r);
       const s2 = api.svg(W2, alto2);
-      s2.setAttribute('role', 'img');
+      s2.setAttribute('role', 'group');
       grafica2.append(s2);
+      const F2 = api.fuente(s2, 12);
       function hist(arr) {
         const cu = new Array(bins).fill(0);
         arr.forEach(v => { const b = Math.max(0, Math.min(bins - 1, Math.floor((v - dom[0]) / anchoBin))); cu[b]++; });
@@ -180,10 +201,14 @@
       const Y2 = api.escala(0, maxD, caja2.b, caja2.t);
       for (let b = 0; b < bins; b++) {
         const x0v = X2(dom[0] + b * anchoBin), x1v = X2(dom[0] + (b + 1) * anchoBin), wdt = x1v - x0v;
-        api.el('rect', { x: x0v + 1, y: Y2(hT[b]), width: Math.max(0, wdt / 2 - 1.5), height: caja2.b - Y2(hT[b]), fill: c.series[0], 'fill-opacity': 0.75 }, s2);
-        api.el('rect', { x: x0v + wdt / 2 + 0.5, y: Y2(hP[b]), width: Math.max(0, wdt / 2 - 1.5), height: caja2.b - Y2(hP[b]), fill: c.mal, 'fill-opacity': 0.75 }, s2);
+        const rT = api.el('rect', { x: x0v + 1, y: Y2(hT[b]), width: Math.max(0, wdt / 2 - 1.5), height: caja2.b - Y2(hT[b]), fill: c.series[0], 'fill-opacity': 0.75 }, s2);
+        const rP = api.el('rect', { x: x0v + wdt / 2 + 0.5, y: Y2(hP[b]), width: Math.max(0, wdt / 2 - 1.5), height: caja2.b - Y2(hP[b]), fill: c.mal, 'fill-opacity': 0.75 }, s2);
+        const rango = `${num(dom[0] + b * anchoBin, 2)} a ${num(dom[0] + (b + 1) * anchoBin, 2)}`;
+        api.inspeccionable(rT, `Entrenamiento, ${rango}: ${num(100 * hT[b], 1)} %`);
+        api.inspeccionable(rP, `Producción, ${rango}: ${num(100 * hP[b], 1)} %`);
       }
       api.el('line', { x1: caja2.l, x2: caja2.r, y1: caja2.b, y2: caja2.b, stroke: c.suave }, s2);
+      api.marcas(dom[0], dom[1], Math.max(3, Math.round(W2 / 80))).forEach(v => api.el('text', { x: X2(v), y: alto2 - 8, 'text-anchor': 'middle', 'font-size': F2, fill: c.suave, text: num(v, 1) }, s2));
 
       leyenda.append(
         H('span', { class: 'leyenda-item' }, H('span', { class: 'leyenda-muestra', style: `--c:${c.series[0]}` }), 'entrenamiento'),
