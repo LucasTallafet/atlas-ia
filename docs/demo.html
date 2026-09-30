@@ -15,7 +15,7 @@
   </script>
   <script src="vendor/tex-svg-full.js" defer></script>
 </head>
-<body>
+<body style="--alto-barra: 0px">
   <header class="cabecera">
     <div class="cabecera-in">
       <a class="marca" href="index.html">Atlas <span>de IA</span></a>
@@ -61,11 +61,16 @@
       })).then(function () { document.body.dataset.listo = 'indice'; });
     }
 
-    function motor(m) {
+    // #<motor> pinta todos sus ejemplos; #<motor>.<modo> solo ese; añadir .ampliado abre el primero a pantalla completa
+    // (para capturarlo con probar_web.py --demo <motor>.<modo>.ampliado).
+    function motor(hash) {
+      var partes = hash.split('.'), m = partes[0];
+      var ampliado = partes.indexOf('ampliado') > 0, modo = partes.slice(1).filter(function (x) { return x !== 'ampliado'; })[0];
+      var primero = null;
       document.title = m + ' · Motores · Atlas de IA';
-      vista.append(H('p', { class: 'migas' }, H('a', { href: '#', text: 'Motores' }), ' › ' + m), H('h1', { text: 'Motor ' + m }));
+      vista.append(H('p', { class: 'migas', style: '--c: var(--acento)' }, H('a', { href: '#', text: 'Motores' }), ' › ' + m), H('h1', { text: 'Motor ' + m }));
       return Motores.cargar(m).then(function (r) {
-        var claves = Object.keys(r.ejemplos);
+        var claves = Object.keys(r.ejemplos).filter(function (k) { return !modo || k === modo; });
         if (!claves.length) vista.append(H('p', { class: 'aviso', text: 'Este motor no declara ejemplos.' }));
         return claves.reduce(function (prom, k) {
           return prom.then(function () {
@@ -75,12 +80,16 @@
               H('h2', { text: k === '-' ? 'Ejemplo' : 'Modo ' + k }),
               H('div', { class: 'panel-interactivo' }, w),
               H('details', {}, H('summary', { text: 'Parámetros' }), H('pre', { text: JSON.stringify(params, null, 1) }))));
+            primero = primero || w;
             return Motores.montar(w, m, JSON.parse(JSON.stringify(params)));
           });
         }, Promise.resolve());
       }, function (e) {
         vista.append(H('p', { class: 'motor-error', text: 'Motor no implementado: ' + e.message }));
-      }).then(function () { return Motores.api.tex(vista); }).then(function () { document.body.dataset.listo = m; });
+      }).then(function () { return Motores.api.tex(vista); }).then(function () {
+        if (ampliado && primero) Motores.ampliar(primero);
+        document.body.dataset.listo = hash;
+      });
     }
 
     function pintar() {

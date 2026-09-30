@@ -43,11 +43,11 @@
 
     const progreso = H('div', { class: 'pasos-progreso' });
     const marco = H('div', { class: 'pasos-marco', 'aria-live': 'polite', tabindex: '-1' });
-    const contador = H('span', { class: 'pasos-contador' });
-    const bAnt = api.boton('← Anterior', () => ir(i - 1), { 'aria-label': 'Paso anterior' });
-    const bSig = api.boton('Siguiente →', () => ir(i + 1), { 'aria-label': 'Paso siguiente', class: 'boton boton-principal' });
-    const bIni = api.boton('Reiniciar', () => ir(0));
-    el.append(progreso, marco, api.fila(bAnt, contador, bSig, bIni));
+    // Contrato táctil (ESPEC-WEB §8b): fotograma arriba y barra de pasos pegada al pie mientras se ve el widget.
+    const barra = api.barraPasos({ alAnterior: () => ir(i - 1), alSiguiente: () => ir(i + 1), alReiniciar: () => ir(0) });
+    const Z = api.zonas(el, { pieFijo: true });
+    Z.grafico.append(progreso, marco);
+    Z.controles.append(barra);
     el.addEventListener('keydown', (e) => {
       if (e.target.tagName === 'INPUT') return;
       if (e.key === 'ArrowRight') { ir(i + 1); e.preventDefault(); }
@@ -56,16 +56,20 @@
 
     function dibujarProgreso() {
       const c = api.colores();
-      const ancho = Math.max(200, el.clientWidth || 300), alto = 22, n = fotos.length;
+      // En táctil la tira es más alta y cada paso tiene una zona de toque que ocupa todo su tramo.
+      const tactil = api.gruesa() || api.estrecho(el);
+      const ancho = Math.max(200, progreso.clientWidth || el.clientWidth || 300), alto = tactil ? 44 : 22, n = fotos.length, cy = alto / 2;
       const s = api.svg(ancho, alto);
       s.setAttribute('aria-hidden', 'true');
       const x = (k) => n === 1 ? ancho / 2 : 10 + k * (ancho - 20) / (n - 1);
-      api.el('line', { x1: x(0), x2: x(n - 1), y1: 11, y2: 11, stroke: c.linea, 'stroke-width': 2 }, s);
-      api.el('line', { x1: x(0), x2: x(i), y1: 11, y2: 11, stroke: c.acento, 'stroke-width': 3 }, s);
+      const tramo = n === 1 ? ancho : (ancho - 20) / (n - 1);
+      api.el('line', { x1: x(0), x2: x(n - 1), y1: cy, y2: cy, stroke: c.linea, 'stroke-width': 2 }, s);
+      api.el('line', { x1: x(0), x2: x(i), y1: cy, y2: cy, stroke: c.acento, 'stroke-width': 3 }, s);
       for (let k = 0; k < n; k++) {
-        const pt = api.el('circle', { cx: x(k), cy: 11, r: k === i ? 7 : 5, fill: k <= i ? c.acento : c.superficie, stroke: k <= i ? c.acento : c.suave, 'stroke-width': 1.5 }, s);
-        pt.style.cursor = 'pointer';
-        pt.addEventListener('click', () => ir(k));
+        api.el('circle', { cx: x(k), cy, r: k === i ? 7 : 5, fill: k <= i ? c.acento : c.superficie, stroke: k <= i ? c.acento : c.suave, 'stroke-width': 1.5 }, s);
+        const zona = api.el('rect', { x: x(k) - tramo / 2, y: 0, width: tramo, height: alto, fill: 'transparent' }, s);
+        zona.style.cursor = 'pointer';
+        zona.addEventListener('click', () => ir(k));
       }
       progreso.innerHTML = '';
       progreso.append(s);
@@ -74,7 +78,7 @@
     function dibujarCajas(f) {
       const c = api.colores();
       const n = f.cajas.length;
-      const ancho = Math.max(280, Math.min(el.clientWidth || 600, 720));
+      const ancho = Math.max(280, Math.min(marco.clientWidth || el.clientWidth || 600, 720));
       const vertical = ancho < 480 && n > 2;
       const cw = vertical ? Math.min(240, ancho - 40) : Math.min(150, (ancho - 20 * (n + 1)) / n);
       const ch = 44, gap = vertical ? 26 : (ancho - n * cw) / (n + 1);
@@ -113,9 +117,7 @@
       marco.append(H('div', { class: 'pasos-texto', html: f.html !== undefined ? f.html : markdown(f.texto || '') }));
       if (f.cajas) marco.append(dibujarCajas(f));
       if (f.tabla) marco.append(dibujarTabla(f.tabla));
-      contador.textContent = `Paso ${i + 1} de ${fotos.length}`;
-      bAnt.disabled = i === 0;
-      bSig.disabled = i === fotos.length - 1;
+      barra.poner(i, fotos.length);
       dibujarProgreso();
       api.tex(marco);
     }

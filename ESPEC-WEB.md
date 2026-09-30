@@ -121,10 +121,55 @@ API mínima que ofrece el núcleo: `api.colores()`, `api.num(x, dec)`, `api.alea
 - `api.boton(texto, fn, attrs?)`, `api.fila(...els)`, `api.html(tag, attrs, ...hijos)` (attrs: `class`, `text`, `html`, `onX`), `api.el(tag, attrs, padre?)` (SVG), `api.svg(ancho, alto)` (viewBox + ancho fluido), `api.escala(d0, d1, r0, r1)` (con `.inversa`), `api.marcas(min, max, n)`, `api.tex(el) → Promise` (espera a MathJax).
 - Contenedor en la ficha: `div.widget` dentro de `div.panel-interactivo`. La app emite `tema` en `document` y pone `data-tema-efectivo` en `<html>`.
 - `funcion`: `x` por defecto `[-5, 5]`; `y` automático (percentiles 1-99 de las curvas). Cada modo añade sus propios controles: tangente (x₀ y h), pdf-cdf (t, histograma de 400 muestras con semilla), discreta (k; evalúa `funciones[0]` en enteros y dibuja las demás como curvas), activaciones (selector + derivada numérica + x), pertenencia (valor de entrada), series (cursor, mínimos marcados), perdidas (`datos.series[0].valores` = residuos; el de mayor |valor| es el atípico arrastrable), barras (horizontales; conmutador lineal/log si todo es > 0). `sombrear`: densidad sombrea `[desde, hasta]`; region sombrea las colas fuera de `[desde, hasta]` (si falta uno de los dos, una sola cola). Las expresiones de `sombrear` usan los `parametros`.
-- Arrastre: los motores enganchan `pointerdown/pointermove` al **contenedor persistente** (no al SVG, que se sustituye en cada redibujado y perdería la captura del puntero).
+- Arrastre: con `api.arrastrable` (§8b), cuya `zona` es el **contenedor persistente** (no el SVG, que se sustituye en cada redibujado y perdería la captura del puntero). Los motores aún no migrados (órdenes 4–6) enganchan `pointerdown/pointermove` a ese contenedor por su cuenta.
 - `umbral`: puntuaciones normales recortadas a (0, 1) con semilla fija (positivos 101, negativos 202, +17 por grupo). Umbral con paso 0,02 = anchura de las barras; se predice positivo si puntuación ≥ t. Histograma espejo (positivos arriba, negativos abajo) con TP/FN/FP/TN, matriz de confusión, barras de `metricas` (por defecto las seis), curva ROC o PR (botón) con AUC. desbalanceo: deslizador de proporción de positivos (total = positivos.n + negativos.n) y referencia "siempre negativo"; curva PR por defecto. grupos: un histograma por grupo, tabla TPR/FPR/precisión/tasa de predichos positivos, ROC por grupo y botón "Un umbral por grupo".
 - `dispersion2d`: núcleo común `montarModo` + objeto por modo `{controles, iniciar, fondo, colorPunto, frente, paso, lectura, leyenda, botones, panel, alCambiarDatos, alCambiarControl, dominio}`. `ctx` ofrece `datos [{x, y, c}]`, `K` (valores de `controles`), `estado`, `X/Y` (escalas con la misma unidad en los dos ejes), `vista`, `c` (colores), `colorClase(k)`, `pt(x, y)`, `asa(elemento, clave, etiqueta, mover(x, y))` (arrastre + flechas del teclado), `celda(centros, j, vista)` (Voronoi), `cambio()`, `redibujar()`, `version` (sube al mover datos). Generadores (`Dispersion2d.generar`): blobs (centros en un círculo de radio 1, desviación = ruido), lunas, circulos (radios 1 y 0,5), lineal (y = 0,7x + 0,2 ± 0,45 por clase), xor, curva (sen 1,5x). `paso_a_paso` añade Paso / Hasta el final (respeta `prefers-reduced-motion`). **Modos nuevos en archivo aparte**: si el modo no está en `dispersion2d.js`, se carga `motores/dispersion2d-<modo>.js`, que llama a `Dispersion2d.modo('<modo>', {...})`; así el motor no pasa de ~600 líneas. El modo se añade igualmente a la línea `// @modos:` de `dispersion2d.js` y su ejemplo a `ejemplos`. kmeans: inicio aleatorio o k-means++, "Otro inicio al azar", centroides arrastrables, celdas de Voronoi, rastro de centroides y gráfica del codo (mejor J de 5 inicios k-means++ para k = 1…max del control).
-- `pasos`: fotogramas `{html}` (de build.py) o `{texto}` (Markdown mínimo) con `tabla` y `cajas`/`activa` opcionales; teclas ← →.
+- `pasos`: fotogramas `{html}` (de build.py) o `{texto}` (Markdown mínimo) con `tabla` y `cajas`/`activa` opcionales; teclas ← →. Barra de pasos del núcleo (`api.barraPasos`), fija al pie en táctil.
+
+### §8b Contrato táctil
+
+Todo lo táctil se resuelve en `nucleo.js` (+ bloque "Contrato táctil" de `estilos.css`). `funcion` y `pasos` son los motores de referencia. Lo que el núcleo hace solo, sin tocar el motor: botón **Ampliar**, atributo `data-disposicion`, deslizadores y botones a tamaño táctil, pausa fuera de pantalla.
+
+**Ayudantes (`api.…`)**
+
+- `arrastrable(elemento, {zona, clave, radio, tactil, etiqueta, valor, alEmpezar, alMover, alSoltar, alTecla})`: arrastre con Pointer Events para ratón, dedo y lápiz. Un único `pointerdown` por `zona` elige el asa más cercana cuyo contorno esté a ≤ `radio` px (mínimo y por defecto 24; `Infinity` = toda la zona). Los movimientos se agrupan por `requestAnimationFrame`. `alMover(p)` recibe `p = {x, y, dx, dy, tipo}` en píxeles de ventana (`api.aSvg(svg, p)` lo pasa a unidades del `viewBox`); `alSoltar(p, cancelado)`. Marca el elemento con `data-arrastrable="<clave>"`, `tabindex="0"`, `role="slider"` y `aria-label="<etiqueta>: <valor()>"`; las flechas llaman a `alTecla(dx, dy)` (±1; ±10 con Mayús). Mientras se arrastra, el asa lleva `data-arrastrando` (crece un 35 %) y `valor()` se muestra en una burbuja 40 px por encima del dedo (24 con ratón). **`zona`** debe sobrevivir a los redibujados (por defecto, el `<svg>` del asa; si el motor sustituye el SVG al redibujar, pasa el contenedor). **`clave`** estable si el asa se recrea en cada redibujado: así la nueva hereda el arrastre en curso y el foco del teclado.
+- `inspeccionable(elemento, texto | () => texto)`: sustituye a `<title>` y a `mouseover`. Con ratón, la etiqueta sale al pasar; con el dedo, al tocar, y queda fija hasta tocar en otro sitio o de nuevo en el mismo. Pone también `aria-label`.
+- `slider({…, fino?})`: etiqueta y valor encima (coma decimal). En táctil: pista de 8 px con tramo relleno, pulgar de 28 px, zona de 48 px y botones **− / +** de 44 px a los lados si el deslizador tiene más de 40 pasos (`fino: true/false` lo fuerza). En escritorio con ratón no cambia.
+- `segmentado(opciones [{valor, texto}], {valor, titulo, etiqueta, alCambiar})` → selector de modo/opción (`.poner(v)`, `.valor`): botones en escritorio, chips de 44 px en táctil.
+- `barraPasos({alAnterior, alSiguiente, alReiniciar, alReproducir?})` → barra de herramientas con `.poner(i, n, reproduciendo)`; botones de 48 px en táctil y, en estrecho, contador corto ("2 / 5") y Reiniciar solo con icono.
+- `zonas(el, {pieFijo})` → `{grafico, controles}`: gráfico arriba y controles debajo. Ampliado: controles abajo en vertical y a la derecha en horizontal. Con `pieFijo`, la zona de controles queda pegada al pie de la pantalla mientras se ve el widget (barra de pasos).
+- `medida(contenedor, {proporcion, proporcionEstrecha, minAncho, maxAncho, minAlto, maxAlto})` → `{ancho, alto, estrecho, ampliado}` a partir del ancho **del contenedor**: por debajo de 560 px, 4:3; nunca más del 70 % del alto de la pantalla; ampliado, usa el alto disponible.
+- `fuente(svg, px)` → tamaño de letra en unidades del `viewBox` que compensa su escala y, en táctil o en estrecho, garantiza 12 px reales (el SVG debe estar ya insertado). Para las marcas de los ejes, `marcas(min, max, n)` con `n` proporcional a los píxeles disponibles (≈ 1 marca cada 70 px).
+- `lienzoNitido(canvas, ancho, alto)` → contexto 2D escalado a `devicePixelRatio` (máx. 2).
+- `bucle(el, paso(dt))` → `{iniciar, parar, activo}`: animación con `requestAnimationFrame` que se detiene cuando `paso` devuelve `false` y se pausa sola mientras el widget está fuera de pantalla. Además, si la instancia devuelve `pausar()`/`reanudar()`, el núcleo los llama al salir/entrar en pantalla. `enPantalla(el)`, `estrecho(el)`, `gruesa()` (puntero táctil) y `reducido()` (menos movimiento) para consultar.
+- Núcleo, sin API: `el.dataset.disposicion = 'apilada' | 'ancha'` según el ancho del widget (< 560 px, con `ResizeObserver`; también redibuja al girar). Botón **Ampliar** en `.motor-cab`: panel fijo a pantalla completa (más Fullscreen API si el navegador la concede), con entrada propia en el historial (Atrás, Esc o ✕ cierran); el DOM del motor no se toca, así que conserva su estado. `Motores.ampliar(el)` / `Motores.cerrarAmpliado()`. `Motores.montar(el, motor, params, {perezoso: true})` retrasa la creación hasta que el contenedor se acerca a la pantalla (la app no lo usa todavía: ver `DECISIONES.md`).
+- `demo.html#<motor>.<modo>` pinta solo ese ejemplo y `#<motor>.<modo>.ampliado` lo abre ampliado, para capturarlo con `probar_web.py --demo <motor>.<modo>.ampliado [--android]`.
+
+**Reglas de `touch-action`** (Chrome lo ignora en las formas SVG; solo cuenta en elementos HTML y en el `<svg>` raíz; `arrastrable` lo pone en la zona y en el `<svg>` del asa):
+
+- Casi todo se arrastra en 2D (plano con vectores, grafo, puntos): `tactil: 'none'` (por defecto). La página se desplaza tocando fuera del gráfico: deja margen lateral y no pases del 70 % del alto (`medida` ya lo limita).
+- Un cursor o algún punto suelto que se mueve en horizontal: `tactil: 'pan-y'`. El scroll vertical sigue vivo sobre el gráfico; el arrastre con el dedo empieza cuando el gesto es claramente horizontal (> 8 px) y un toque sin arrastre lleva el asa ahí. El valor se mueve también con su deslizador y sus − / +.
+- Nunca `preventDefault` en `touchmove` a nivel de documento.
+
+| Motor | `touch-action` | Qué se arrastra |
+|---|---|---|
+| `funcion` | `pan-y` | Tirador sobre el eje x en tangente, pdf-cdf, discreta, activaciones, pertenencia, series y perdidas (residuo atípico); `radio: Infinity` (toda la gráfica). familias, rectas, densidad, region y barras no arrastran nada. |
+| `pasos` | — | Nada: barra de pasos fija y tira de progreso con zonas de toque de 44 px. |
+
+**Tamaños:** objetivos ≥ 44 px (48 en la barra de pasos y en la zona de los deslizadores), ≥ 8 px entre vecinos, texto de SVG ≥ 12 px reales, radio de captura ≥ 24 px, burbuja 40 px sobre el dedo, apilado < 560 px de ancho del widget.
+
+**Lista de comprobación por motor** (órdenes 4–6):
+
+1. Usa `zonas(el)`: gráfico (+ leyenda) en `grafico`; lectura y controles en `controles`. Ampliado se ve bien en vertical y en horizontal.
+2. Calcula el tamaño con `medida(contenedor)`, no con el ancho de la ventana ni con alturas fijas.
+3. Todo lo que se arrastra pasa por `arrastrable` (nada de `pointerdown` propios) y tiene su `[data-arrastrable]`, con `clave` si se recrea.
+4. `tactil` elegido (`none` o `pan-y`) y anotado en la tabla de arriba.
+5. Lo que se arrastra se reconoce a simple vista (tirador, halo o punto destacado) y el dedo no tapa lo que cambia: `valor()` en la burbuja.
+6. Cada asa tiene `etiqueta`, `valor` y `alTecla`; con `pan-y`, además un deslizador o − / + equivalente.
+7. Ningún `<title>`, `title=` ni `mouseover`: `inspeccionable`.
+8. Deslizadores con `api.slider`, selectores con `api.segmentado` y paso a paso con `api.barraPasos` (en una zona `pieFijo` si el gráfico es alto).
+9. Textos del SVG con `fuente(svg, px)`, menos marcas en estrecho y ninguna etiqueta recortada o solapada a 412 px.
+10. Canvas con `lienzoNitido`; animaciones con `bucle` (o `pausar`/`reanudar`). `probar_web.py --demo <motor> --android` sin errores ni avisos de arrastre, y capturas revisadas (normal y `.ampliado`).
 
 ### Reparto de motores por sesión
 

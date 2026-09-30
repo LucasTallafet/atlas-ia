@@ -41,21 +41,15 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const leyenda = H('div', { class: 'motor-leyenda' });
-    el.append(grafica, leyenda, lectura, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, leyenda);
+    Z.controles.append(lectura, controles);
     const sliders = {};
     function sl(clave, o) { sliders[clave] = api.slider(Object.assign({}, o, { alCambiar: (v) => { o.alCambiar(v); dibujar(); } })); controles.append(sliders[clave]); }
 
     if (modo === 'familias' && fs.length > 1 || modo === 'activaciones') {
-      const botones = H('div', { class: 'motor-selector', role: 'group', 'aria-label': 'Elegir función' });
-      const opciones = (modo === 'familias' ? [{ etiqueta: 'Todas', k: -1 }] : []).concat(fs);
-      opciones.forEach(o => {
-        const b = api.boton(o.etiqueta, () => { E.sel = o.k; marcar(); dibujar(); });
-        b.dataset.k = o.k;
-        botones.append(b);
-      });
-      const marcar = () => botones.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.k === E.sel)));
-      marcar();
-      controles.append(botones);
+      const opciones = (modo === 'familias' ? [{ texto: 'Todas', valor: -1 }] : []).concat(fs.map(f => ({ texto: f.etiqueta, valor: f.k })));
+      controles.append(api.segmentado(opciones, { valor: E.sel, etiqueta: 'Elegir función', alCambiar: (k) => { E.sel = k; dibujar(); } }));
     }
     if (modo === 'tangente') {
       sl('cursor', { etiqueta: 'punto x₀', min: x0, max: x1, paso: pasoCursor * 10, valor: E.cursor, alCambiar: v => { E.cursor = v; } });
@@ -76,10 +70,8 @@
     if ((modo === 'barras' || modo === 'series')) {
       const positivos = series.every(s => s.valores.every(v => v > 0));
       if (positivos) {
-        const b = api.boton('', () => { E.log = !E.log; ponTexto(); dibujar(); });
-        const ponTexto = () => { b.textContent = E.log ? 'Escala: logarítmica' : 'Escala: lineal'; b.setAttribute('aria-pressed', String(E.log)); };
-        ponTexto();
-        controles.append(b);
+        controles.append(api.segmentado([{ texto: 'lineal', valor: false }, { texto: 'logarítmica', valor: true }],
+          { valor: E.log, titulo: 'Escala:', etiqueta: 'Escala', alCambiar: (v) => { E.log = v; dibujar(); } }));
       }
     }
     if (Object.keys(sliders).length || controles.children.length) {
@@ -116,7 +108,7 @@
     function lienzo(s, c, caja, dx, dy, opts) {
       opts = opts || {};
       const X = api.escala(dx[0], dx[1], caja.l, caja.r), Y = opts.log ? logEscala(dy, caja.b, caja.t) : api.escala(dy[0], dy[1], caja.b, caja.t);
-      const g = api.el('g', { 'font-size': 11, fill: c.suave }, s);
+      const g = api.el('g', { 'font-size': F.eje, fill: c.suave }, s);
       const mx = opts.marcasX || api.marcas(dx[0], dx[1], Math.max(3, Math.floor((caja.r - caja.l) / 70)));
       const my = opts.log ? marcasLog(dy) : api.marcas(dy[0], dy[1], Math.max(3, Math.floor((caja.b - caja.t) / 45)));
       mx.forEach(v => {
@@ -167,41 +159,50 @@
     }
     function punto(L, x, y, color, r) { return api.el('circle', { cx: L.X(x), cy: L.Y(y), r: r || 5, fill: color, stroke: api.colores().superficie, 'stroke-width': 1.5 }, L.g); }
     function vertical(L, x, color, caja, disc) { api.el('line', { x1: L.X(x), x2: L.X(x), y1: caja.t, y2: caja.b, stroke: color, 'stroke-width': 1.4, 'stroke-dasharray': disc ? '5 4' : null }, L.g); }
-    function textoEn(L, x, y, t, color, ancla) { return api.el('text', { x: L.X(x), y: L.Y(y), fill: color, 'font-size': 12, 'font-weight': 600, 'text-anchor': ancla || 'start', text: t, 'paint-order': 'stroke', stroke: api.colores().superficie, 'stroke-width': 3 }, L.g); }
+    function textoEn(L, x, y, t, color, ancla) { return api.el('text', { x: L.X(x), y: L.Y(y), fill: color, 'font-size': F.rotulo, 'font-weight': 600, 'text-anchor': ancla || 'start', text: t, 'paint-order': 'stroke', stroke: api.colores().superficie, 'stroke-width': 3 }, L.g); }
 
-    // Arrastre con Pointer Events: mueve el cursor del modo. Los eventos van al contenedor,
-    // que sobrevive a cada redibujado (el SVG se sustituye y perdería la captura del puntero).
-    let arrastre = null;
-    function arrastrable(s, L, alMover) {
-      s.style.touchAction = 'pan-y';
-      s.style.cursor = 'ew-resize';
-      arrastre = { s, L, alMover };
-    }
-    const moverArrastre = (e) => {
-      const { s, L, alMover } = arrastre;
-      const r = s.getBoundingClientRect();
-      alMover(L.X.inversa((e.clientX - r.left) * s.viewBox.baseVal.width / r.width));
-    };
-    grafica.addEventListener('pointerdown', (e) => { if (!arrastre) return; grafica.setPointerCapture(e.pointerId); moverArrastre(e); });
-    grafica.addEventListener('pointermove', (e) => { if (arrastre && grafica.hasPointerCapture(e.pointerId)) moverArrastre(e); });
+    // Cursor arrastrable (ESPEC-WEB §8b): un tirador sobre el eje marca qué se mueve, y tocar o arrastrar en cualquier
+    // punto de la gráfica lo lleva ahí. Solo se mueve en horizontal (touch-action: pan-y): el scroll vertical sigue vivo.
+    // La zona es el contenedor, que sobrevive a cada redibujado (el SVG se sustituye).
+    const valorDe = (clave) => (clave === 'atipico' ? series[0].valores[E.atipico] : E[clave]);
     function fijarCursor(v, clave) {
       clave = clave || 'cursor';
       const sld = sliders[clave];
       const paso = parseFloat(sld.input.step) || 1;
-      E[clave] = Math.min(parseFloat(sld.input.max), Math.max(parseFloat(sld.input.min), redondeo(v, paso)));
-      sld.valor = E[clave];
+      const nuevo = Math.min(parseFloat(sld.input.max), Math.max(parseFloat(sld.input.min), redondeo(v, paso)));
+      if (nuevo === valorDe(clave)) return;
+      if (clave === 'atipico') series[0].valores[E.atipico] = nuevo; else E[clave] = nuevo;
+      sld.valor = nuevo;
       dibujar();
+    }
+    function tirador(s, L, c, caja, clave) {
+      clave = clave || 'cursor';
+      const sld = sliders[clave], nombre = sld.querySelector('label').textContent;
+      const x = L.X(valorDe(clave)), y = caja.b, paso = parseFloat(sld.input.step) || 1;
+      s.style.cursor = 'ew-resize';
+      s.setAttribute('role', 'group');   // con role="img" el tirador no llegaría a los lectores de pantalla
+      const g = api.el('g', {}, s);
+      api.el('circle', { cx: x, cy: y, r: 9, fill: c.acento, stroke: c.superficie, 'stroke-width': 2 }, g);
+      api.el('path', { d: `M${x - 2.5},${y - 3.5}v7M${x + 2.5},${y - 3.5}v7`, stroke: c.superficie, 'stroke-width': 1.6, 'stroke-linecap': 'round' }, g);
+      api.arrastrable(g, {
+        zona: grafica, clave, radio: Infinity, tactil: 'pan-y', etiqueta: nombre,
+        valor: () => `${nombre} = ${sld.querySelector('.slider-valor').textContent}`,
+        alMover: (p) => fijarCursor(L.X.inversa(api.aSvg(s, p).x), clave),
+        alTecla: (dx, dy) => fijarCursor(valorDe(clave) + (dx + dy) * paso, clave),
+      });
     }
 
     // ───── Dibujo principal ─────
+    const F = { eje: 11, rotulo: 12 };   // tamaños de letra del SVG; en táctil nunca por debajo de 12 px reales
     function dibujar() {
       const c = api.colores();
-      const W = Math.max(300, Math.min(el.clientWidth || 640, 900));
-      const alto = modo === 'pdf-cdf' ? Math.max(380, Math.min(W * 0.95, 540)) : Math.max(230, Math.min(W * 0.6, 400));
+      const M = api.medida(grafica, modo === 'pdf-cdf' ? { minAncho: 300, proporcion: 0.95, proporcionEstrecha: 1.15, minAlto: 380, maxAlto: 540 } : { minAncho: 300, minAlto: 230 });
+      const W = M.ancho, alto = M.alto;
       grafica.innerHTML = ''; lectura.innerHTML = ''; leyenda.innerHTML = '';
       const s = api.svg(W, modo === 'barras' ? 10 : alto);
       s.setAttribute('role', 'img');
       grafica.append(s);
+      F.eje = api.fuente(s, 11); F.rotulo = api.fuente(s, 12);
       const col = (k) => c.series[k % c.series.length];
       const lineas = [];
       const pon = (t) => lineas.push(t);
@@ -272,7 +273,7 @@
         pon(`x₀ = ${num(a, 3)} · f(x₀) = ${num(fa, 3)}`);
         pon(`Pendiente de la secante con h = ${num(E.h, 3)}: <strong>${num(msec, 4)}</strong>`);
         pon(`Pendiente de la tangente, f′(x₀) ≈ <strong>${num(mtan, 4)}</strong> · diferencia: ${num(Math.abs(msec - mtan), 4)}`);
-        arrastrable(s, L, v => fijarCursor(v));
+        tirador(s, L, c, caja);
       }
       if (modo === 'rectas') {
         for (let i = 0; i < fs.length; i++) {
@@ -310,6 +311,7 @@
         }).join('');
         pon(`<div class="tabla-scroll"><table class="motor-tabla"><thead><tr><th>Pérdida</th><th>media sobre ${v.length} residuos</th><th>peso del atípico</th></tr></thead><tbody>${filas}</tbody></table></div>`);
         pon(`Residuos: ${v.map((r, k) => k === E.atipico ? `<strong>${num(r, 2)}</strong>` : num(r, 2)).join(' · ')}`);
+        tirador(s, L, c, caja, 'atipico');
       }
       if (modo === 'activaciones') {
         const f = fs[E.sel], x = E.cursor;
@@ -319,14 +321,14 @@
         punto(L, x, ev(f, x), col(f.k), 6);
         ley([[`derivada de ${f.etiqueta}`, col(f.k), true]]);
         pon(`${f.etiqueta}(${num(x, 2)}) = <strong>${num(ev(f, x), 4)}</strong> · derivada = <strong>${num(deriv(f, x), 4)}</strong>`);
-        arrastrable(s, L, v => fijarCursor(v));
+        tirador(s, L, c, caja);
       }
       if (modo === 'pertenencia') {
         const x = E.cursor;
         vertical(L, x, c.texto, caja, false);
         const grados = fs.map(f => { const y = Math.max(0, ev(f, x)); punto(L, x, y, col(f.k), 5.5); return `${f.etiqueta}: <strong>${num(y, 2)}</strong>`; });
         pon(`Entrada ${num(x, 2)} → grado de pertenencia μ · ${grados.join(' · ')}`);
-        arrastrable(s, L, v => fijarCursor(v));
+        tirador(s, L, c, caja);
       }
       fin(s, lineas);
     }
@@ -360,13 +362,13 @@
       vertical(L2, t, c.texto, c2, true);
       api.el('line', { x1: c2.l, x2: L2.X(t), y1: L2.Y(F(t)), y2: L2.Y(F(t)), stroke: c.suave, 'stroke-dasharray': '4 4' }, L2.g);
       punto(L2, t, F(t), col(1), 6);
-      api.el('text', { x: c1.l + 6, y: c1.t + 14, 'font-size': 12, fill: c.suave, text: 'Densidad (PDF) e histograma de una muestra' }, s);
-      api.el('text', { x: c2.l + 6, y: c2.t + 14, 'font-size': 12, fill: c.suave, text: 'Distribución acumulada (CDF)' }, s);
+      api.el('text', { x: c1.l + 6, y: c1.t + 14, 'font-size': F.rotulo, fill: c.suave, text: 'Densidad (PDF) e histograma de una muestra' }, s);
+      api.el('text', { x: c2.l + 6, y: c2.t + 14, 'font-size': F.rotulo, fill: c.suave, text: 'Distribución acumulada (CDF)' }, s);
       ley([[fs[0].etiqueta + ' (PDF)', col(0)], ['CDF', col(1)], [`histograma de ${m} valores simulados`, c.suave]]);
       const prop = muestra.filter(v => v <= t).length / m;
       pon(`P(X ≤ ${num(t, 2)}) = área sombreada = F(${num(t, 2)}) = <strong>${num(F(t), 4)}</strong>`);
       pon(`En la muestra simulada, proporción de valores ≤ ${num(t, 2)}: ${num(prop, 3)}`);
-      arrastrable(s, L1, v => fijarCursor(v));
+      tirador(s, L1, c, c1);
       finF(s, lineasDe(pon));
     }
 
@@ -384,7 +386,7 @@
       const w = Math.max(1, (L.X(1) - L.X(0)) * 0.72);
       ks.forEach((k, i) => {
         const r = api.el('rect', { x: L.X(k) - w / 2, y: L.Y(ps[i]), width: w, height: Math.max(0, L.Y(0) - L.Y(ps[i])), fill: col(0), 'fill-opacity': k === E.cursor ? 1 : k <= E.cursor ? 0.7 : 0.35 }, L.g);
-        api.el('title', { text: `P(X = ${k}) = ${num(ps[i], 4)}` }, r);
+        api.inspeccionable(r, `P(X = ${k}) = ${num(ps[i], 4)}`);
       });
       extra.forEach(g => trazo(L, muestras(g, 400), { stroke: col(g.k), 'stroke-width': 2 }));
       const suma = ps.reduce((a, b) => a + b, 0), media = ks.reduce((a, k, i) => a + k * ps[i], 0);
@@ -393,7 +395,7 @@
       ley([[fs[0].etiqueta, col(0)]].concat(extra.map(g => [g.etiqueta, col(g.k)])));
       pon(`P(X = ${E.cursor}) = <strong>${num(i >= 0 ? ps[i] : 0, 4)}</strong> · P(X ≤ ${E.cursor}) = <strong>${num(acum, 4)}</strong>`);
       pon(`Media = ${num(media, 3)} · varianza = ${num(varz, 3)} · suma de todas las barras = ${num(suma, 4)}`);
-      arrastrable(s, L, v => fijarCursor(v));
+      tirador(s, L, c, caja);
       finF(s, lineasDe(pon));
     }
 
@@ -416,7 +418,7 @@
       vertical(L, E.cursor, c.suave, caja, true);
       ley(series.map((se, k) => [se.nombre, col(k)]).concat([['○ mínimo de cada serie', c.suave]]));
       pon(`En ${etq[E.cursor]}: ` + partes.join(' · '));
-      arrastrable(s, L, v => fijarCursor(Math.round(v)));
+      tirador(s, L, c, caja);
       finF(s, lineasDe(pon));
     }
 
@@ -434,7 +436,7 @@
       if (dx[1] === dx[0]) dx[1] = dx[0] + 1;
       const X = E.log ? logEscala(dx, izq, W - der) : api.escala(dx[0], dx[1], izq, W - der);
       const mx = E.log ? marcasLog(dx) : api.marcas(dx[0], dx[1], Math.max(2, Math.floor((W - izq - der) / 70)));
-      const g = api.el('g', { 'font-size': 11, fill: c.suave }, s);
+      const g = api.el('g', { 'font-size': F.eje, fill: c.suave }, s);
       const y0 = 10, yb = alto - 26;
       mx.forEach(v => { api.el('line', { x1: X(v), x2: X(v), y1: y0, y2: yb, stroke: c.rejilla }, g); api.el('text', { x: X(v), y: yb + 15, 'text-anchor': 'middle', text: num(v, 3) }, g); });
       const base = E.log ? dx[0] : 0;
@@ -442,15 +444,15 @@
       etq.forEach((t, i) => {
         const yf = y0 + i * fila;
         const txt = String(t).length > 28 ? String(t).slice(0, 27) + '…' : String(t);
-        api.el('text', { x: izq - 8, y: yf + fila / 2 + 4, 'text-anchor': 'end', 'font-size': 12, fill: c.texto, text: txt }, s);
+        api.el('text', { x: izq - 8, y: yf + fila / 2 + 4, 'text-anchor': 'end', 'font-size': F.rotulo, fill: c.texto, text: txt }, s);
         series.forEach((se, k) => {
           const v = se.valores[i];
           if (!Number.isFinite(v)) return;
           const h = ns > 1 ? 14 : 20, yb2 = yf + (ns > 1 ? 6 + k * 16 : (fila - h) / 2);
           const a = X(base), b = X(v);
           const r = api.el('rect', { x: Math.min(a, b), y: yb2, width: Math.max(1, Math.abs(b - a)), height: h, rx: 2, fill: v < 0 ? c.mal : col(k) }, s);
-          api.el('title', { text: `${t} · ${se.nombre}: ${num(v, 4)}` }, r);
-          api.el('text', { x: v < 0 ? Math.min(a, b) - 4 : Math.max(a, b) + 4, y: yb2 + h / 2 + 4, 'text-anchor': v < 0 ? 'end' : 'start', 'font-size': 11, fill: c.texto, text: num(v, 3) }, s);
+          api.inspeccionable(r, `${t}${se.nombre ? ' · ' + se.nombre : ''}: ${num(v, 4)}`);
+          api.el('text', { x: v < 0 ? Math.min(a, b) - 4 : Math.max(a, b) + 4, y: yb2 + h / 2 + 4, 'text-anchor': v < 0 ? 'end' : 'start', 'font-size': F.eje, fill: c.texto, text: num(v, 3) }, s);
         });
       });
       if (ns > 1 || series[0].nombre) ley(series.map((se, k) => [se.nombre, col(k)]));
