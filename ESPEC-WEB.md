@@ -154,6 +154,11 @@ Todo lo táctil se resuelve en `nucleo.js` (+ bloque "Contrato táctil" de `esti
 | Motor | `touch-action` | Qué se arrastra |
 |---|---|---|
 | `funcion` | `pan-y` | Tirador sobre el eje x en tangente, pdf-cdf, discreta, activaciones, pertenencia, series y perdidas (residuo atípico); `radio: Infinity` (toda la gráfica). familias, rectas, densidad, region y barras no arrastran nada. |
+| `vectores2d` | `none` | Puntas de vectores/puntos (radio de captura 44 px); coordenadas también con deslizadores − / + en «Coordenadas». |
+| `transformacion2d` | `none` | Columnas 1 y 2 de la matriz (radio 44 px); los cuatro valores también con − / + en «Valores de la matriz». |
+| `dispersion2d` | `none` | Puntos (radio 30 px) y centroides/consulta (44 px). Solo táctil y con `arrastrables` o modo `kmeans` (`anadir_puntos: false` lo desactiva): tocar un hueco añade un punto (clase del más cercano), mantener 600 ms un punto lo quita (mín. 3), con aviso la primera vez. Reproducción con `bucle`. |
+| `descenso` | `none` | Todo el mapa (`radio: Infinity`): tocar o arrastrar coloca el punto (gradiente) o el punto de partida (lr, optimizadores, que reinician el recorrido). Barra de pasos fija con Anterior/Reproducir/Siguiente/Reiniciar. |
+| `umbral` | `pan-y` | Umbral en horizontal; el asa cubre todo el gráfico (una por banda con «un umbral por grupo»). Paneles apilados con `data-disposicion="apilada"`. |
 | `pasos` | — | Nada: barra de pasos fija y tira de progreso con zonas de toque de 44 px. |
 
 **Tamaños:** objetivos ≥ 44 px (48 en la barra de pasos y en la zona de los deslizadores), ≥ 8 px entre vecinos, texto de SVG ≥ 12 px reales, radio de captura ≥ 24 px, burbuja 40 px sobre el dedo, apilado < 560 px de ancho del widget.

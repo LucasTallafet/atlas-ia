@@ -42,7 +42,8 @@
    "dataset": {"tipo": "objeto", "req": true, "desc": "{\"generador\": \"blobs|lunas|circulos|lineal|xor|curva\", \"n\": 120, \"ruido\": 0.2, \"clases\": 2, \"semilla\": 7} o {\"puntos\": [[x, y, clase], ...]}"},
    "controles": {"tipo": "lista", "req": false, "desc": "[{\"nombre\": \"k\", \"min\": 1, \"max\": 15, \"paso\": 1, \"valor\": 3}] hiperparámetros expuestos"},
    "paso_a_paso": {"tipo": "bool", "req": false, "desc": "muestra botones Paso / Reiniciar en algoritmos iterativos"},
-   "arrastrables": {"tipo": "bool", "req": false}
+   "arrastrables": {"tipo": "bool", "req": false},
+   "anadir_puntos": {"tipo": "bool", "req": false, "desc": "solo táctil: tocar un hueco añade un punto y mantener pulsado un punto lo quita (por defecto true si hay puntos arrastrables o modo kmeans; false lo desactiva)"}
   }
  },
  "descenso": {

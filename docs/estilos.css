@@ -863,3 +863,12 @@ html.hoja-abierta, html.hoja-abierta body { overflow: hidden; }
   .cabecera, .barra-inferior, .lateral, .panel-interactivo, .pie-ficha, .selector-vista { display: none !important; }
   .a-fondo { display: block; }
 }
+
+/* Coordenadas / valores con − / + de los motores 2D (órdenes móvil 4) */
+.motor-coordenadas { margin: 6px 0; }
+.motor-coordenadas > summary { cursor: pointer; font-weight: 600; padding: 6px 0; }
+@media (pointer: coarse), (max-width: 599.98px) {
+  .motor-coordenadas > summary { min-height: 44px; display: flex; align-items: center; }
+}
+[data-disposicion="apilada"] .umbral-paneles { grid-template-columns: minmax(0, 1fr); }
+.motor-aviso { margin: .4rem 0 0; padding: .5rem .7rem; border-radius: 8px; background: var(--superficie-2, rgba(127,127,127,.12)); font-size: .9rem; }

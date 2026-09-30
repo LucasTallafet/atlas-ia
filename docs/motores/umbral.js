@@ -73,7 +73,10 @@
     paneles.append(izq, der);
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, leyenda, paneles, lectura, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, leyenda);
+    Z.controles.append(paneles, lectura, controles);
+    let F = 12;   // letra del SVG en unidades del viewBox (≥ 12 px reales)
 
     const redondeo = (v) => Math.min(1, Math.max(0, Math.round(v / PASO) * PASO));
     const sUmbral = api.slider({ etiqueta: 'umbral t', min: 0, max: 1, paso: PASO, valor: E.t, alCambiar: v => { E.t = v; dibujar(); } });
@@ -113,14 +116,34 @@
       }
       api.el('line', { x1: caja.l, x2: caja.r, y1: medio, y2: medio, stroke: c.suave }, gr);
       const m = confusion(g.pos, g.neg, t);
-      const et = (x, y, txt, ancla, color) => api.el('text', { x, y, 'text-anchor': ancla, 'font-size': 12, 'font-weight': 600, fill: color, text: txt, 'paint-order': 'stroke', stroke: c.superficie, 'stroke-width': 3 }, gr);
+      const et = (x, y, txt, ancla, color) => api.el('text', { x, y, 'text-anchor': ancla, 'font-size': F, 'font-weight': 600, fill: color, text: txt, 'paint-order': 'stroke', stroke: c.superficie, 'stroke-width': 3 }, gr);
       et(caja.l + 4, caja.t + 12, `FN ${m.fn}`, 'start', c.mal);
       et(caja.r - 4, caja.t + 12, `TP ${m.tp}`, 'end', c.bien);
       et(caja.l + 4, caja.b - 4, `TN ${m.tn}`, 'start', c.bien);
       et(caja.r - 4, caja.b - 4, `FP ${m.fp}`, 'end', c.mal);
       if (g.nombre) et(caja.l + 4, caja.t + 28, 'Grupo ' + g.nombre, 'start', c.texto);
-      api.el('line', { x1: X(t), x2: X(t), y1: caja.t, y2: caja.b, stroke: c.texto, 'stroke-width': 2 }, gr);
-      api.el('path', { d: `M${X(t) - 6},${caja.t} L${X(t) + 6},${caja.t} L${X(t)},${caja.t + 8}Z`, fill: c.texto }, gr);
+      // Asa del umbral: línea + agarre visibles y un rectángulo transparente que cubre toda la banda (zona táctil ancha).
+      // Con un solo umbral hay una asa para todo el gráfico; con «un umbral por grupo», una por banda.
+      const unico = !(modo === 'grupos' && E.porGrupo);
+      const asa = api.el('g', {}, s);
+      const banda = unico ? { t: 0, b: s.viewBox.baseVal.height } : caja;
+      api.el('rect', { x: 0, y: banda.t, width: s.viewBox.baseVal.width, height: banda.b - banda.t, fill: 'transparent' }, asa);
+      api.el('line', { x1: X(t), x2: X(t), y1: caja.t, y2: caja.b, stroke: c.texto, 'stroke-width': 2 }, asa);
+      const gy = caja.t + 34;
+      api.el('circle', { cx: X(t), cy: gy, r: 11, fill: c.texto, stroke: c.superficie, 'stroke-width': 2 }, asa);
+      api.el('path', { d: `M${X(t) - 2.5},${gy - 4}v8M${X(t) + 2.5},${gy - 4}v8`, stroke: c.superficie, 'stroke-width': 1.6, 'stroke-linecap': 'round' }, asa);
+      const nombre = unico ? 'Umbral t' : 'Umbral del grupo ' + g.nombre;
+      const aplicar = (v) => {
+        v = redondeo(v);
+        if (unico) { if (v === E.t) return; E.t = v; sUmbral.valor = v; } else { if (v === E.tg[k]) return; E.tg[k] = v; sGrupos[k].valor = v; }
+        dibujar();
+      };
+      api.arrastrable(asa, {
+        zona: grafica, clave: unico ? 'umbral' : 'umbral-' + k, radio: Infinity, tactil: 'pan-y', etiqueta: nombre,
+        valor: () => `t = ${num(t, 2)}`,
+        alMover: (p) => aplicar(X.inversa(api.aSvg(s, p).x)),
+        alTecla: (dx) => aplicar(umbralDe(k) + dx * PASO),
+      });
       return { X, k, t0: caja.t, t1: caja.b };
     }
 
@@ -143,7 +166,7 @@
       s.classList.add('umbral-curva');
       s.setAttribute('role', 'img');
       const X = api.escala(0, 1, m.l, L - m.r), Y = api.escala(0, 1, L - m.b, m.t);
-      const g = api.el('g', { 'font-size': 11, fill: c.suave }, s);
+      const g = api.el('g', { 'font-size': 13, fill: c.suave }, s);   // el SVG se muestra a ~1:1, así nunca baja de 12 px
       [0, 0.25, 0.5, 0.75, 1].forEach(v => {
         api.el('line', { x1: X(v), x2: X(v), y1: Y(0), y2: Y(1), stroke: c.rejilla }, g);
         api.el('line', { x1: X(0), x2: X(1), y1: Y(v), y2: Y(v), stroke: c.rejilla }, g);
@@ -171,13 +194,15 @@
     // ───── Dibujo ─────
     function dibujar() {
       const c = api.colores();
-      const W = Math.max(300, Math.min(el.clientWidth || 640, 900));
-      const altoG = modo === 'grupos' ? 150 : 210, eje = 22;
+      const M = api.medida(grafica, { minAncho: 300, maxAncho: 900 });
+      const W = M.ancho;
+      const altoG = modo === 'grupos' ? 150 : (M.estrecho ? 190 : 210), eje = 26;
       const alto = G.length * altoG + eje;
       grafica.innerHTML = ''; izq.innerHTML = ''; der.innerHTML = ''; leyenda.innerHTML = '';
       const s = api.svg(W, alto);
-      s.setAttribute('role', 'img');
+      s.setAttribute('role', 'group');
       grafica.append(s);
+      F = api.fuente(s, 12);
       let maxCuenta = 1;
       G.forEach(g => {
         const cu = (arr) => { const h = {}; arr.forEach(v => { const b = Math.floor(v / PASO + 1e-9); h[b] = (h[b] || 0) + 1; }); return Math.max(0, ...Object.values(h)); };
@@ -185,11 +210,10 @@
       });
       const zonas = G.map((g, k) => histograma(s, c, { l: 12, r: W - 12, t: k * altoG + 4, b: (k + 1) * altoG - 4 }, g, umbralDe(k), k, maxCuenta));
       const X = zonas[0].X;
-      const ge = api.el('g', { 'font-size': 11, fill: c.suave }, s);
-      for (let v = 0; v <= 1.0001; v += 0.1) api.el('text', { x: X(v), y: alto - 6, 'text-anchor': 'middle', text: num(v, 1) }, ge);
-
-      s.style.touchAction = 'pan-y'; s.style.cursor = 'ew-resize';
-      actual = { s, X, altoG };
+      const ge = api.el('g', { 'font-size': api.fuente(s, 11), fill: c.suave }, s);
+      const paso = M.estrecho ? 0.2 : 0.1;
+      for (let v = 0; v <= 1.0001; v += paso) api.el('text', { x: X(v), y: alto - 6, 'text-anchor': 'middle', text: num(v, 1) }, ge);
+      s.style.cursor = 'ew-resize';
 
       leyenda.append(
         H('span', { class: 'leyenda-item' }, H('span', { class: 'leyenda-muestra', style: `--c:${c.series[0]}` }), 'clase positiva (arriba)'),
@@ -224,20 +248,6 @@
       lectura.innerHTML = lineas.map(t => `<p>${t}</p>`).join('');
       s.setAttribute('aria-label', 'Histograma de puntuaciones con el umbral. ' + lectura.textContent);
     }
-
-    // Arrastre del umbral: los eventos van al contenedor, que sobrevive a cada redibujado del SVG
-    let actual = null, grupoArrastre = 0;
-    const mover = (e, inicio) => {
-      const { s, X, altoG } = actual, r = s.getBoundingClientRect(), f = s.viewBox.baseVal.width / r.width;
-      const v = redondeo(X.inversa((e.clientX - r.left) * f));
-      if (modo === 'grupos' && E.porGrupo) {
-        if (inicio) grupoArrastre = Math.min(G.length - 1, Math.max(0, Math.floor((e.clientY - r.top) * f / altoG)));
-        E.tg[grupoArrastre] = v; sGrupos[grupoArrastre].valor = v;
-      } else { E.t = v; sUmbral.valor = v; }
-      dibujar();
-    };
-    grafica.addEventListener('pointerdown', (e) => { if (!actual) return; grafica.setPointerCapture(e.pointerId); mover(e, true); });
-    grafica.addEventListener('pointermove', (e) => { if (grafica.hasPointerCapture(e.pointerId)) mover(e, false); });
 
     dibujar();
     return { redibujar: dibujar };

@@ -68,7 +68,7 @@
       const X = api.escala(1, hist.length, m.l, W - m.r), Y = api.escala(0, maxD * 1.05, alto - m.b, m.t);
       const s = api.svg(W, alto);
       s.setAttribute('role', 'img');
-      const g = api.el('g', { 'font-size': 11, fill: c.suave }, s);
+      const g = api.el('g', { 'font-size': 12, fill: c.suave }, s);
       api.marcas(0, maxD, 4).forEach(v => { api.el('line', { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), stroke: c.rejilla }, g); api.el('text', { x: m.l - 4, y: Y(v) + 4, 'text-anchor': 'end', text: num(v, 2) }, g); });
       api.el('polyline', { points: hist.map((h, i) => X(i + 1).toFixed(1) + ',' + Y(h.dist).toFixed(1)).join(' '), fill: 'none', stroke: c.acento, 'stroke-width': 2 }, s);
       hist.forEach((h, i) => api.el('circle', { cx: X(i + 1), cy: Y(h.dist), r: i < E.revelados ? 3.5 : 2.5, fill: i < E.revelados ? c.acento : c.superficie, stroke: c.acento, 'stroke-width': 1.5 }, s));

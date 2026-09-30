@@ -21,28 +21,25 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const leyenda = H('div', { class: 'motor-leyenda' });
-    el.append(grafica, leyenda, lectura, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, leyenda);
+    Z.controles.append(lectura, controles);
 
     if (presets.length) {
       const grupo = H('div', { class: 'motor-selector', role: 'group', 'aria-label': 'Matrices predefinidas' });
       presets.forEach(pr => grupo.append(api.boton(pr.nombre, () => { M.a = pr.matriz[0][0]; M.b = pr.matriz[0][1]; M.c = pr.matriz[1][0]; M.d = pr.matriz[1][1]; dibujar(); })));
       controles.append(grupo);
     }
+    // Valores de la matriz con − / +: alternativa exacta al arrastre de las columnas.
+    const entradasSl = [['a', 'fila 1, col. 1'], ['b', 'fila 1, col. 2'], ['c', 'fila 2, col. 1'], ['d', 'fila 2, col. 2']].map(([k, et]) =>
+      ({ k, sl: api.slider({ etiqueta: et, min: -ext, max: ext, paso: 0.1, fino: true, valor: M[k], alCambiar: (v) => { M[k] = v; dibujar(); } }) }));
+    const detMat = H('details', { class: 'motor-coordenadas' }, H('summary', { text: 'Valores de la matriz' }), H('div', { class: 'motor-controles' }, ...entradasSl.map(e => e.sl)));
+    controles.append(detMat);
     controles.append(api.boton('Reiniciar', reiniciar));
     function reiniciar() { Motores.desmontar(el); Motores.montar(el, 'transformacion2d', JSON.parse(JSON.stringify(p))); }
 
     // ───── Plano y arrastre (eventos en el contenedor, que sobrevive a cada redibujado) ─────
-    let L = null, arrastre = null;
-    grafica.addEventListener('pointermove', (e) => {
-      if (!arrastre) return;
-      const s = grafica.querySelector('svg');
-      if (!s) return;
-      const r = s.getBoundingClientRect(), f = s.viewBox.baseVal.width / r.width;
-      arrastre(L.X.inversa((e.clientX - r.left) * f), L.Y.inversa((e.clientY - r.top) * f));
-    });
-    const soltar = () => { arrastre = null; };
-    grafica.addEventListener('pointerup', soltar);
-    grafica.addEventListener('pointercancel', soltar);
+    let L = null, S = null, F = 13;
 
     function plano(s, c, caja) {
       const k = Math.min((caja.r - caja.l) / (dom.x1 - dom.x0), (caja.b - caja.t) / (dom.y1 - dom.y0));
@@ -67,19 +64,17 @@
       puntaFlecha(g, p0, p1, color);
     }
     function etiquetaTxt(g, pt, texto, color, c) {
-      api.el('text', { x: pt[0] + 6, y: pt[1] - 6, fill: color, 'font-size': 13, 'font-weight': 700, 'paint-order': 'stroke', stroke: c.superficie, 'stroke-width': 3, text: texto }, g);
+      api.el('text', { x: pt[0] + 6, y: pt[1] - 6, fill: color, 'font-size': F, 'font-weight': 700, 'paint-order': 'stroke', stroke: c.superficie, 'stroke-width': 3, text: texto }, g);
     }
     function asa(g, x, y, color, texto, mover) {
-      const pt = L.pt(x, y);
-      const c1 = api.el('circle', { cx: pt[0], cy: pt[1], r: 10, fill: color, stroke: api.colores().superficie, 'stroke-width': 1.6, tabindex: 0, role: 'button', 'aria-label': texto + ' (arrastra o usa las flechas)' }, g);
+      const pt = L.pt(x, y), paso = (dom.x1 - dom.x0) / 40;
+      const c1 = api.el('circle', { cx: pt[0], cy: pt[1], r: 10, fill: color, stroke: api.colores().superficie, 'stroke-width': 1.6 }, g);
       c1.style.cursor = 'grab';
-      c1.addEventListener('pointerdown', (e) => { e.stopPropagation(); arrastre = mover; grafica.setPointerCapture(e.pointerId); });
-      c1.addEventListener('keydown', (e) => {
-        const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[e.key];
-        if (!d) return;
-        e.preventDefault();
-        const paso = (dom.x1 - dom.x0) / 40;
-        mover(x + d[0] * paso, y + d[1] * paso);
+      api.arrastrable(c1, {
+        zona: grafica, clave: texto, radio: 44, tactil: 'none', etiqueta: texto,
+        valor: () => `${texto} = (${num(x, 2)}, ${num(y, 2)})`,
+        alMover: (p) => { const q = api.aSvg(S, p); mover(L.X.inversa(q.x), L.Y.inversa(q.y)); },
+        alTecla: (dx, dy) => mover(x + dx * paso, y + dy * paso),
       });
       return c1;
     }
@@ -98,12 +93,13 @@
     // ───── Dibujo principal ─────
     function dibujar() {
       const c = api.colores();
-      const W = Math.max(300, Math.min(el.clientWidth || 640, 760));
-      const alto = Math.max(260, Math.min(W * 0.82, 460));
+      const Md = api.medida(grafica, { minAncho: 300, maxAncho: 760, proporcion: 0.82, minAlto: 260, maxAlto: 460 });
+      const W = Md.ancho, alto = Md.alto;
       grafica.innerHTML = ''; lectura.innerHTML = ''; leyenda.innerHTML = '';
       const s = api.svg(W, alto);
-      s.setAttribute('role', 'img');
+      s.setAttribute('role', 'group');
       grafica.append(s);
+      S = s; F = api.fuente(s, 13);
       const caja = { l: 16, r: W - 16, t: 16, b: alto - 16 };
       L = plano(s, c, caja);
       const col = (k) => c.series[((k % 8) + 8) % 8];
@@ -159,6 +155,7 @@
       pon(`M = [[${num(M.a, 2)}, ${num(M.b, 2)}], [${num(M.c, 2)}, ${num(M.d, 2)}]]`);
       pon(`determinante = <strong>${num(det, 3)}</strong> · ${Math.abs(det) < 1e-9 ? 'aplasta el plano en una línea (o un punto)' : det > 0 ? 'conserva la orientación' : 'invierte la orientación'} · el área de cada celda se multiplica por ${num(Math.abs(det), 3)}`);
 
+      entradasSl.forEach(e => { e.sl.valor = M[e.k]; });
       lectura.innerHTML = lineas.map(t => `<p>${t}</p>`).join('');
       s.setAttribute('aria-label', 'Transformación lineal interactiva. ' + lectura.textContent);
     }

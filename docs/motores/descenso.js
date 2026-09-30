@@ -104,36 +104,78 @@
 
   // Dos lienzos superpuestos: fondo (mapa de calor + curvas de nivel, caro, se recalcula poco) y
   // frente (punto/trayectorias, barato, se redibuja en cada arrastre o paso).
-  function crearEscena(el, api, f, dom) {
+  function crearEscena(el, api, f, dom, opc) {
     const H = api.html;
+    const Z = api.zonas(el, { pieFijo: !!(opc && opc.pieFijo) });
     const grafica = H('div', { class: 'motor-grafica' });
     grafica.style.position = 'relative';
     const fondoCanvas = H('canvas'); fondoCanvas.style.cssText = 'display:block;max-width:100%;';
-    const frenteCanvas = H('canvas'); frenteCanvas.style.cssText = 'display:block;max-width:100%;position:absolute;left:0;top:0;touch-action:none;';
+    const frenteCanvas = H('canvas'); frenteCanvas.style.cssText = 'display:block;max-width:100%;position:absolute;left:0;top:0;';
     grafica.append(fondoCanvas, frenteCanvas);
-    const esc = { grafica, fondoCanvas, frenteCanvas, W: 0, Ht: 0, vista: null, X: null, Y: null };
+    Z.grafico.append(grafica);
+    const esc = { Z, grafica, fondoCanvas, frenteCanvas, W: 0, Ht: 0, vista: null, X: null, Y: null, cf: null, cp: null };
     esc.medir = function () {
-      esc.W = Math.max(280, Math.min(el.clientWidth || 520, 620));
-      esc.Ht = Math.round(esc.W * 0.78);
-      [fondoCanvas, frenteCanvas].forEach(cv => {
-        cv.width = Math.round(esc.W * 2); cv.height = Math.round(esc.Ht * 2);
-        cv.style.width = esc.W + 'px'; cv.style.height = esc.Ht + 'px';
-      });
+      const M = api.medida(grafica, { minAncho: 280, maxAncho: 620, proporcion: 0.78, proporcionEstrecha: 0.9, minAlto: 220, maxAlto: 460 });
+      esc.W = M.ancho; esc.Ht = M.alto;
+      esc.cf = api.lienzoNitido(fondoCanvas, esc.W, esc.Ht);
+      esc.cp = api.lienzoNitido(frenteCanvas, esc.W, esc.Ht);
       esc.vista = ejesIguales(dom, esc.W, esc.Ht);
       esc.X = api.escala(esc.vista.x0, esc.vista.x1, 0, esc.W);
       esc.Y = api.escala(esc.vista.y0, esc.vista.y1, esc.Ht, 0);
     };
     esc.dibujarFondo = function (c) {
-      const ctx = fondoCanvas.getContext('2d');
-      ctx.setTransform(2, 0, 0, 2, 0, 0); ctx.clearRect(0, 0, esc.W, esc.Ht);
-      dibujarSuperficie(ctx, c, f, esc.vista, esc.W, esc.Ht);
+      esc.cf.clearRect(0, 0, esc.W, esc.Ht);
+      dibujarSuperficie(esc.cf, c, f, esc.vista, esc.W, esc.Ht);
     };
     esc.ctxFrente = function () {
-      const ctx = frenteCanvas.getContext('2d');
-      ctx.setTransform(2, 0, 0, 2, 0, 0); ctx.clearRect(0, 0, esc.W, esc.Ht);
-      return ctx;
+      esc.cp.clearRect(0, 0, esc.W, esc.Ht);
+      return esc.cp;
+    };
+    // Tocar o arrastrar en cualquier punto del mapa coloca el punto (ESPEC-WEB §8b: radio infinito, touch-action none).
+    esc.colocable = function (etiqueta, obtener, poner) {
+      const cv = frenteCanvas, paso = (dom.x1 - dom.x0) / 40;
+      const limitar = (x, y) => poner(Math.min(esc.vista.x1, Math.max(esc.vista.x0, x)), Math.min(esc.vista.y1, Math.max(esc.vista.y0, y)));
+      cv.style.cursor = 'crosshair';
+      api.arrastrable(cv, {
+        zona: cv, clave: 'punto', radio: Infinity, tactil: 'none', etiqueta,
+        valor: () => { const q = obtener(); return `(${api.num(q.x, 2)}, ${api.num(q.y, 2)})`; },
+        alMover: (pt) => { const r = cv.getBoundingClientRect(); limitar(esc.X.inversa((pt.x - r.left) * esc.W / r.width), esc.Y.inversa((pt.y - r.top) * esc.Ht / r.height)); },
+        alTecla: (dx, dy) => { const q = obtener(); limitar(q.x + dx * paso, q.y + dy * paso); },
+      });
     };
     return esc;
+  }
+
+  // Barra de pasos + reproducción con bucle (se pausa sola fuera de pantalla). irA(n) rehace el camino hasta la iteración n.
+  function controlPasos(el, api, o) {
+    let acum = 0;
+    const b = api.bucle(el, (dt) => {
+      acum += dt;
+      if (acum < 350) return true;
+      acum = 0;
+      if (o.terminado()) { pintar(); return false; }
+      o.avanzar(); o.actualizar(); pintar();
+      return !o.terminado();
+    });
+    const barra = api.barraPasos({
+      alAnterior: () => { b.parar(); o.irA(Math.max(0, o.iter() - 1)); o.actualizar(); pintar(); },
+      alSiguiente: () => { b.parar(); o.avanzar(); o.actualizar(); pintar(); },
+      alReiniciar: () => { b.parar(); o.irA(0); o.actualizar(); pintar(); },
+      alReproducir: () => {
+        if (b.activo) { b.parar(); return pintar(); }
+        if (api.reducido()) { for (let i = 0; i < 300 && !o.terminado(); i++) o.avanzar(); o.actualizar(); return pintar(); }
+        if (o.terminado()) o.irA(0);
+        b.iniciar(); o.actualizar(); pintar();
+      },
+    });
+    function pintar() {
+      const i = o.iter();
+      barra.poner(i, i + 2, b.activo);
+      barra.querySelector('.bp-largo').textContent = `Iteración ${i}`;
+      barra.querySelector('.bp-corto').textContent = `it. ${i}`;
+      barra.querySelector('.bp-siguiente').disabled = o.terminado();
+    }
+    return { barra, pintar, parar: () => b.parar() };
   }
 
   // ───────────────────────── gradiente ─────────────────────────
@@ -145,32 +187,10 @@
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
     const esc = crearEscena(el, api, f, dom);
-    el.append(esc.grafica, lectura, controles);
+    esc.Z.controles.append(lectura, controles);
     controles.append(api.boton('Reiniciar', () => { Motores.desmontar(el); Motores.montar(el, 'descenso', JSON.parse(JSON.stringify(p))); }));
 
-    esc.frenteCanvas.tabIndex = 0;
-    esc.frenteCanvas.style.cursor = 'crosshair';
-    esc.frenteCanvas.setAttribute('role', 'application');
-    let arrastrando = false;
-    function fijar(cx, cy) {
-      const r = esc.frenteCanvas.getBoundingClientRect();
-      punto.x = Math.min(esc.vista.x1, Math.max(esc.vista.x0, esc.X.inversa(cx - r.left)));
-      punto.y = Math.min(esc.vista.y1, Math.max(esc.vista.y0, esc.Y.inversa(cy - r.top)));
-      frente();
-    }
-    esc.frenteCanvas.addEventListener('pointerdown', e => { arrastrando = true; esc.frenteCanvas.setPointerCapture(e.pointerId); fijar(e.clientX, e.clientY); });
-    esc.frenteCanvas.addEventListener('pointermove', e => { if (arrastrando) fijar(e.clientX, e.clientY); });
-    esc.frenteCanvas.addEventListener('pointerup', () => { arrastrando = false; });
-    esc.frenteCanvas.addEventListener('pointercancel', () => { arrastrando = false; });
-    esc.frenteCanvas.addEventListener('keydown', e => {
-      const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[e.key];
-      if (!d) return;
-      e.preventDefault();
-      const paso = (dom.x1 - dom.x0) / 40;
-      punto.x = Math.min(dom.x1, Math.max(dom.x0, punto.x + d[0] * paso));
-      punto.y = Math.min(dom.y1, Math.max(dom.y0, punto.y + d[1] * paso));
-      frente();
-    });
+    esc.colocable('Punto', () => punto, (x, y) => { punto.x = x; punto.y = y; frente(); });
 
     function frente() {
       const c = api.colores();
@@ -180,9 +200,10 @@
       const paso = (esc.vista.x1 - esc.vista.x0) * 0.12;
       const x1d = punto.x + (gx / mag) * paso, y1d = punto.y + (gy / mag) * paso;
       flecha(ctx, esc.X(punto.x), esc.Y(punto.y), esc.X(x1d), esc.Y(y1d), c.texto);
-      ctx.beginPath(); ctx.arc(esc.X(punto.x), esc.Y(punto.y), 6, 0, 2 * Math.PI);
+      ctx.beginPath(); ctx.arc(esc.X(punto.x), esc.Y(punto.y), 15, 0, 2 * Math.PI);
+      ctx.strokeStyle = c.acento; ctx.lineWidth = 1.5; ctx.globalAlpha = 0.5; ctx.stroke(); ctx.globalAlpha = 1;
+      ctx.beginPath(); ctx.arc(esc.X(punto.x), esc.Y(punto.y), 7, 0, 2 * Math.PI);
       ctx.fillStyle = c.acento; ctx.strokeStyle = c.superficie; ctx.lineWidth = 1.5; ctx.fill(); ctx.stroke();
-      esc.frenteCanvas.setAttribute('aria-label', `Punto en (${num(punto.x, 2)}, ${num(punto.y, 2)}). Arrástralo o usa las flechas del teclado.`);
       lectura.innerHTML = `<p>En (x, y) = (${num(punto.x, 3)}, ${num(punto.y, 3)}): f = ${num(f(punto), 4)} · ∇f = (${num(gx, 3)}, ${num(gy, 3)}).</p>` +
         `<p>El gradiente (la flecha) apunta hacia donde <em>f</em> crece más deprisa. Para minimizar, hay que avanzar en la dirección opuesta, −∇f.</p>`;
     }
@@ -196,14 +217,13 @@
     const H = api.html, num = api.num;
     const f = api.expr(p.superficie, ['x', 'y']);
     const dom = dominioPorDefecto(p);
-    const reducido = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const E = { lr: p.lr != null ? p.lr : 0.1, camino: [[p.inicio[0], p.inicio[1]]], iter: 0, estado: 'inicio' };
+    const ini = { x: p.inicio[0], y: p.inicio[1] };
+    const E = { lr: p.lr != null ? p.lr : 0.1, camino: [[ini.x, ini.y]], iter: 0, estado: 'inicio' };
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    const esc = crearEscena(el, api, f, dom);
-    el.append(esc.grafica, lectura, controles);
+    const esc = crearEscena(el, api, f, dom, { pieFijo: true });
 
-    function reiniciarCamino() { E.camino = [[p.inicio[0], p.inicio[1]]]; E.iter = 0; E.estado = 'inicio'; }
+    function reiniciarCamino() { E.camino = [[ini.x, ini.y]]; E.iter = 0; E.estado = 'inicio'; }
     function paso() {
       if (E.estado === 'divergido' || E.estado === 'convergido') return;
       const [x, y] = E.camino[E.camino.length - 1];
@@ -218,17 +238,15 @@
       } else E.estado = 'avanzando';
     }
 
-    controles.append(api.slider({ etiqueta: 'tasa de aprendizaje η', min: 0.01, max: 1.2, paso: 0.01, valor: E.lr, alCambiar: v => { E.lr = v; parar(); reiniciarCamino(); actualizar(); } }));
-    let temporizador = null;
-    const bPaso = api.boton('Paso →', () => { parar(); paso(); actualizar(); }, { class: 'boton boton-principal' });
-    const bAuto = api.boton('Hasta el final', () => {
-      if (temporizador) return parar();
-      if (reducido) { for (let i = 0; i < 300 && E.estado !== 'convergido' && E.estado !== 'divergido'; i++) paso(); return actualizar(); }
-      bAuto.textContent = 'Pausa';
-      temporizador = setInterval(() => { if (!document.body.contains(el) || E.estado === 'convergido' || E.estado === 'divergido') return parar(); paso(); actualizar(); }, 350);
+    const pasos = controlPasos(el, api, {
+      iter: () => E.iter, terminado: () => E.estado === 'divergido' || E.estado === 'convergido', avanzar: paso, actualizar: () => actualizar(),
+      irA: (n) => { reiniciarCamino(); for (let i = 0; i < n; i++) paso(); },
     });
-    function parar() { if (temporizador) { clearInterval(temporizador); temporizador = null; } bAuto.textContent = 'Hasta el final'; }
-    controles.append(bPaso, bAuto, api.boton('Reiniciar', () => { parar(); reiniciarCamino(); actualizar(); }));
+    const parar = pasos.parar;
+    controles.append(api.slider({ etiqueta: 'tasa de aprendizaje η', min: 0.01, max: 1.2, paso: 0.01, valor: E.lr, alCambiar: v => { E.lr = v; parar(); reiniciarCamino(); actualizar(); } }));
+    esc.Z.controles.append(lectura, controles, pasos.barra);
+    // Tocar el mapa coloca el punto de partida y reinicia el recorrido.
+    esc.colocable('Punto de partida', () => ini, (x, y) => { ini.x = x; ini.y = y; parar(); reiniciarCamino(); actualizar(); });
 
     function frente(c) {
       const ctx = esc.ctxFrente();
@@ -237,13 +255,11 @@
       ctx.stroke();
       E.camino.forEach(([x, y], i) => {
         const ultimo = i === E.camino.length - 1;
-        ctx.beginPath(); ctx.arc(esc.X(x), esc.Y(y), ultimo ? 6 : 2.6, 0, 2 * Math.PI);
+        ctx.beginPath(); ctx.arc(esc.X(x), esc.Y(y), ultimo ? 7 : 3, 0, 2 * Math.PI);
         ctx.fillStyle = ultimo ? c.acento : c.superficie; ctx.fill();
         if (!ultimo) { ctx.strokeStyle = c.texto; ctx.lineWidth = 1; ctx.stroke(); }
       });
       const [x, y] = E.camino[E.camino.length - 1];
-      esc.frenteCanvas.setAttribute('role', 'img');
-      esc.frenteCanvas.setAttribute('aria-label', `Descenso de gradiente: iteración ${E.iter}, en (${num(x, 2)}, ${num(y, 2)}).`);
       const msgs = {
         inicio: 'Punto de partida.', avanzando: 'Bajando por la superficie hacia el mínimo.',
         convergido: '<strong>Convergido</strong>: el gradiente ya es casi cero.',
@@ -251,8 +267,7 @@
         oscila: '<strong>Oscila</strong>: da saltos de un lado a otro del valle sin asentarse.',
       };
       lectura.innerHTML = `<p>Iteración ${E.iter}: (x, y) = (${num(x, 3)}, ${num(y, 3)}) · f(x, y) = ${num(f({ x, y }), 4)}.</p><p>${msgs[E.estado] || ''}</p>`;
-      bPaso.disabled = E.estado === 'convergido' || E.estado === 'divergido';
-      bAuto.disabled = bPaso.disabled;
+      pasos.pintar();
     }
     function actualizar() { frente(api.colores()); }
     function dibujar() { esc.medir(); esc.dibujarFondo(api.colores()); actualizar(); }
@@ -267,8 +282,8 @@
     const dom = dominioPorDefecto(p);
     const lr = p.lr != null ? p.lr : 0.1;
     const nombres = p.optimizadores && p.optimizadores.length ? p.optimizadores : ['sgd', 'momentum', 'adam'];
-    const reducido = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    function crear(nombre) { return { nombre, camino: [[p.inicio[0], p.inicio[1]]], v: [0, 0], m: [0, 0], vv: [0, 0], t: 0, terminado: false }; }
+    const ini = { x: p.inicio[0], y: p.inicio[1] };
+    function crear(nombre) { return { nombre, camino: [[ini.x, ini.y]], v: [0, 0], m: [0, 0], vv: [0, 0], t: 0, terminado: false }; }
     let opts = nombres.map(crear);
 
     function pasoOptimizador(o) {
@@ -295,19 +310,18 @@
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const leyenda = H('div', { class: 'motor-leyenda' });
     const controles = H('div', { class: 'motor-controles' });
-    const esc = crearEscena(el, api, f, dom);
-    el.append(esc.grafica, leyenda, lectura, controles);
+    const esc = crearEscena(el, api, f, dom, { pieFijo: true });
+    esc.Z.grafico.append(leyenda);
 
-    let temporizador = null;
-    const bPaso = api.boton('Paso →', () => { parar(); opts.forEach(pasoOptimizador); actualizar(); }, { class: 'boton boton-principal' });
-    const bAuto = api.boton('Hasta el final', () => {
-      if (temporizador) return parar();
-      if (reducido) { for (let i = 0; i < 300 && opts.some(o => !o.terminado); i++) opts.forEach(pasoOptimizador); return actualizar(); }
-      bAuto.textContent = 'Pausa';
-      temporizador = setInterval(() => { if (!document.body.contains(el) || opts.every(o => o.terminado)) return parar(); opts.forEach(pasoOptimizador); actualizar(); }, 350);
+    const pasos = controlPasos(el, api, {
+      iter: () => opts[0].camino.length - 1, terminado: () => opts.every(o => o.terminado),
+      avanzar: () => opts.forEach(pasoOptimizador), actualizar: () => actualizar(),
+      irA: (n) => { opts = nombres.map(crear); for (let i = 0; i < n; i++) opts.forEach(pasoOptimizador); },
     });
-    function parar() { if (temporizador) { clearInterval(temporizador); temporizador = null; } bAuto.textContent = 'Hasta el final'; }
-    controles.append(bPaso, bAuto, api.boton('Reiniciar', () => { parar(); opts = nombres.map(crear); actualizar(); }));
+    const parar = pasos.parar;
+    esc.Z.controles.append(lectura, controles, pasos.barra);
+    // Tocar el mapa coloca el punto de partida común y reinicia los tres recorridos.
+    esc.colocable('Punto de partida', () => ini, (x, y) => { ini.x = x; ini.y = y; parar(); opts = nombres.map(crear); actualizar(); });
 
     function frente(c) {
       const ctx = esc.ctxFrente();
@@ -319,14 +333,11 @@
         const [lx, ly] = o.camino[o.camino.length - 1];
         ctx.beginPath(); ctx.arc(esc.X(lx), esc.Y(ly), 5, 0, 2 * Math.PI); ctx.fillStyle = color; ctx.fill();
       });
-      esc.frenteCanvas.setAttribute('role', 'img');
-      esc.frenteCanvas.setAttribute('aria-label', 'Trayectorias de varios optimizadores sobre la misma superficie de pérdida.');
       leyenda.innerHTML = '';
       opts.forEach((o, i) => leyenda.append(H('span', { class: 'leyenda-item' }, H('span', { class: 'leyenda-muestra', style: `--c:${c.series[i % 8]}` }), o.nombre)));
       const lineas = opts.map(o => { const [x, y] = o.camino[o.camino.length - 1]; return `${o.nombre}: ${o.camino.length - 1} pasos, f = ${num(f({ x, y }), 4)}${o.terminado ? ' (parado)' : ''}`; });
       lectura.innerHTML = `<p>${lineas.join(' · ')}</p><p>Con la misma tasa de aprendizaje (η = ${num(lr, 3)}) y el mismo punto de partida, cada optimizador sigue un camino distinto: SGD sigue el gradiente tal cual, momentum acumula velocidad y Adam adapta el paso a cada dirección.</p>`;
-      bPaso.disabled = opts.every(o => o.terminado);
-      bAuto.disabled = bPaso.disabled;
+      pasos.pintar();
     }
     function actualizar() { frente(api.colores()); }
     function dibujar() { esc.medir(); esc.dibujarFondo(api.colores()); actualizar(); }

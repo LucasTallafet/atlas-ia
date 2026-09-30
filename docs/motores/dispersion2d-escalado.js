@@ -46,7 +46,7 @@
       const X = api.escala(x0, x1, m.l, W - m.r), Y = api.escala(y0, y1, alto - m.b, m.t);
       const s = api.svg(W, alto);
       s.setAttribute('role', 'img');
-      const g = api.el('g', { 'font-size': 11, fill: c.suave }, s);
+      const g = api.el('g', { 'font-size': 12, fill: c.suave }, s);
       api.marcas(x0, x1, 5).forEach(v => { api.el('line', { x1: X(v), x2: X(v), y1: m.t, y2: alto - m.b, stroke: c.rejilla }, g); api.el('text', { x: X(v), y: alto - m.b + 15, 'text-anchor': 'middle', text: num(v, 2) }, g); });
       api.marcas(y0, y1, 4).forEach(v => { api.el('line', { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), stroke: c.rejilla }, g); api.el('text', { x: m.l - 4, y: Y(v) + 4, 'text-anchor': 'end', text: num(v, 2) }, g); });
       tx.y.forEach((xv, i) => api.el('circle', { cx: X(xv), cy: Y(ty.y[i]), r: 4, fill: c.series[0], stroke: c.superficie }, s));

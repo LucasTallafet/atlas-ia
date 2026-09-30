@@ -51,39 +51,35 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const leyenda = H('div', { class: 'motor-leyenda' });
-    el.append(grafica, leyenda, lectura, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, leyenda);
+    Z.controles.append(lectura, controles);
 
     const NOMBRE_OP = { suma: 'u + v', resta: 'u − v', escalar: 'k·u', producto: 'producto escalar', coseno: 'coseno', euclidea: 'distancia euclídea', manhattan: 'distancia manhattan', proyeccion: 'proyección' };
     if ((modo === 'operaciones' || modo === 'similitud') && mostrar.length > 1) {
-      const grupo = H('div', { class: 'motor-selector', role: 'group', 'aria-label': 'Elegir relación' });
-      mostrar.forEach(m => {
-        const b = api.boton(NOMBRE_OP[m] || m, () => { E.activo = m; marcar(); dibujar(); });
-        b.dataset.m = m;
-        grupo.append(b);
-      });
-      const marcar = () => grupo.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.m === E.activo)));
-      marcar();
-      controles.append(grupo);
+      controles.append(api.segmentado(mostrar.map(m => ({ valor: m, texto: NOMBRE_OP[m] || m })), { valor: E.activo, etiqueta: 'Elegir relación', alCambiar: (m) => { E.activo = m; dibujar(); } }));
     }
     if (mostrar.includes('escalar')) {
       controles.append(api.slider({ etiqueta: 'k', min: -2, max: 2, paso: 0.1, valor: E.k, alCambiar: v => { E.k = v; dibujar(); } }));
     }
+    // Coordenadas con − / +: alternativa exacta al arrastre y al teclado, para afinar sin tapar el gráfico con el dedo.
+    const coordenadas = [];
+    if (modo !== 'etiquetas') {
+      const det = H('details', { class: 'motor-coordenadas' }, H('summary', { text: 'Coordenadas' }));
+      const lista = H('div', { class: 'motor-controles' });
+      vecs.forEach(v => [0, 1].forEach(j => {
+        const sl = api.slider({ etiqueta: `${v.nombre} · ${j ? 'y' : 'x'}`, min: j ? dom.y0 : dom.x0, max: j ? dom.y1 : dom.x1, paso: 0.1, fino: true, valor: v.xy[j], alCambiar: (val) => { v.xy[j] = val; dibujar(); } });
+        coordenadas.push({ sl, v, j });
+        lista.append(sl);
+      }));
+      det.append(lista);
+      controles.append(det);
+    }
     controles.append(api.boton('Reiniciar', reiniciar));
     function reiniciar() { Motores.desmontar(el); Motores.montar(el, 'vectores2d', JSON.parse(JSON.stringify(p))); }
 
-    // ───── Plano y arrastre (los eventos van al contenedor, que sobrevive a cada redibujado) ─────
-    let L = null;
-    let arrastre = null;
-    grafica.addEventListener('pointermove', (e) => {
-      if (!arrastre) return;
-      const s = grafica.querySelector('svg');
-      if (!s) return;
-      const r = s.getBoundingClientRect(), f = s.viewBox.baseVal.width / r.width;
-      arrastre(L.X.inversa((e.clientX - r.left) * f), L.Y.inversa((e.clientY - r.top) * f));
-    });
-    const soltar = () => { arrastre = null; };
-    grafica.addEventListener('pointerup', soltar);
-    grafica.addEventListener('pointercancel', soltar);
+    // ───── Plano y arrastre (la zona es el contenedor, que sobrevive a cada redibujado) ─────
+    let L = null, S = null, F = 13;
 
     function plano(s, c, caja) {
       const k = Math.min((caja.r - caja.l) / (dom.x1 - dom.x0), (caja.b - caja.t) / (dom.y1 - dom.y0));
@@ -111,7 +107,7 @@
       if (!disc) puntaFlecha(g, p0, p1, color);
     }
     function etiquetaTxt(g, p, texto, color, c) {
-      api.el('text', { x: p[0] + 6, y: p[1] - 6, fill: color, 'font-size': 13, 'font-weight': 700, 'paint-order': 'stroke', stroke: c.superficie, 'stroke-width': 3, text: texto }, g);
+      api.el('text', { x: p[0] + 6, y: p[1] - 6, fill: color, 'font-size': F, 'font-weight': 700, 'paint-order': 'stroke', stroke: c.superficie, 'stroke-width': 3, text: texto }, g);
     }
     function arcoAngulo(L2, a0, a1, radio) {
       let diff = a1 - a0;
@@ -126,16 +122,14 @@
       return d;
     }
     function asa(g, x, y, color, texto, mover) {
-      const pt = L.pt(x, y);
-      const c1 = api.el('circle', { cx: pt[0], cy: pt[1], r: 10, fill: color, stroke: api.colores().superficie, 'stroke-width': 1.6, tabindex: 0, role: 'button', 'aria-label': texto + ' (arrastra o usa las flechas)' }, g);
+      const pt = L.pt(x, y), paso = (dom.x1 - dom.x0) / 40;
+      const c1 = api.el('circle', { cx: pt[0], cy: pt[1], r: 10, fill: color, stroke: api.colores().superficie, 'stroke-width': 1.6 }, g);
       c1.style.cursor = 'grab';
-      c1.addEventListener('pointerdown', (e) => { e.stopPropagation(); arrastre = mover; grafica.setPointerCapture(e.pointerId); });
-      c1.addEventListener('keydown', (e) => {
-        const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[e.key];
-        if (!d) return;
-        e.preventDefault();
-        const paso = (dom.x1 - dom.x0) / 40;
-        mover(x + d[0] * paso, y + d[1] * paso);
+      api.arrastrable(c1, {
+        zona: grafica, clave: texto, radio: 44, tactil: 'none', etiqueta: texto,
+        valor: () => `${texto} = (${num(x, 2)}, ${num(y, 2)})`,
+        alMover: (p) => { const q = api.aSvg(S, p); mover(L.X.inversa(q.x), L.Y.inversa(q.y)); },
+        alTecla: (dx, dy) => mover(x + dx * paso, y + dy * paso),
       });
       return c1;
     }
@@ -253,12 +247,13 @@
     // ───── Dibujo principal ─────
     function dibujar() {
       const c = api.colores();
-      const W = Math.max(300, Math.min(el.clientWidth || 640, 760));
-      const alto = Math.max(260, Math.min(W * 0.82, 460));
+      const M = api.medida(grafica, { minAncho: 300, maxAncho: 760, proporcion: 0.82, minAlto: 260, maxAlto: 460 });
+      const W = M.ancho, alto = M.alto;
       grafica.innerHTML = ''; lectura.innerHTML = ''; leyenda.innerHTML = '';
       const s = api.svg(W, alto);
-      s.setAttribute('role', 'img');
+      s.setAttribute('role', 'group');
       grafica.append(s);
+      S = s; F = api.fuente(s, 13);
       const caja = { l: 16, r: W - 16, t: 16, b: alto - 16 };
       L = plano(s, c, caja);
       const col = (k) => c.series[((k % 8) + 8) % 8];
@@ -270,6 +265,7 @@
       else if (modo === 'base') dibujarBase(c, L, col, ley, pon);
       else if (modo === 'etiquetas') dibujarEtiquetas(c, L, col, ley, pon);
 
+      coordenadas.forEach(({ sl, v, j }) => { sl.valor = v.xy[j]; });
       lectura.innerHTML = lineas.map(t => `<p>${t}</p>`).join('');
       s.setAttribute('aria-label', 'Plano de vectores interactivo. ' + lectura.textContent);
     }

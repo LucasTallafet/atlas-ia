@@ -170,7 +170,6 @@
   function montarModo(el, p, api, def) {
     const H = api.html, num = api.num;
     const original = JSON.parse(JSON.stringify(p));
-    const reducido = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
     const ctx = { api, p, num, H, datos: generar(p.dataset, api), K: {}, estado: {}, version: 0, celda };
     const listaControles = p.controles && p.controles.length ? p.controles : (def.controles || []);
     listaControles.forEach(q => { ctx.K[q.nombre] = q.valor; });
@@ -186,57 +185,101 @@
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
     const panel = H('div', { class: 'disp-panel' });
-    el.append(grafica, leyenda, lectura, controles, panel);
+    const Z = api.zonas(el);
+    // Añadir (tocar un hueco) y quitar (mantener pulsado un punto) solo con dedo o lápiz: con ratón no cambia nada.
+    const editable = p.anadir_puntos !== false && (!!p.arrastrables || p.modo === 'kmeans');
+    const aviso = H('p', { class: 'motor-aviso', role: 'note', text: 'Toca un hueco del gráfico para añadir un punto; mantén pulsado un punto para quitarlo.' });
+    aviso.hidden = !(editable && api.gruesa() && !window.__atlasAvisoPuntos);
+    Z.grafico.append(grafica, leyenda, aviso);
+    Z.controles.append(lectura, controles, panel);
+    let S = null, F = 11;
+    const avisoUsado = () => { window.__atlasAvisoPuntos = true; aviso.hidden = true; };
 
     listaControles.forEach(q => controles.append(api.slider({
       etiqueta: q.etiqueta || q.nombre, min: q.min, max: q.max, paso: q.paso, valor: q.valor,
       alCambiar: v => { ctx.K[q.nombre] = v; parar(); if (def.alCambiarControl) def.alCambiarControl(ctx, q.nombre); dibujar(); },
     })));
     if (def.botones) controles.append(...def.botones(ctx));
-    let bPaso = null, bAuto = null, temporizador = null;
-    function parar() { if (temporizador) { clearInterval(temporizador); temporizador = null; } if (bAuto) bAuto.textContent = 'Hasta el final'; }
+    let bPaso = null, bAuto = null, acum = 0;
+    // Animación con bucle: se detiene sola al terminar y se pausa cuando el widget sale de pantalla.
+    const anim = api.bucle(el, (dt) => {
+      acum += dt;
+      if (acum < 450) return true;
+      acum = 0;
+      if (ctx.estado.terminado) { parar(); return false; }
+      def.paso(ctx); dibujar();
+      if (ctx.estado.terminado) { parar(); return false; }
+      return true;
+    });
+    function parar() { anim.parar(); if (bAuto) bAuto.textContent = 'Hasta el final'; }
     if (p.paso_a_paso && def.paso) {
       bPaso = api.boton('Paso →', () => { parar(); def.paso(ctx); dibujar(); }, { class: 'boton boton-principal' });
       bAuto = api.boton('Hasta el final', () => {
-        if (temporizador) return parar();
-        if (reducido) { for (let i = 0; i < 200 && !ctx.estado.terminado; i++) def.paso(ctx); return dibujar(); }
+        if (anim.activo) return parar();
+        if (api.reducido()) { for (let i = 0; i < 200 && !ctx.estado.terminado; i++) def.paso(ctx); return dibujar(); }
         bAuto.textContent = 'Pausa';
-        temporizador = setInterval(() => { if (ctx.estado.terminado || !document.body.contains(el)) return parar(); def.paso(ctx); dibujar(); }, 450);
+        acum = 0; anim.iniciar();
       });
       controles.append(bPaso, bAuto);
     }
     controles.append(api.boton('Reiniciar', () => { parar(); Motores.desmontar(el); Motores.montar(el, 'dispersion2d', JSON.parse(JSON.stringify(original))); }));
 
-    // Asas arrastrables: puntero (eventos en el contenedor, que sobrevive al redibujado) y teclado (flechas)
-    let arrastre = null, foco = null;
-    ctx.asa = function (elemento, clave, etiqueta, mover) {
-      elemento.setAttribute('tabindex', '0');
-      elemento.setAttribute('role', 'button');
-      elemento.setAttribute('aria-label', etiqueta + ' (arrastra o usa las flechas)');
+    // Asas arrastrables (ESPEC-WEB §8b): la zona es el contenedor, que sobrevive al redibujado. Los puntos admiten
+    // además pulsación larga para quitarlos (o.quitar = índice) cuando la edición táctil está activa.
+    let tocoAsa = false, bloqueado = false, tPulsar = null;
+    const limpiarPulsar = () => { if (tPulsar) { clearTimeout(tPulsar); tPulsar = null; } };
+    ctx.asa = function (elemento, clave, etiqueta, mover, o) {
+      o = o || {};
       elemento.dataset.asa = clave;
       elemento.style.cursor = 'grab';
-      elemento.addEventListener('pointerdown', (e) => { e.stopPropagation(); arrastre = mover; grafica.setPointerCapture(e.pointerId); });
-      elemento.addEventListener('keydown', (e) => {
-        const d = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, 1], ArrowDown: [0, -1] }[e.key];
-        if (!d) return;
-        e.preventDefault();
-        const x = ctx.X.inversa(+elemento.dataset.px), y = ctx.Y.inversa(+elemento.dataset.py), paso = (ctx.vista.x1 - ctx.vista.x0) / 40;
-        foco = clave;
-        mover(x + d[0] * paso, y + d[1] * paso);
-        cambio();
+      const posicion = () => ({ x: ctx.X.inversa(+elemento.dataset.px), y: ctx.Y.inversa(+elemento.dataset.py) });
+      api.arrastrable(elemento, {
+        zona: grafica, clave, radio: o.radio || 44, tactil: 'none', etiqueta,
+        valor: () => { const q = posicion(); return `(${num(q.x, 2)}, ${num(q.y, 2)})`; },
+        alEmpezar: (pt) => {
+          tocoAsa = true; bloqueado = false; limpiarPulsar();
+          if (editable && o.quitar !== undefined && pt.tipo !== 'mouse') {
+            tPulsar = setTimeout(() => {
+              tPulsar = null;
+              if (ctx.datos.length <= 3) return;
+              bloqueado = true;
+              ctx.datos.splice(o.quitar, 1);
+              avisoUsado();
+              if (navigator.vibrate) navigator.vibrate(20);
+              cambio();
+            }, 600);
+          }
+        },
+        alMover: (pt) => {
+          if (bloqueado) return;
+          if (tPulsar && Math.hypot(pt.dx, pt.dy) > 8) limpiarPulsar();
+          const q = api.aSvg(S, pt);
+          mover(Math.min(ctx.vista.x1, Math.max(ctx.vista.x0, ctx.X.inversa(q.x))), Math.min(ctx.vista.y1, Math.max(ctx.vista.y0, ctx.Y.inversa(q.y))));
+          cambio();
+        },
+        alSoltar: () => { limpiarPulsar(); bloqueado = false; },
+        alTecla: (dx, dy) => { const q = posicion(), paso = (ctx.vista.x1 - ctx.vista.x0) / 40; mover(q.x + dx * paso, q.y + dy * paso); cambio(); },
       });
     };
-    grafica.addEventListener('pointermove', (e) => {
-      if (!arrastre || !grafica.hasPointerCapture(e.pointerId)) return;
-      const s = grafica.querySelector('svg'), r = s.getBoundingClientRect(), f = s.viewBox.baseVal.width / r.width;
-      const x = Math.min(ctx.vista.x1, Math.max(ctx.vista.x0, ctx.X.inversa((e.clientX - r.left) * f)));
-      const y = Math.min(ctx.vista.y1, Math.max(ctx.vista.y0, ctx.Y.inversa((e.clientY - r.top) * f)));
-      arrastre(x, y);
+    // Tocar un hueco (sin arrastrar y sin asa cerca) añade un punto de la clase del más cercano.
+    let toque = null;
+    grafica.addEventListener('pointerdown', (e) => {
+      tocoAsa = false;
+      toque = editable && e.pointerType !== 'mouse' ? { x: e.clientX, y: e.clientY, t: performance.now(), id: e.pointerId } : null;
+    });
+    grafica.addEventListener('pointerup', (e) => {
+      const t = toque; toque = null;
+      if (!t || e.pointerId !== t.id || tocoAsa || !S || Math.hypot(e.clientX - t.x, e.clientY - t.y) > 8 || performance.now() - t.t > 500) return;
+      const q = api.aSvg(S, { x: e.clientX, y: e.clientY }), cj = ctx.caja;
+      if (q.x < cj.l || q.x > cj.r || q.y < cj.t || q.y > cj.b) return;
+      const x = ctx.X.inversa(q.x), y = ctx.Y.inversa(q.y);
+      let c = 0, md = Infinity;
+      ctx.datos.forEach(d => { const dd = (d.x - x) ** 2 + (d.y - y) ** 2; if (dd < md) { md = dd; c = d.c; } });
+      ctx.datos.push({ x, y, c });
+      avisoUsado();
       cambio();
     });
-    const soltar = () => { arrastre = null; };
-    grafica.addEventListener('pointerup', soltar);
-    grafica.addEventListener('pointercancel', soltar);
+    grafica.addEventListener('pointercancel', () => { toque = null; });
     function cambio() { parar(); ctx.version++; if (def.alCambiarDatos) def.alCambiarDatos(ctx); dibujar(); }
     ctx.cambio = cambio;
     ctx.redibujar = () => dibujar();
@@ -247,8 +290,8 @@
     function dibujar() {
       const c = api.colores();
       ctx.c = c;
-      const W = Math.max(300, Math.min(el.clientWidth || 640, 900));
-      const alto = Math.round(Math.max(250, Math.min(W * 0.62, 430)));
+      const M = api.medida(grafica, { minAncho: 300, maxAncho: 900, proporcion: 0.62, proporcionEstrecha: 0.85, minAlto: 250, maxAlto: 430 });
+      const W = M.ancho, alto = M.alto;
       const caja = { l: 36, r: W - 10, t: 10, b: alto - 24 };
       // Misma escala en los dos ejes: las distancias se ven como son
       const { x0, x1, y0, y1 } = ctx.dom, k = Math.min((caja.r - caja.l) / (x1 - x0), (caja.b - caja.t) / (y1 - y0));
@@ -260,9 +303,9 @@
       grafica.innerHTML = ''; leyenda.innerHTML = '';
       const s = api.svg(W, alto);
       s.setAttribute('role', 'group');
-      s.style.touchAction = 'pan-y';
       grafica.append(s);
-      const g = api.el('g', { 'font-size': 11, fill: c.suave }, s);
+      S = s; F = api.fuente(s, 11);
+      const g = api.el('g', { 'font-size': F, fill: c.suave }, s);
       api.marcas(ctx.vista.x0, ctx.vista.x1, Math.max(3, Math.floor(W / 90))).forEach(v => {
         api.el('line', { x1: ctx.X(v), x2: ctx.X(v), y1: caja.t, y2: caja.b, stroke: c.rejilla }, g);
         api.el('text', { x: ctx.X(v), y: caja.b + 15, 'text-anchor': 'middle', text: num(v, 2) }, g);
@@ -281,7 +324,7 @@
       ctx.datos.forEach((d, i) => {
         const color = def.colorPunto ? def.colorPunto(ctx, i) : ctx.colorClase(d.c);
         const pc = api.el('circle', { cx: ctx.X(d.x), cy: ctx.Y(d.y), r: 4.5, fill: color, stroke: c.superficie, 'stroke-width': 1, class: 'disp-punto', 'data-px': ctx.X(d.x), 'data-py': ctx.Y(d.y) }, gp);
-        if (p.arrastrables) ctx.asa(pc, 'p' + i, `Punto ${i + 1}`, (x, y) => { d.x = x; d.y = y; });
+        if (p.arrastrables) ctx.asa(pc, 'p' + i, `Punto ${i + 1}`, (x, y) => { d.x = x; d.y = y; }, { radio: 30, quitar: i });
       });
       if (def.frente) def.frente(ctx, s);
 
@@ -291,7 +334,6 @@
       if (bPaso) bPaso.disabled = !!ctx.estado.terminado;
       if (bAuto) bAuto.disabled = !!ctx.estado.terminado;
       if (def.panel) { panel.innerHTML = ''; def.panel(ctx, panel); }
-      if (foco) { const f = s.querySelector(`[data-asa="${foco}"]`); foco = null; if (f) f.focus(); }
     }
 
     if (def.iniciar) def.iniciar(ctx);
@@ -446,7 +488,7 @@
       const X = api.escala(1, kmax, m.l, W - m.r), Y = api.escala(0, Math.max(js[0], E.J) * 1.05, alto - m.b, m.t);
       const s = api.svg(W, alto);
       s.setAttribute('role', 'img');
-      const g = api.el('g', { 'font-size': 11, fill: c.suave }, s);
+      const g = api.el('g', { 'font-size': 12, fill: c.suave }, s);
       api.marcas(0, Math.max(js[0], E.J), 4).forEach(v => {
         api.el('line', { x1: m.l, x2: W - m.r, y1: Y(v), y2: Y(v), stroke: c.rejilla }, g);
         api.el('text', { x: m.l - 4, y: Y(v) + 4, 'text-anchor': 'end', text: num(v, 1) }, g);

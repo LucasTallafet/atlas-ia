@@ -81,9 +81,9 @@
         const v = E.sil[i], y = m.t + pos * alturaBarra;
         api.el('rect', { x: Math.min(X(0), X(v)), y, width: Math.abs(X(v) - X(0)) || 0.5, height: alturaBarra * 0.85, fill: ctx.colorClase(E.asig[i]) }, g);
       });
-      api.el('text', { x: m.l, y: alto - 8, 'text-anchor': 'start', 'font-size': 11, fill: c.suave, text: '−1' }, g);
-      api.el('text', { x: (X(0)), y: alto - 8, 'text-anchor': 'middle', 'font-size': 11, fill: c.suave, text: '0' }, g);
-      api.el('text', { x: W - m.r, y: alto - 8, 'text-anchor': 'end', 'font-size': 11, fill: c.suave, text: '+1' }, g);
+      api.el('text', { x: m.l, y: alto - 8, 'text-anchor': 'start', 'font-size': 12, fill: c.suave, text: '−1' }, g);
+      api.el('text', { x: (X(0)), y: alto - 8, 'text-anchor': 'middle', 'font-size': 12, fill: c.suave, text: '0' }, g);
+      api.el('text', { x: W - m.r, y: alto - 8, 'text-anchor': 'end', 'font-size': 12, fill: c.suave, text: '+1' }, g);
       s.setAttribute('aria-label', `Gráfico de silueta, media ${num(media, 3)}`);
       cont.append(api.html('h3', { text: `Gráfico de silueta — media = ${num(media, 3)}` }), s);
       cont.className = 'disp-panel disp-codo';

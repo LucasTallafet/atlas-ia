@@ -119,7 +119,7 @@
         const cx0 = m.l + j * anchoBarra, y0 = Y(0);
         api.el('rect', { x: cx0 + anchoBarra * 0.15, y: Math.min(y0, Y(E.w0[j])), width: anchoBarra * 0.3, height: Math.abs(Y(E.w0[j]) - y0) || 0.5, fill: c.suave }, gg);
         api.el('rect', { x: cx0 + anchoBarra * 0.55, y: Math.min(y0, Y(E.w[j])), width: anchoBarra * 0.3, height: Math.abs(Y(E.w[j]) - y0) || 0.5, fill: c.acento }, gg);
-        api.el('text', { x: cx0 + anchoBarra / 2, y: alto - 8, 'text-anchor': 'middle', 'font-size': 11, fill: c.suave, text: 'x' + (j + 1) }, gg);
+        api.el('text', { x: cx0 + anchoBarra / 2, y: alto - 8, 'text-anchor': 'middle', 'font-size': 12, fill: c.suave, text: 'x' + (j + 1) }, gg);
       }
       s.setAttribute('aria-label', 'Coeficientes de cada potencia de x, sin regularizar y regularizados');
       cont.append(api.html('h3', { text: 'Coeficientes por potencia de x (variables estandarizadas)' }), s);
