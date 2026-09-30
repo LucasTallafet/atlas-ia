@@ -152,7 +152,8 @@
     vista.innerHTML = '';
     vista.classList.remove('con-pie-fijo');
     marcarNavegacion(clave);
-    document.body.classList.remove('cab-oculta');
+    document.body.classList.remove('cab-oculta', 'barra-ficha');
+    movil = null;
     window.scrollTo(0, 0);
     if (!primera) vista.focus({ preventScroll: true });
     primera = false;
@@ -816,6 +817,7 @@
     const bCompleta = h('button', { type: 'button', 'aria-pressed': String(modoVista === 'completa') }, 'Completa');
     const bEsencial = h('button', { type: 'button', 'aria-pressed': String(modoVista === 'esencial') }, 'Esencial');
     const selector = h('div', { class: 'selector-vista', role: 'group', 'aria-label': 'Nivel de detalle' }, bCompleta, bEsencial);
+    let alModo = null;  // en móvil: actualiza la barra fija y el índice de secciones
     const ponModo = (m) => {
       art.classList.toggle('esencial', m === 'esencial');
       if (resumen) {  // Esencial: la chuleta justo tras la frase; Completa: "Para llevar" tras Errores típicos (ESPEC-WEB §5.5)
@@ -823,15 +825,16 @@
         if (m === 'esencial' || !errores) cuerpo.prepend(resumen); else errores.after(resumen);
       }
       bCompleta.setAttribute('aria-pressed', String(m === 'completa')); bEsencial.setAttribute('aria-pressed', String(m === 'esencial')); pref('atlas-ia-modo', m);
+      if (alModo) alModo(m);
     };
     bCompleta.addEventListener('click', () => ponModo('completa'));
     bEsencial.addEventListener('click', () => ponModo('esencial'));
     art.append(selector);
 
     const cuerpo = h('div', { class: 'ficha-cuerpo' });
-    const sec = (titulo, contenido, clase) => h('section', { class: clase || '' }, h('h2', { text: titulo }), contenido);
+    const sec = (titulo, contenido, clase) => h('section', { class: clase || '', 'data-titulo': titulo }, h('h2', { text: titulo }), contenido);
     if (S['Intuición']) cuerpo.append(sec('Intuición', h('div', { html: S['Intuición'] }), 'solo-completa'));
-    if (S['Explicación']) cuerpo.append(h('section', { class: 'sec-explicacion solo-completa', html: '<h2>Explicación</h2>' + S['Explicación'] }));
+    if (S['Explicación']) cuerpo.append(h('section', { class: 'sec-explicacion solo-completa', 'data-titulo': 'Explicación', html: '<h2>Explicación</h2>' + S['Explicación'] }));
     if (S['Formalización']) cuerpo.append(sec('Formalización', h('div', { html: S['Formalización'] }), 'solo-completa'));
     let widgetEl = null;
     if (F.widget) {
@@ -852,17 +855,20 @@
     if (errores) cuerpo.append(errores);
     const resumen = S['En resumen'] ? sec('Para llevar', h('div', { html: S['En resumen'] }), 'en-resumen') : null;
     if (resumen) cuerpo.append(resumen);
-    if (S['A fondo']) cuerpo.append(h('section', { class: 'solo-completa' }, h('details', { class: 'a-fondo' }, h('summary', { text: 'A fondo' }), h('div', { html: S['A fondo'] }))));
+    if (S['A fondo']) cuerpo.append(h('section', { class: 'solo-completa', 'data-titulo': 'A fondo' }, h('details', { class: 'a-fondo' }, h('summary', { text: 'A fondo' }), h('div', { html: S['A fondo'] }))));
     if (F.quiz && F.quiz.length) cuerpo.append(sec('Autoevaluación', quiz(id, F.quiz)));
     if (F.glosario && F.glosario.length) {
       cuerpo.append(sec('Glosario', h('dl', { class: 'glosario-ficha' }, F.glosario.map(g => [h('dt', { text: g.termino }), h('dd', { html: g.definicion })])), 'solo-completa'));
     }
     cuerpo.append(seccionFuentes(c));
     cuerpo.append(pieFicha(id));
+    cuerpo.querySelectorAll('table').forEach(t => { if (!t.parentElement.classList.contains('tabla-scroll')) { const w = h('div', { class: 'tabla-scroll' }); t.replaceWith(w); w.append(t); } });
     art.append(h('div', { class: 'ficha-rejilla' }, cuerpo, lateral(c)));
     vista.append(art);
+    if (UI && UI.esMovil()) alModo = fichaMovil(art, c, cuerpo, ponModo);
     ponModo(modoVista);
     await tex(art);
+    ajustarAnchos(art);
     if (widgetEl && window.Motores) await Motores.montar(widgetEl, F.widget.motor, JSON.parse(JSON.stringify(F.widget.params)));
   }
 
@@ -878,9 +884,10 @@
     return h('section', { class: 'solo-completa' }, h('h2', { text: 'Fuentes' }), cont);
   }
 
-  function lateral(c) {
+  function lateral(c, marcarSinVer) {
     const lista = (ids, notas, conCheck) => ids.length
-      ? h('ul', {}, ids.map((id, k) => h('li', {}, conCheck && dominada(id) ? h('span', { class: 'ok', 'aria-label': 'dominada' }, '✓ ') : null, enlace(id), notas && notas[k] ? h('small', { text: notas[k] }) : null)))
+      ? h('ul', {}, ids.map((id, k) => h('li', {}, conCheck && dominada(id) ? h('span', { class: 'ok', 'aria-label': 'dominada' }, '✓ ') : null, enlace(id),
+        conCheck && marcarSinVer && !vistaF(id) ? h('span', { class: 'sin-ver', text: 'sin ver' }) : null, notas && notas[k] ? h('small', { text: notas[k] }) : null)))
       : h('p', { class: 'suave', style: 'margin:0', text: 'Ninguno' });
     const ruta = rutaHacia(c.id);
     const bloques = [
@@ -895,11 +902,111 @@
 
   function pieFicha(id) {
     const k = POS[id];
-    const ant = I.orden[k - 1], sig = I.orden[k + 1], rec = recomendado(id);
+    let ant = I.orden[k - 1], sig = I.orden[k + 1], deRuta = null;
+    const r = prog.ultimaRuta;
+    if (UI && UI.esMovil() && r && C[r.destino]) {  // móvil: si la ruta activa incluye esta ficha, se avanza por ella
+      const lista = rutaHacia(r.destino), j = lista.indexOf(id);
+      if (j >= 0) { ant = lista[j - 1] || null; sig = lista[j + 1] || null; deRuta = r.nombre; }
+    }
+    const rec = recomendado(id);
+    const marca = h('button', { type: 'button', class: 'boton solo-movil marcar-vista' });
+    const pintarMarca = () => { const v = vistaF(id); marca.textContent = v ? '✓ Vista · quitar la marca' : 'Marcar como vista'; marca.setAttribute('aria-pressed', String(v)); };
+    marca.addEventListener('click', () => {
+      const f = Object.assign({}, prog.fichas[id]);
+      if (f.vista) delete f.vista; else f.vista = hoy();
+      prog.fichas[id] = f; guardar(); pintarMarca();
+      if (UI) UI.aviso(f.vista ? 'Marcada como vista' : 'Marca de vista quitada');
+    });
+    pintarMarca();
     return h('nav', { class: 'pie-ficha', 'aria-label': 'Navegación entre fichas' },
-      ant ? h('a', { href: '#' + ant }, h('small', { text: '← Anterior' }), C[ant].nombre) : h('span'),
+      deRuta ? h('p', { class: 'suave pie-ruta solo-movil', text: 'Ruta activa: ' + deRuta }) : null,
+      ant ? h('a', { href: '#' + ant, class: 'anterior' }, h('small', { text: '← Anterior' }), C[ant].nombre) : h('span'),
       sig ? h('a', { href: '#' + sig, class: 'siguiente' }, h('small', { text: 'Siguiente →' }), C[sig].nombre) : h('span'),
+      marca,
       rec && rec !== sig ? h('a', { href: '#' + rec, class: 'recomendado' }, h('small', { text: 'Siguiente recomendado (requisitos dominados, aún sin dominar)' }), C[rec].nombre) : null);
+  }
+
+  // ───────────── Ficha en móvil (ESPEC-WEB §5) ─────────────
+  // Barra fija compacta (título, vista, "Secciones"), fila de chips con las secciones y botón "Relaciones".
+  // Devuelve la función que se llama al cambiar de vista (Completa / Esencial).
+  let movil = null;
+  function fichaMovil(art, c, cuerpo, ponModo) {
+    const vistaActual = () => (art.classList.contains('esencial') ? 'esencial' : 'completa');
+    const bModo = h('button', { type: 'button', class: 'barra-modo' });
+    const bSec = h('button', { type: 'button', class: 'barra-sec', 'aria-haspopup': 'dialog' }, 'Secciones');
+    const barra = h('div', { class: 'ficha-barra', role: 'region', 'aria-label': 'Barra de la ficha' },
+      h('span', { class: 'barra-titulo', text: c.nombre }), bModo, bSec);
+    bModo.addEventListener('click', () => ponModo(vistaActual() === 'completa' ? 'esencial' : 'completa'));
+    const sinVer = c.prerequisitos.filter(x => !vistaF(x)).length;
+    const bRel = h('button', { type: 'button', class: 'boton boton-relaciones', 'aria-haspopup': 'dialog' }, 'Relaciones',
+      sinVer ? h('span', { class: 'sin-ver', text: `${sinVer} requisito${sinVer > 1 ? 's' : ''} sin ver` }) : null);
+    bRel.addEventListener('click', () => { const hj = UI.hojaInferior(lateral(c, true), { titulo: 'Relaciones' }); tex(hj.cuerpo); });
+    const fila = h('div', { class: 'ficha-secciones' });
+    art.append(bRel, fila, barra);
+    let lista = [], chipsEl = null, actual = null;
+    const titulo = (s) => s.dataset.titulo || (s.querySelector('h2') || {}).textContent || '';
+    const irA = (s) => {
+      const d = s.querySelector('details');
+      if (d) d.open = true;
+      s.scrollIntoView({ behavior: reducido() ? 'auto' : 'smooth', block: 'start' });
+    };
+    const pintarActual = () => {
+      if (!lista.length) return;
+      const tope = barra.offsetHeight + 24;
+      let cur = null;
+      for (const s of lista) if (s.getBoundingClientRect().top <= tope) cur = s;
+      if (cur === actual) return;
+      actual = cur;
+      if (chipsEl) {
+        chipsEl.poner(cur ? String(lista.indexOf(cur)) : []);
+        const ac = chipsEl.querySelector('[aria-pressed="true"]');
+        if (ac) chipsEl.scrollTo({ left: Math.max(0, ac.offsetLeft - 16), behavior: 'auto' });
+      }
+    };
+    bSec.addEventListener('click', () => {
+      pintarActual();
+      const items = lista.map(s => h('button', { type: 'button', class: 'sec-item', 'aria-current': s === actual ? 'true' : null, onclick: () => hj.cerrar().then(() => irA(s)) }, titulo(s)));
+      const hj = UI.hojaInferior(h('div', { class: 'sec-lista' }, items), { titulo: 'Secciones' });
+    });
+    movil = { art, barra, pintarActual };
+    return (m) => {
+      lista = [...cuerpo.children].filter(s => s.tagName === 'SECTION' && s.offsetParent !== null && titulo(s));
+      actual = null;
+      bModo.textContent = '';
+      bModo.append(h('small', { text: 'Vista' }), m === 'esencial' ? 'Esencial' : 'Completa');
+      bModo.setAttribute('aria-label', `Vista ${m === 'esencial' ? 'Esencial' : 'Completa'}. Cambiar a ${m === 'esencial' ? 'Completa' : 'Esencial'}`);
+      fila.innerHTML = '';
+      chipsEl = null;
+      if (lista.length >= 3) {
+        chipsEl = UI.chips(lista.map((s, k) => ({ valor: k, texto: titulo(s) })), { etiqueta: 'Secciones de la ficha', alCambiar: (v) => { irA(lista[Number(v)]); } });
+        fila.append(chipsEl);
+      }
+      fila.hidden = !chipsEl;
+      pintarActual();
+    };
+  }
+  // La barra fija aparece cuando el selector grande sale de la pantalla y sustituye a la cabecera general.
+  let pendienteF = false;
+  function actualizarBarraFicha() {
+    pendienteF = false;
+    if (!movil || !movil.art.isConnected) { movil = null; document.body.classList.remove('barra-ficha'); return; }
+    const visible = movil.art.querySelector('.selector-vista').getBoundingClientRect().bottom < 4;
+    movil.barra.classList.toggle('visible', visible);
+    document.body.classList.toggle('barra-ficha', visible);
+    movil.pintarActual();
+  }
+  const pedirBarra = () => { if (!pendienteF) { pendienteF = true; requestAnimationFrame(actualizarBarraFicha); } };
+  window.addEventListener('scroll', pedirBarra, { passive: true });
+  window.addEventListener('resize', () => { pedirBarra(); ajustarAnchos(document); });
+
+  // Fórmulas en línea más anchas que la columna: se ponen en su propia caja con desplazamiento.
+  function ajustarAnchos(raiz) {
+    const cuerpo = raiz.querySelector ? raiz.querySelector('.ficha-cuerpo') : null;
+    if (!cuerpo || !cuerpo.clientWidth) return;
+    cuerpo.querySelectorAll('mjx-container:not([display="true"])').forEach(m => {
+      m.classList.remove('mjx-ancha');
+      if (m.getBoundingClientRect().width > cuerpo.clientWidth - 8) m.classList.add('mjx-ancha');
+    });
   }
 
   function quiz(id, preguntas) {
@@ -909,10 +1016,11 @@
     function pintar() {
       cont.innerHTML = '';
       respuestas = {};
+      const comprobar = !!(UI && UI.esMovil());
       preguntas.forEach((q, i) => cont.append(pregunta(q, i, (ok) => {
         respuestas[i] = ok;
         if (Object.keys(respuestas).length === preguntas.length) terminar();
-      })));
+      }, { comprobar, ultima: i === preguntas.length - 1 })));
       resultado.textContent = '';
       cont.append(resultado);
       tex(cont);
@@ -932,11 +1040,13 @@
     return cont;
   }
 
-  function pregunta(q, i, alResponder) {
+  // o.comprobar (móvil): tocar una opción solo la selecciona; "Comprobar" y "Siguiente" van al pie de la pregunta.
+  function pregunta(q, i, alResponder, o) {
+    o = o || {};
     const expl = h('div', { class: 'explicacion', hidden: true });
     const botones = q.opciones.map((o, k) => h('button', { type: 'button', class: 'opcion', 'data-k': k },
       h('span', { class: 'marca-op', 'aria-hidden': 'true', text: String.fromCharCode(97 + k) + ')' }), h('span', { html: o.html })));
-    botones.forEach((b, k) => b.addEventListener('click', () => {
+    const revelar = (k) => {
       const ok = q.opciones[k].correcta;
       botones.forEach((x, j) => {
         x.disabled = true;
@@ -947,8 +1057,30 @@
       expl.innerHTML = `<strong>${ok ? '✓ Correcto.' : '✗ No es correcto.'}</strong> ${q.explicacion}`;
       tex(expl);
       alResponder(ok);
-    }));
-    return h('div', { class: 'pregunta' }, h('fieldset', {}, h('legend', { html: `${i + 1}. ${q.enunciado}` }), botones, expl));
+    };
+    let accion = null;
+    if (!o.comprobar) botones.forEach((b, k) => b.addEventListener('click', () => revelar(k)));
+    else {
+      let elegida = -1, comprobada = false;
+      accion = api.boton('Comprobar', () => {
+        if (!comprobada) {
+          if (elegida < 0) return;
+          comprobada = true;
+          revelar(elegida);
+          if (o.ultima) accion.hidden = true; else accion.textContent = 'Siguiente →';
+        } else {
+          const sig = accion.closest('.pregunta').nextElementSibling;
+          if (sig) sig.scrollIntoView({ behavior: reducido() ? 'auto' : 'smooth', block: 'start' });
+        }
+      }, { class: 'boton boton-principal quiz-accion', disabled: true });
+      botones.forEach((b, k) => b.addEventListener('click', () => {
+        if (comprobada) return;
+        elegida = k;
+        botones.forEach((x, j) => { x.classList.toggle('elegida', j === k); x.setAttribute('aria-pressed', String(j === k)); });
+        accion.disabled = false;
+      }));
+    }
+    return h('div', { class: 'pregunta' }, h('fieldset', {}, h('legend', { html: `${i + 1}. ${q.enunciado}` }), botones, expl), accion);
   }
 
   // ───────────── Vista previa de enlaces internos ─────────────
@@ -1155,6 +1287,11 @@
     const pieFijo = h('a', { class: 'boton boton-principal boton-fijo', hidden: true });
     const activar = (destino) => {
       if (!vertical) return;
+      if (destino && C[destino]) {  // ruta activa: la usa el pie de las fichas (Anterior / Siguiente)
+        const pre = RUTAS.find(r => r.destino === destino);
+        prog.ultimaRuta = { destino, nombre: pre ? pre.nombre : 'Ruta hacia ' + C[destino].nombre };
+        guardar();
+      }
       const pasos = destino ? rutaHacia(destino) : [];
       const s = pasos.find(id => !dominada(id) && C[id].prerequisitos.every(dominada));
       pieFijo.hidden = !s;
