@@ -25,28 +25,42 @@
     const anchoEtiq = Math.max(60, Math.min(140, Math.max(...filas.map(f => String(f).length)) * 7 + 18));
     const nCols = columnas.length;
     const cellW = Math.max(44, Math.min(128, (dispW - anchoEtiq - 10) / nCols));
-    const cellH = 38, altoCab = 30;
+    // Táctil o estrecho: filas de 46 px (objetivo táctil); si la rejilla no cabe, se desplaza en su caja.
+    const tactil = window.matchMedia('(pointer: coarse)').matches || (el.clientWidth || 640) < 560;
+    const cellH = tactil ? 48 : 38, altoCab = tactil ? 34 : 30;
     return { ancho: anchoEtiq + cellW * nCols + 10, alto: altoCab + cellH * filas.length + 8, anchoEtiq, cellW, cellH, altoCab };
   }
   // celda(i, j) → {fill, texto?, colorTexto?, contorno?, grosor?, negrita?, aria?, onClick?}
-  function dibujarRejilla(api, s, c, filas, columnas, med, celda) {
+  // alFila(i) (opcional): tocar la etiqueta de una fila. Las etiquetas recortadas ("…") se leen al tocarlas.
+  function dibujarRejilla(api, s, c, filas, columnas, med, celda, alFila) {
     const g = api.el('g', {}, s);
+    s.parentNode.style.overflowX = 'auto';
+    s.style.maxWidth = 'none';
+    s.style.width = med.ancho + 'px';
+    const F = api.fuente(s, 12);
+    const ch = F * 0.6;   // ancho medio de un carácter
     columnas.forEach((cn, j) => {
       const x = med.anchoEtiq + j * med.cellW + med.cellW / 2;
-      api.el('text', { x, y: med.altoCab - 10, 'text-anchor': 'middle', 'font-size': 10.5, 'font-weight': 600, fill: c.suave, text: truncar(cn, Math.max(3, Math.floor(med.cellW / 6.2))) }, g);
+      const t = api.el('text', { x, y: med.altoCab - 10, 'text-anchor': 'middle', 'font-size': F, 'font-weight': 600, fill: c.suave, text: truncar(cn, Math.max(3, Math.floor(med.cellW / ch))) }, g);
+      const zona = api.el('rect', { x: x - med.cellW / 2, y: 0, width: med.cellW, height: med.altoCab, fill: 'transparent' }, g);
+      api.inspeccionable(zona, 'Columna «' + cn + '»');
+      void t;
     });
     filas.forEach((fn, i) => {
-      const y = med.altoCab + i * med.cellH + med.cellH / 2 + 4;
-      api.el('text', { x: med.anchoEtiq - 8, y, 'text-anchor': 'end', 'font-size': 11, fill: c.suave, text: truncar(fn, Math.max(4, Math.floor((med.anchoEtiq - 10) / 6.2))) }, g);
+      const y = med.altoCab + i * med.cellH + med.cellH / 2 + F * 0.35;
+      api.el('text', { x: med.anchoEtiq - 8, y, 'text-anchor': 'end', 'font-size': F, fill: c.suave, text: truncar(fn, Math.max(4, Math.floor((med.anchoEtiq - 10) / ch))), 'pointer-events': 'none' }, g);
+      const zona = api.el('rect', { x: 0, y: med.altoCab + i * med.cellH, width: med.anchoEtiq, height: med.cellH, fill: 'transparent' }, g);
+      if (alFila) accesible(zona, () => alFila(i), 'Fila «' + fn + '»: resaltar');
+      else api.inspeccionable(zona, 'Fila «' + fn + '»');
     });
     filas.forEach((fn, i) => {
       columnas.forEach((cn, j) => {
         const d = celda(i, j);
         const x0 = med.anchoEtiq + j * med.cellW, y0 = med.altoCab + i * med.cellH;
         const rect = api.el('rect', { x: x0 + 1.5, y: y0 + 1.5, width: med.cellW - 3, height: med.cellH - 3, rx: 4, fill: d.fill, stroke: d.contorno || c.linea, 'stroke-width': d.grosor || 1 }, g);
-        if (d.texto) api.el('text', { x: x0 + med.cellW / 2, y: y0 + med.cellH / 2 + 4, 'text-anchor': 'middle', 'font-size': 11.5, 'font-weight': d.negrita ? 700 : 500, fill: d.colorTexto || c.texto, text: d.texto, 'pointer-events': 'none' }, g);
+        if (d.texto) api.el('text', { x: x0 + med.cellW / 2, y: y0 + med.cellH / 2 + F * 0.35, 'text-anchor': 'middle', 'font-size': F, 'font-weight': d.negrita ? 700 : 500, fill: d.colorTexto || c.texto, text: d.texto, 'pointer-events': 'none' }, g);
         if (d.onClick) accesible(rect, d.onClick, d.aria);
-        else if (d.aria) rect.setAttribute('aria-label', d.aria);
+        if (d.aria) api.inspeccionable(rect, d.aria);
       });
     });
   }
@@ -58,10 +72,12 @@
     if (!V) throw new Error('El modo atencion necesita "valores"');
     const maxV = Math.max(1e-9, ...V.flat());
     const argmax = V.map(fila => fila.indexOf(Math.max(...fila)));
-    const E = { sel: null };
+    const E = { sel: null, fila: null };
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
-    el.append(grafica, lectura);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica);
+    Z.controles.append(lectura);
 
     function dibujar() {
       const c = api.colores();
@@ -75,16 +91,19 @@
         const v = V[i][j], t = v / maxV, sel = E.sel && E.sel[0] === i && E.sel[1] === j;
         return {
           fill: mezcla(c.superficie, c.acento, t), colorTexto: contraste(t, c), texto: num(v, 2),
-          contorno: sel ? c.mal : (argmax[i] === j ? c.acento : c.linea), grosor: sel || argmax[i] === j ? 2.2 : 1,
+          contorno: sel ? c.mal : (argmax[i] === j || E.fila === i ? c.acento : c.linea), grosor: sel || argmax[i] === j || E.fila === i ? 2.2 : 1,
           aria: `fila ${filas[i]}, columna ${columnas[j]}: ${num(v, 3)}`,
           onClick: () => { E.sel = sel ? null : [i, j]; dibujar(); },
         };
-      });
-      if (E.sel) {
+      }, (i) => { E.fila = E.fila === i ? null : i; dibujar(); });
+      if (E.fila !== null && !E.sel) {
+        const i = E.fila;
+        lectura.innerHTML = `<p>«${filas[i]}» reparte su atención así: ${columnas.map((cn, j) => `«${cn}» ${num(V[i][j], 2)}`).join(', ')}.</p>`;
+      } else if (E.sel) {
         const [i, j] = E.sel;
         lectura.innerHTML = `<p>«${filas[i]}» presta atención a «${columnas[j]}» con peso <strong>${num(V[i][j], 3)}</strong> (su mayor peso es «${columnas[argmax[i]]}»).</p>`;
       } else {
-        lectura.innerHTML = '<p>Cada fila suma (casi) 1: son los pesos de atención de una consulta sobre cada clave. El contorno de color marca el máximo de cada fila. Haz clic en una celda para leer su valor exacto.</p>';
+        lectura.innerHTML = '<p>Cada fila suma (casi) 1: son los pesos de atención de una consulta sobre cada clave. El contorno de color marca el máximo de cada fila. Toca una celda para leer su valor exacto o una palabra de la izquierda para resaltar su fila.</p>';
       }
     }
     dibujar();
@@ -101,7 +120,9 @@
     const leyenda = H('div', { class: 'motor-leyenda' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, leyenda, lectura, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, leyenda, lectura);
+    Z.controles.append(controles);
     const bt = api.boton('Quitar máscara', () => { E.aplicada = !E.aplicada; bt.textContent = E.aplicada ? 'Quitar máscara' : 'Aplicar máscara'; dibujar(); });
     controles.append(bt);
 
@@ -147,14 +168,11 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
-    const grupo = H('div', { class: 'motor-selector', role: 'group', 'aria-label': 'Qué cuenta como mejor resultado' });
-    const bMax = api.boton('Mejor: el más alto', () => { E.criterio = 'max'; marcar(); dibujar(); });
-    const bMin = api.boton('Mejor: el más bajo', () => { E.criterio = 'min'; marcar(); dibujar(); });
-    grupo.append(bMax, bMin);
-    controles.append(grupo);
-    function marcar() { bMax.setAttribute('aria-pressed', String(E.criterio === 'max')); bMin.setAttribute('aria-pressed', String(E.criterio === 'min')); }
-    marcar();
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, lectura);
+    Z.controles.append(controles);
+    controles.append(api.segmentado([{ valor: 'max', texto: 'Mejor: el más alto' }, { valor: 'min', texto: 'Mejor: el más bajo' }],
+      { valor: E.criterio, etiqueta: 'Qué cuenta como mejor resultado', alCambiar: (v) => { E.criterio = v; dibujar(); } }));
 
     function dibujar() {
       const c = api.colores();
@@ -194,7 +212,9 @@
     if (!V) throw new Error('El modo tabla-enlaces necesita "valores"');
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
-    el.append(grafica, lectura);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica);
+    Z.controles.append(lectura);
 
     function dibujar() {
       const c = api.colores();

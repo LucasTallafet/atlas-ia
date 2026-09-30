@@ -76,24 +76,32 @@
   }
 
   // ───────────── Dibujo de la red (compartido por los cuatro modos) ─────────────
-  function tamaño(el, capas) {
+  // En móvil (< 560 px) las capas anchas (≥ 4 neuronas) se dibujan en vertical: las capas son filas.
+  function tamaño(el, capas, api) {
     const ancho = Math.max(280, Math.min(el.clientWidth || 560, 600));
     const maxN = Math.max(...capas);
-    const alto = Math.max(190, Math.min(58 * maxN + 40, 320));
-    return { ancho, alto };
+    const vertical = ancho < 560 && maxN >= 4;
+    if (vertical) return { ancho, alto: Math.min(110 * capas.length, 560), vertical, tactil: true };
+    const tactil = api.gruesa() || ancho < 560;
+    const alto = Math.max(190, Math.min((tactil ? 64 : 58) * maxN + 40, 320));
+    return { ancho, alto, vertical: false, tactil };
   }
-  function layout(capas, ancho, alto) {
-    const n = capas.length, mx = 44;
-    const xs = capas.map((_, i) => (n === 1 ? ancho / 2 : mx + i * (ancho - 2 * mx) / (n - 1)));
+  function layout(capas, dim) {
+    const { ancho, alto, vertical } = dim;
+    const n = capas.length, mx = vertical ? 40 : 44;
+    const long = vertical ? alto : ancho, corto = vertical ? ancho : alto;
+    const along = capas.map((_, i) => (n === 1 ? long / 2 : mx + i * (long - 2 * mx) / (n - 1)));
     return capas.map((cnt, i) => {
-      const ys = [];
-      for (let j = 0; j < cnt; j++) ys.push(alto * (j + 1) / (cnt + 1));
-      return ys.map(y => [xs[i], y]);
+      const across = [];
+      for (let j = 0; j < cnt; j++) across.push(corto * (j + 1) / (cnt + 1));
+      return across.map(a => (vertical ? [a, along[i]] : [along[i], a]));
     });
   }
   // matriz(i) → matriz a visualizar como aristas de la transición i (pesos o gradientes). opts.valorNodo(i, j) → texto o null.
   function dibujarRed(api, s, c, capas, pos, matriz, opts) {
     const g = api.el('g', {}, s);
+    const F = api.fuente(s, 12);
+    const tocables = [];
     for (let i = 0; i < capas.length - 1; i++) {
       const M = matriz(i);
       const maxAbs = Math.max(1e-6, ...M.flat().map(Math.abs));
@@ -102,24 +110,37 @@
           const v = M[j][k], t = Math.min(1, Math.abs(v) / maxAbs);
           const [x0, y0] = pos[i][k], [x1, y1] = pos[i + 1][j];
           api.el('line', { x1: x0, y1: y0, x2: x1, y2: y1, stroke: v >= 0 ? c.acento : c.mal, 'stroke-width': 1 + 3 * t, opacity: 0.3 + 0.6 * t }, g);
+          // Zona de toque ancha (invisible) por peso: al tocar, su valor.
+          const zona = api.el('line', { x1: x0, y1: y0, x2: x1, y2: y1, stroke: 'transparent', 'stroke-width': 16 }, g);
+          tocables.push(() => api.inspeccionable(zona, `${opts.nombreMatriz || 'Peso'} de ${nombreNodo(i, k)} a ${nombreNodo(i + 1, j)}: ${api.num(v, 3)}`));
         }
       }
+    }
+    function nombreNodo(i, j) {
+      const et = opts.etiquetaNodo ? opts.etiquetaNodo(i, j) : null;
+      return et || `capa ${i}, neurona ${j + 1}`;
     }
     const radio = opts.radio || 18;
     capas.forEach((n, i) => {
       pos[i].forEach(([x, y], j) => {
         const activo = opts.resaltado && opts.resaltado(i, j);
-        api.el('circle', { cx: x, cy: y, r: radio, fill: c.superficie, stroke: activo ? c.acento : c.suave, 'stroke-width': activo ? 3 : 1.4 }, g);
+        const nodo = api.el('circle', { cx: x, cy: y, r: radio, fill: c.superficie, stroke: activo ? c.acento : c.suave, 'stroke-width': activo ? 3 : 1.4 }, g);
         const val = opts.valorNodo ? opts.valorNodo(i, j) : null;
-        api.el('text', { x, y: y + 4, 'text-anchor': 'middle', 'font-size': val !== null && val !== undefined ? 11 : 12, 'font-weight': 700, fill: val !== null && val !== undefined ? c.texto : c.suave, text: val !== null && val !== undefined ? val : '?' }, g);
+        const hay = val !== null && val !== undefined;
+        const t = api.el('text', { x, y: y + F * 0.35, 'text-anchor': 'middle', 'font-size': F, 'font-weight': 700, fill: hay ? c.texto : c.suave, text: hay ? val : '?', 'pointer-events': 'none' }, g);
+        api.inspeccionable(nodo, `${nombreNodo(i, j)}: ${hay ? 'valor ' + val : 'aún sin calcular'}`);
         if (opts.etiquetaNodo) {
           const et = opts.etiquetaNodo(i, j);
-          if (et) api.el('text', { x, y: y - radio - 6, 'text-anchor': 'middle', 'font-size': 10, fill: c.suave, text: et }, g);
+          if (et) api.el('text', { x: opts.vertical ? x + radio + 3 : x, y: opts.vertical ? y - radio + F * 0.6 : y - radio - 6, 'text-anchor': opts.vertical ? 'start' : 'middle', 'font-size': F, fill: c.suave, text: et, 'pointer-events': 'none' }, g);
         }
       });
     });
+    tocables.forEach(f => f());
   }
-  function radioDe(alto, capas) { return Math.min(20, Math.max(11, alto / (Math.max(...capas) * 2.6))); }
+  function radioDe(dim, capas) {
+    const lado = dim.vertical ? dim.ancho : dim.alto;
+    return Math.min(22, Math.max(dim.tactil ? 18 : 11, lado / (Math.max(...capas) * 2.6)));
+  }
   function etiquetaCapa(capas) {
     return (i, j) => (i === 0 ? `x${j + 1}` : i === capas.length - 1 ? `y${capas[i] > 1 ? j + 1 : ''}` : `h${j + 1}`);
   }
@@ -137,7 +158,9 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, lectura);
+    Z.controles.append(controles);
 
     entrada.forEach((v, k) => controles.append(api.slider({ etiqueta: `x${k + 1}`, min: -2, max: 2, paso: 0.1, valor: v, alCambiar: val => { entrada[k] = val; dibujar(); } })));
     for (let k = 0; k < capas[0]; k++) {
@@ -149,13 +172,13 @@
     function dibujar() {
       const c = api.colores();
       grafica.innerHTML = '';
-      const dim = tamaño(el, capas);
+      const dim = tamaño(el, capas, api);
       const s = api.svg(dim.ancho, dim.alto);
       grafica.append(s);
-      const pos = layout(capas, dim.ancho, dim.alto);
+      const pos = layout(capas, dim);
       const { acts, zs } = propagar(capas, pesos, act, entrada);
       dibujarRed(api, s, c, capas, pos, i => pesos[i].W, {
-        radio: radioDe(dim.alto, capas),
+        radio: radioDe(dim, capas), vertical: dim.vertical,
         valorNodo: (i, j) => num(acts[i][j], 2),
         etiquetaNodo: etiquetaCapa(capas),
       });
@@ -183,29 +206,24 @@
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const tablaEnv = H('div', {});
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, tablaEnv, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, lectura, tablaEnv);
+    Z.controles.append(controles);
 
     const combos = [[0, 0], [0, 1], [1, 0], [1, 1]];
-    const grupo = H('div', { class: 'motor-selector', role: 'group', 'aria-label': 'Elegir entrada' });
-    combos.forEach(([a, b]) => {
-      const boton = api.boton(`(${a}, ${b})`, () => { E.entrada = [a, b]; marcar(); dibujar(); });
-      boton.dataset.a = a; boton.dataset.b = b;
-      grupo.append(boton);
-    });
-    function marcar() { grupo.querySelectorAll('button').forEach(bt => bt.setAttribute('aria-pressed', String(Number(bt.dataset.a) === E.entrada[0] && Number(bt.dataset.b) === E.entrada[1]))); }
-    marcar();
-    controles.append(grupo);
+    controles.append(api.segmentado(combos.map(([a, b]) => ({ valor: a + ',' + b, texto: `(${a}, ${b})` })),
+      { valor: E.entrada.join(','), etiqueta: 'Elegir entrada', titulo: 'Entrada', alCambiar: (v) => { E.entrada = v.split(',').map(Number); dibujar(); } }));
 
     function dibujar() {
       const c = api.colores();
       grafica.innerHTML = '';
-      const dim = tamaño(el, capas);
+      const dim = tamaño(el, capas, api);
       const s = api.svg(dim.ancho, dim.alto);
       grafica.append(s);
-      const pos = layout(capas, dim.ancho, dim.alto);
+      const pos = layout(capas, dim);
       const { acts } = propagar(capas, pesos, act, E.entrada);
       dibujarRed(api, s, c, capas, pos, i => pesos[i].W, {
-        radio: radioDe(dim.alto, capas),
+        radio: radioDe(dim, capas), vertical: dim.vertical,
         valorNodo: (i, j) => num(acts[i][j], 2),
         etiquetaNodo: etiquetaCapa(capas),
       });
@@ -249,21 +267,21 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
-
-    const bPaso = api.boton('Paso →', () => { if (E.capa < L) { E.capa++; dibujar(); } }, { class: 'boton boton-principal' });
-    const bFinal = api.boton('Hasta el final', () => { E.capa = L; dibujar(); });
-    controles.append(bPaso, bFinal, api.boton('Reiniciar', () => { E.capa = 0; dibujar(); }));
+    const Z = api.zonas(el, { pieFijo: true });
+    Z.grafico.append(grafica, lectura);
+    const ir = (k) => { E.capa = Math.max(0, Math.min(L, k)); dibujar(); };
+    const barra = api.barraPasos({ alAnterior: () => ir(E.capa - 1), alSiguiente: () => ir(E.capa + 1), alReiniciar: () => ir(0) });
+    Z.controles.append(barra);
 
     function dibujar() {
       const c = api.colores();
       grafica.innerHTML = '';
-      const dim = tamaño(el, capas);
+      const dim = tamaño(el, capas, api);
       const s = api.svg(dim.ancho, dim.alto);
       grafica.append(s);
-      const pos = layout(capas, dim.ancho, dim.alto);
+      const pos = layout(capas, dim);
       dibujarRed(api, s, c, capas, pos, i => pesos[i].W, {
-        radio: radioDe(dim.alto, capas),
+        radio: radioDe(dim, capas), vertical: dim.vertical,
         resaltado: (i) => i === E.capa,
         valorNodo: (i, j) => (i <= E.capa ? num(acts[i][j], 2) : null),
         etiquetaNodo: etiquetaCapa(capas),
@@ -279,8 +297,7 @@
         texto = `<p>Capa ${E.capa}${E.capa === L ? ' (salida)' : ''}:</p>` + det.map(t2 => `<p>${t2}</p>`).join('');
       }
       lectura.innerHTML = texto;
-      bPaso.disabled = E.capa >= L;
-      bFinal.disabled = bPaso.disabled;
+      barra.poner(E.capa, L + 1);
       s.setAttribute('role', 'img');
       s.setAttribute('aria-label', `Propagación hacia delante, capa ${E.capa} de ${L}.`);
     }
@@ -314,7 +331,9 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, lectura);
+    Z.controles.append(controles);
 
     const bPaso = api.boton('Paso →', paso, { class: 'boton boton-principal' });
     const bAplicar = api.boton('Aplicar un paso de descenso', aplicar);
@@ -347,15 +366,15 @@
     function dibujar() {
       const c = api.colores();
       grafica.innerHTML = '';
-      const dim = tamaño(el, capas);
+      const dim = tamaño(el, capas, api);
       const s = api.svg(dim.ancho, dim.alto);
       grafica.append(s);
-      const pos = layout(capas, dim.ancho, dim.alto);
+      const pos = layout(capas, dim);
       const enBack = E.fase !== 'adelante';
       dibujarRed(api, s, c, capas, pos,
         i => (enBack && i + 1 >= E.deltaCapa ? ultimo.grad[i].dW : pesos[i].W),
         {
-          radio: radioDe(dim.alto, capas),
+          radio: radioDe(dim, capas), vertical: dim.vertical,
           resaltado: (i) => (E.fase === 'adelante' ? i === E.capa : i === E.deltaCapa),
           valorNodo: (i, j) => (E.fase === 'adelante' && i > E.capa ? null : num(ultimo.acts[i][j], 2)),
           etiquetaNodo: etiquetaCapa(capas),

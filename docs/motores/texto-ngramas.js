@@ -10,12 +10,14 @@
     const E = { texto: (p.textos && p.textos[0]) || 'el gato negro duerme sobre el sofá viejo cerca de la ventana', n: p.n || 2, pos: 0 };
 
     const entrada = H('div', { class: 'motor-fila' });
-    const cinta = H('div', { class: 'motor-grafica' });
+    const cinta = H('div', { class: 'motor-grafica', style: 'display:flex;flex-wrap:wrap;gap:.25rem' });
     const controles = H('div', { class: 'motor-controles' });
     const grafica = H('div', { class: 'motor-grafica' });
     const tabla = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
-    el.append(entrada, cinta, controles, grafica, tabla, lectura);
+    const Z = api.zonas(el);
+    Z.grafico.append(entrada, cinta, grafica, tabla, lectura);
+    Z.controles.append(controles);
     entrada.append(Texto.textoEditable(api, E.texto, v => { E.texto = v; ajustarLimites(); dibujar(); }, 'Texto de ejemplo (editable)'));
 
     let sPos;
@@ -65,20 +67,10 @@
 
       // ───── barras horizontales con los n-gramas más frecuentes ─────
       const top = filas.slice(0, 8);
-      const maxCnt = Math.max(...top.map(f => f[1]), 1);
-      const alturaFila = 24, alto = Math.max(50, top.length * alturaFila + 14), anchoEtiqueta = 150;
-      const W = Math.max(320, Math.min(el.clientWidth || 640, 780));
       grafica.innerHTML = '';
-      const s = api.svg(W, alto);
+      const s = Texto.graficoBarras(api, c, grafica, top);
       s.setAttribute('role', 'img');
       grafica.append(s);
-      const x0 = anchoEtiqueta, xMax = W - 36;
-      top.forEach(([g, cnt], i) => {
-        const y = 8 + i * alturaFila, w = cnt / maxCnt * (xMax - x0);
-        api.el('text', { x: x0 - 8, y: y + 14, 'text-anchor': 'end', 'font-size': 12, fill: c.texto, text: g }, s);
-        api.el('rect', { x: x0, y, width: Math.max(1, w), height: 15, fill: c.acento, 'fill-opacity': 0.75, rx: 3 }, s);
-        api.el('text', { x: x0 + w + 6, y: y + 12, 'font-size': 11, fill: c.suave, text: cnt }, s);
-      });
       s.setAttribute('aria-label', `Los ${top.length} n-gramas más frecuentes, de tamaño ${E.n}.`);
 
       const actual = toks.slice(E.pos, E.pos + E.n).join(' ');

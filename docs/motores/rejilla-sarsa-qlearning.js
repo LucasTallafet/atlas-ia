@@ -46,13 +46,11 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
-    const grupo = H('div', { class: 'motor-selector', role: 'group', 'aria-label': 'Algoritmo' });
-    const bS = api.boton('SARSA (on-policy)', () => { E.algoritmo = 'sarsa'; marcar(); parar(); iniciar(); dibujar(); });
-    const bQ = api.boton('Q-learning (off-policy)', () => { E.algoritmo = 'qlearning'; marcar(); parar(); iniciar(); dibujar(); });
-    grupo.append(bS, bQ); controles.append(grupo);
-    function marcar() { bS.setAttribute('aria-pressed', String(E.algoritmo === 'sarsa')); bQ.setAttribute('aria-pressed', String(E.algoritmo === 'qlearning')); }
-    marcar();
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, lectura);
+    Z.controles.append(controles);
+    controles.append(api.segmentado([{ valor: 'sarsa', texto: 'SARSA (on-policy)' }, { valor: 'qlearning', texto: 'Q-learning (off-policy)' }],
+      { valor: E.algoritmo, etiqueta: 'Algoritmo', alCambiar: (v) => { E.algoritmo = v; parar(); iniciar(); dibujar(); } }));
     controles.append(
       api.slider({ etiqueta: 'ε (exploración)', min: 0, max: 0.5, paso: 0.01, valor: E.epsilon, alCambiar: v => { E.epsilon = v; } }),
       api.slider({ etiqueta: 'α (paso de aprendizaje)', min: 0.05, max: 1, paso: 0.05, valor: E.alpha, alCambiar: v => { E.alpha = v; } }),
@@ -94,7 +92,7 @@
           : 'Q-learning actualiza Q con la mejor acción posible del siguiente estado (off-policy), aunque luego explore otra cosa: aprende la ruta óptima justo al borde del acantilado, aunque al explorar caiga alguna vez.'}</p>`;
     }
     dibujar();
-    return { redibujar: dibujar, destruir: parar };
+    return { redibujar: dibujar, destruir: parar, pausar: parar };
   });
   }
 })();

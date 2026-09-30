@@ -39,7 +39,9 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, lectura);
+    Z.controles.append(controles);
     controles.append(api.slider({ etiqueta: 'α (paso de aprendizaje)', min: 0.05, max: 1, paso: 0.05, valor: E.alpha, alCambiar: v => { E.alpha = v; } }));
     let temporizador = null;
     const bPaso = api.boton('Paso →', () => { parar(); pasoTD(); dibujar(); }, { class: 'boton boton-principal' });
@@ -70,7 +72,7 @@
         `<p>Cada paso corrige V(s) con el error TD = ${num(ultimoError, 3)} = recompensa + γ·V(s') − V(s), usando la propia estimación de V(s') sin esperar a que acabe el episodio.</p>`;
     }
     dibujar();
-    return { redibujar: dibujar, destruir: parar };
+    return { redibujar: dibujar, destruir: parar, pausar: parar };
   });
   }
 })();

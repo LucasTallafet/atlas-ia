@@ -51,7 +51,9 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, lectura);
+    Z.controles.append(controles);
     controles.append(api.slider({ etiqueta: 'ε (exploración)', min: 0, max: 1, paso: 0.02, valor: E.epsilon, alCambiar: v => { E.epsilon = v; } }));
     let temporizador = null;
     const bPaso = api.boton('Episodio →', () => { parar(); episodio(); dibujar(); }, { class: 'boton boton-principal' });
@@ -89,7 +91,7 @@
         `<p>Cada episodio completo actualiza Q(s, a) con el retorno real observado desde esa visita (línea de color = último recorrido); no hace falta conocer las probabilidades de transición del mundo.</p>`;
     }
     dibujar();
-    return { redibujar: dibujar, destruir: parar };
+    return { redibujar: dibujar, destruir: parar, pausar: parar };
   });
   }
 })();

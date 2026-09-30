@@ -24,7 +24,8 @@
     const lineas = envolver(etiqueta);
     const maxLen = Math.max(...lineas.map(l => l.length));
     const w = Math.max(84, Math.min(172, maxLen * 7.3 + 28));
-    const h = (lineas.length > 1 ? 50 : 38) + (altoExtra || 0);
+    const tactil = window.matchMedia('(pointer: coarse), (max-width: 599.98px)').matches;   // objetivo táctil ≥ 44 px
+    const h = (lineas.length > 1 ? 50 : (tactil ? 46 : 38)) + (altoExtra || 0);
     return { lineas, w, h };
   }
 
@@ -74,7 +75,7 @@
     const cruzado = Math.max(...capas.map(ids => ids.reduce((s, id) => s + ladoCruzado(id) + gapCruzado, 0) + gapCruzado));
     const base = Math.max(320, Math.min(el.clientWidth || 640, 760));
     if (horizontal) return { ancho: Math.max(base, principal), alto: Math.max(150, Math.min(cruzado, 420)), margen };
-    return { ancho: Math.max(base, Math.min(cruzado, 760)), alto: Math.max(150, Math.min(principal, 480)), margen };
+    return { ancho: Math.max(base, Math.min(cruzado, 760)), alto: Math.max(150, Math.min(principal, (el.clientWidth || 640) < 560 ? 720 : 480)), margen };
   }
   function posicionar(capas, cajas, ancho, alto, horizontal, margen) {
     const nCapas = capas.length;
@@ -150,27 +151,29 @@
     const rect = api.el('rect', { x: cx - w / 2, y: cy - h / 2, width: w, height: h, rx: 8, fill: opts.fill || c.superficie, stroke: opts.stroke || c.linea, 'stroke-width': opts.grosor || 1.3 }, g);
     const n = lineas.length;
     lineas.forEach((linea, i) => {
-      api.el('text', { x: cx, y: cy - (n - 1) * 7 + i * 14 + 4, 'text-anchor': 'middle', 'font-size': 12, 'font-weight': opts.negrita ? 700 : 500, fill: opts.colorTexto || c.texto, text: linea, 'pointer-events': 'none' }, g);
+      const F = opts.F || 12;
+      api.el('text', { x: cx, y: cy - (n - 1) * F * 0.6 + i * F * 1.2 + F * 0.33, 'text-anchor': 'middle', 'font-size': F, 'font-weight': opts.negrita ? 700 : 500, fill: opts.colorTexto || c.texto, text: linea, 'pointer-events': 'none' }, g);
     });
     return rect;
   }
-  function aristaCaja(api, g, c, A, B, horizontal, idMarcador, etiqueta, atenuada) {
+  function aristaCaja(api, g, c, A, B, horizontal, idMarcador, etiqueta, atenuada, F) {
     const p0 = horizontal ? [A.x + A.w / 2, A.y] : [A.x, A.y + A.h / 2];
     const p1 = horizontal ? [B.x - B.w / 2, B.y] : [B.x, B.y - B.h / 2];
     api.el('line', { x1: p0[0], y1: p0[1], x2: p1[0], y2: p1[1], stroke: c.suave, 'stroke-width': 1.6, opacity: atenuada ? 0.22 : 0.8, 'marker-end': `url(#${idMarcador})` }, g);
     if (etiqueta) {
       const mx = (p0[0] + p1[0]) / 2, my = (p0[1] + p1[1]) / 2;
-      api.el('text', { x: mx, y: my - 5, 'text-anchor': 'middle', 'font-size': 10, fill: c.suave, opacity: atenuada ? 0.3 : 1, 'paint-order': 'stroke', stroke: c.superficie, 'stroke-width': 3, text: etiqueta }, g);
+      // En vertical la etiqueta va al lado de la flecha (hay hueco entre capas); en horizontal, encima.
+      api.el('text', { x: horizontal ? mx : mx + 8, y: horizontal ? my - 5 : my + F * 0.35, 'text-anchor': horizontal ? 'middle' : 'start', 'font-size': F || 12, fill: c.suave, opacity: atenuada ? 0.3 : 1, 'paint-order': 'stroke', stroke: c.superficie, 'stroke-width': 3, text: etiqueta }, g);
     }
   }
-  function aristaCirculo(api, g, c, pA, pB, radio, idMarcador, etiqueta, atenuada) {
+  function aristaCirculo(api, g, c, pA, pB, radio, idMarcador, etiqueta, atenuada, F) {
     const dx = pB[0] - pA[0], dy = pB[1] - pA[1], d = Math.max(1e-4, Math.hypot(dx, dy));
     const ux = dx / d, uy = dy / d;
     const p0 = [pA[0] + ux * radio, pA[1] + uy * radio], p1 = [pB[0] - ux * radio, pB[1] - uy * radio];
     api.el('line', { x1: p0[0], y1: p0[1], x2: p1[0], y2: p1[1], stroke: c.suave, 'stroke-width': 1.5, opacity: atenuada ? 0.18 : 0.7, 'marker-end': `url(#${idMarcador})` }, g);
     if (etiqueta) {
       const mx = (p0[0] + p1[0]) / 2, my = (p0[1] + p1[1]) / 2;
-      api.el('text', { x: mx, y: my - 5, 'text-anchor': 'middle', 'font-size': 10, fill: c.suave, opacity: atenuada ? 0.25 : 1, 'paint-order': 'stroke', stroke: c.superficie, 'stroke-width': 3, text: etiqueta }, g);
+      api.el('text', { x: mx, y: my - 5, 'text-anchor': 'middle', 'font-size': F || 10, fill: c.suave, opacity: atenuada ? 0.25 : 1, 'paint-order': 'stroke', stroke: c.superficie, 'stroke-width': 3, text: etiqueta }, g);
     }
   }
   function esVecino(aristas, a, b) { return aristas.some(([x, y]) => (x === a && y === b) || (x === b && y === a)); }
@@ -187,7 +190,7 @@
     const H = api.html;
     const nodos = p.nodos, aristas = p.aristas || [];
     const nodoPorId = {}; nodos.forEach(n => { nodoPorId[n.id] = n; });
-    const horizontal = p.direccion !== 'vertical';
+    const horizontalPedido = p.direccion !== 'vertical';
     const { capas } = calcularCapas(nodos, aristas);
     const cajas = {}; nodos.forEach(n => { cajas[n.id] = medirCaja(n.etiqueta); });
     const idMarcador = 'flecha-grafo-' + (++CONTADOR);
@@ -195,26 +198,31 @@
 
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
-    el.append(grafica, lectura);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica);
+    Z.controles.append(lectura);
 
     function seleccionar(id) { E.sel = E.sel === id ? null : id; dibujar(); }
 
     function dibujar() {
       const c = api.colores();
       grafica.innerHTML = '';
+      const horizontal = horizontalPedido && !api.estrecho(el);   // en móvil, siempre de arriba abajo
       const dim = tamaño(el, capas, cajas, horizontal);
       const s = api.svg(dim.ancho, dim.alto);
       grafica.append(s);
+      const F = api.fuente(s, 12);
       crearMarcador(api, s, c, idMarcador);
       const pos = posicionar(capas, cajas, dim.ancho, dim.alto, horizontal, dim.margen);
       const g = api.el('g', {}, s);
       aristas.forEach(([a, b, etq]) => {
         if (!pos[a] || !pos[b]) return;
-        aristaCaja(api, g, c, pos[a], pos[b], horizontal, idMarcador, etq, E.sel && E.sel !== a && E.sel !== b);
+        aristaCaja(api, g, c, pos[a], pos[b], horizontal, idMarcador, etq, E.sel && E.sel !== a && E.sel !== b, F);
       });
       nodos.forEach(n => {
         const q = pos[n.id], activo = E.sel === n.id, vecino = E.sel && esVecino(aristas, E.sel, n.id);
         const rect = dibujarCaja(api, g, c, q.x, q.y, q.w, q.h, q.lineas, {
+          F,
           fill: activo ? c.acento : c.superficie,
           stroke: activo ? c.acento : (vecino ? c.suave : c.linea),
           grosor: activo ? 2.4 : (vecino ? 1.8 : 1.3),
@@ -248,11 +256,40 @@
     const nodoPorId = {}; nodos.forEach(n => { nodoPorId[n.id] = n; });
     const posNorm = layoutFuerza(nodos, aristas, api);
     const idMarcador = 'flecha-grafo-' + (++CONTADOR);
-    const E = { sel: null };
+    // Vista (zoom y desplazamiento) y posiciones movidas a mano (normalizadas [0,1]). Reiniciar/Centrar las restaura.
+    const E = { sel: null, k: 1, tx: 0, ty: 0, mov: {}, pellizco: false };
 
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
-    el.append(grafica, lectura);
+    const controles = H('div', { class: 'motor-controles' });
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, lectura);
+    Z.controles.append(controles);
+    const MX = 60, MT = 26, MB = 44;   // márgenes: dejan sitio a las etiquetas bajo los nodos
+    let svgActual = null, dimActual = { ancho: 300, alto: 240 };
+
+    function zoom(f, cx, cy) {   // (cx, cy) en unidades del viewBox; por defecto, el centro
+      const k2 = Math.max(0.6, Math.min(4, E.k * f));
+      const x = cx === undefined ? dimActual.ancho / 2 : cx, y = cy === undefined ? dimActual.alto / 2 : cy;
+      E.tx = x - (x - E.tx) * k2 / E.k; E.ty = y - (y - E.ty) * k2 / E.k; E.k = k2;
+      dibujar();
+    }
+    controles.append(
+      api.boton('+', () => zoom(1.3), { 'aria-label': 'Acercar' }),
+      api.boton('−', () => zoom(1 / 1.3), { 'aria-label': 'Alejar' }),
+      api.boton('Centrar', () => { E.k = 1; E.tx = 0; E.ty = 0; E.mov = {}; dibujar(); }, { 'aria-label': 'Centrar y recolocar los nodos' }),
+      H('span', { text: 'Arrastra un nodo para moverlo; pellizca para ampliar y desplaza con dos dedos.' }));
+    api.pellizcar(grafica, {
+      alEmpezar: () => { E.pellizco = true; },
+      alMover: (g) => {
+        if (!svgActual) return;
+        const q = api.aSvg(svgActual, { x: g.cx, y: g.cy });
+        const r = svgActual.getBoundingClientRect(), esc = dimActual.ancho / (r.width || 1);
+        E.tx += g.dx * esc; E.ty += g.dy * esc;
+        zoom(g.escala, q.x, q.y);
+      },
+      alSoltar: () => { E.pellizco = false; },
+    });
 
     function seleccionar(id) { E.sel = E.sel === id ? null : id; dibujar(); }
 
@@ -263,26 +300,46 @@
       const alto = Math.max(240, Math.min(ancho * 0.78, 440));
       const s = api.svg(ancho, alto);
       grafica.append(s);
+      svgActual = s; dimActual = { ancho, alto };
+      const F = api.fuente(s, 12);
       crearMarcador(api, s, c, idMarcador);
-      const radio = 20;
+      const radio = 22;
       const pos = {};
       nodos.forEach(n => {
-        const [nx, ny] = posNorm[n.id];
-        pos[n.id] = [16 + nx * (ancho - 32), 16 + ny * (alto - 32)];
+        const [nx, ny] = E.mov[n.id] || posNorm[n.id];
+        pos[n.id] = [MX + nx * (ancho - 2 * MX), MT + ny * (alto - MT - MB)];
       });
-      const g = api.el('g', {}, s);
+      const g = api.el('g', { transform: `translate(${E.tx} ${E.ty}) scale(${E.k})` }, s);
+      const Fz = F / E.k;   // el texto no crece con el zoom
       aristas.forEach(([a, b, etq]) => {
         if (!pos[a] || !pos[b]) return;
-        aristaCirculo(api, g, c, pos[a], pos[b], radio, idMarcador, etq, E.sel && E.sel !== a && E.sel !== b);
+        aristaCirculo(api, g, c, pos[a], pos[b], radio, idMarcador, etq, E.sel && E.sel !== a && E.sel !== b, Fz);
       });
       nodos.forEach((n, i) => {
         const [x, y] = pos[n.id], activo = E.sel === n.id, vecino = E.sel && esVecino(aristas, E.sel, n.id);
         const col = c.series[i % 8];
         const atenuado = E.sel && !activo && !vecino;
         const circ = api.el('circle', { cx: x, cy: y, r: radio, fill: activo ? col : c.superficie, stroke: col, 'stroke-width': activo ? 3 : (vecino ? 2.2 : 1.4), opacity: atenuado ? 0.35 : 1 }, g);
-        api.el('text', { x, y: y + radio + 13, 'text-anchor': 'middle', 'font-size': 11, 'font-weight': activo ? 700 : 500, fill: activo ? col : c.texto, opacity: atenuado ? 0.35 : 1, text: n.etiqueta }, g);
+        api.el('text', { x, y: y + radio + Fz * 1.15, 'text-anchor': 'middle', 'font-size': Fz, 'font-weight': activo ? 700 : 500, fill: activo ? col : c.texto, opacity: atenuado ? 0.35 : 1, text: n.etiqueta, 'pointer-events': 'none' }, g);
         circ.setAttribute('aria-label', n.etiqueta + (activo ? ', seleccionado' : ''));
         accesible(circ, () => seleccionar(n.id));
+        // Arrastre del nodo: un toque sin arrastre lo selecciona (click); arrastrar lo mueve sin desplazar la página.
+        api.arrastrable(circ, {
+          zona: grafica, clave: 'nodo-' + n.id, radio: 24, tactil: 'none', etiqueta: 'Nodo ' + n.etiqueta,
+          valor: () => n.etiqueta,
+          alMover: (pt) => {
+            if (E.pellizco) return;
+            const q = api.aSvg(s, pt);
+            const x2 = (q.x - E.tx) / E.k, y2 = (q.y - E.ty) / E.k;
+            E.mov[n.id] = [Math.max(0, Math.min(1, (x2 - MX) / (ancho - 2 * MX))), Math.max(0, Math.min(1, (y2 - MT) / (alto - MT - MB)))];
+            dibujar();
+          },
+          alTecla: (dx, dy) => {
+            const [nx, ny] = E.mov[n.id] || posNorm[n.id];
+            E.mov[n.id] = [Math.max(0, Math.min(1, nx + dx * 0.03)), Math.max(0, Math.min(1, ny - dy * 0.03))];
+            dibujar();
+          },
+        });
       });
       s.setAttribute('role', 'img');
       s.setAttribute('aria-label', 'Grafo de conocimiento con ' + nodos.length + ' conceptos.');
@@ -328,7 +385,7 @@
     const H = api.html, num = api.num;
     const nodos = p.nodos, aristas = p.aristas || [];
     nodos.forEach(n => { if (!n.tabla) throw new Error('El nodo "' + n.id + '" necesita "tabla" en el modo red-bayesiana'); });
-    const horizontal = p.direccion !== 'vertical';
+    const horizontalPedido = p.direccion !== 'vertical';
     const { capas } = calcularCapas(nodos, aristas);
     const padresDe = {}; nodos.forEach(n => { padresDe[n.id] = []; });
     aristas.forEach(([a, b]) => { if (padresDe[b]) padresDe[b].push(a); });
@@ -341,7 +398,9 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, lectura);
+    Z.controles.append(controles);
     controles.append(api.boton('Reiniciar (sin observaciones)', () => { evidencia = {}; M = inferir(nodos, padresDe, evidencia); dibujar(); }));
 
     function ciclar(id) {
@@ -355,21 +414,23 @@
     function dibujar() {
       const c = api.colores();
       grafica.innerHTML = '';
+      const horizontal = horizontalPedido && !api.estrecho(el);   // en móvil, siempre de arriba abajo
       const dim = tamaño(el, capas, cajas, horizontal);
       const s = api.svg(dim.ancho, dim.alto);
       grafica.append(s);
+      const F = api.fuente(s, 12);
       crearMarcador(api, s, c, idMarcador);
       const pos = posicionar(capas, cajas, dim.ancho, dim.alto, horizontal, dim.margen);
       const g = api.el('g', {}, s);
-      aristas.forEach(([a, b]) => { if (pos[a] && pos[b]) aristaCaja(api, g, c, pos[a], pos[b], horizontal, idMarcador, null, false); });
+      aristas.forEach(([a, b]) => { if (pos[a] && pos[b]) aristaCaja(api, g, c, pos[a], pos[b], horizontal, idMarcador, null, false, F); });
       nodos.forEach(n => {
         const q = pos[n.id], vals = valoresDe(n), obs = n.id in evidencia, p1 = M[n.id];
         const borde = obs ? (evidencia[n.id] === 1 ? c.acento : c.mal) : c.linea;
-        const rect = dibujarCaja(api, g, c, q.x, q.y, q.w, q.h, q.lineas, { stroke: borde, grosor: obs ? 2.6 : 1.3 });
+        const rect = dibujarCaja(api, g, c, q.x, q.y, q.w, q.h, q.lineas, { F, stroke: borde, grosor: obs ? 2.6 : 1.3 });
         const bw = q.w - 14, bx = q.x - bw / 2, by = q.y + q.h / 2 - 12;
         api.el('rect', { x: bx, y: by, width: bw, height: 7, rx: 3, fill: c.rejilla, 'pointer-events': 'none' }, g);
         api.el('rect', { x: bx, y: by, width: bw * Math.max(0, Math.min(1, p1)), height: 7, rx: 3, fill: obs ? borde : c.acento, 'pointer-events': 'none' }, g);
-        api.el('text', { x: q.x, y: by - 4, 'text-anchor': 'middle', 'font-size': 10, fill: c.suave, text: obs ? (vals[evidencia[n.id]] + ' (fijado)') : ('P(' + vals[1] + ') = ' + num(p1, 2)), 'pointer-events': 'none' }, g);
+        api.el('text', { x: q.x, y: by - 4, 'text-anchor': 'middle', 'font-size': F, fill: c.suave, text: obs ? (vals[evidencia[n.id]] + ' (fijado)') : ('P(' + vals[1] + ') = ' + num(p1, 2)), 'pointer-events': 'none' }, g);
         rect.setAttribute('aria-label', n.etiqueta + ': ' + (obs ? 'fijado a ' + vals[evidencia[n.id]] : 'probabilidad ' + num(p1, 2)) + '. Pulsa para cambiar la observación.');
         accesible(rect, () => ciclar(n.id));
       });

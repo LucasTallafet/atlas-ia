@@ -420,6 +420,39 @@
     if (!(e.pointerType === 'touch' && mejor.tactil !== 'none')) iniciar(e);
   }
 
+  // pellizcar(zona, {alEmpezar(), alMover({escala, dx, dy, cx, cy}), alSoltar()}): gesto de dos dedos (táctil o lápiz)
+  // sobre la zona. escala = cambio relativo de la distancia entre dedos; dx, dy = desplazamiento del punto medio;
+  // cx, cy = punto medio en píxeles de ventana. Compatible con arrastrable: la zona debe llevar touch-action: none.
+  function pellizcar(zona, o) {
+    const dedos = new Map();
+    let ult = null;
+    const medir = () => {
+      const [a, b] = Array.from(dedos.values());
+      return { d: Math.hypot(a.x - b.x, a.y - b.y) || 1, cx: (a.x + b.x) / 2, cy: (a.y + b.y) / 2 };
+    };
+    zona.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'mouse') return;
+      dedos.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (dedos.size === 2) { ult = medir(); if (o.alEmpezar) o.alEmpezar(); }
+    });
+    window.addEventListener('pointermove', (e) => {
+      const p = dedos.get(e.pointerId);
+      if (!p) return;
+      p.x = e.clientX; p.y = e.clientY;
+      if (dedos.size === 2 && ult) {
+        const m = medir();
+        o.alMover({ escala: m.d / ult.d, dx: m.cx - ult.cx, dy: m.cy - ult.cy, cx: m.cx, cy: m.cy });
+        ult = m;
+      }
+    });
+    const fin = (e) => {
+      if (!dedos.delete(e.pointerId)) return;
+      if (ult && dedos.size < 2) { ult = null; if (o.alSoltar) o.alSoltar(); }
+    };
+    window.addEventListener('pointerup', fin);
+    window.addEventListener('pointercancel', fin);
+  }
+
   // inspeccionable(elemento, texto | () => texto): sustituye a <title> y al hover. Con ratón, la etiqueta sale al
   // pasar por encima; con el dedo, al tocar, y se queda hasta tocar en otro sitio (o otra vez en el mismo).
   let ultimoPuntero = 'mouse';
@@ -561,7 +594,7 @@
 
   const api = {
     colores, num, aleatorio, expr, slider, boton, fila, tex, svg, el: svgEl, html, escala, marcas,
-    arrastrable, inspeccionable, aSvg, segmentado, barraPasos, zonas, medida, fuente, lienzoNitido, bucle, enPantalla, estrecho, gruesa, reducido,
+    arrastrable, pellizcar, inspeccionable, aSvg, segmentado, barraPasos, zonas, medida, fuente, lienzoNitido, bucle, enPantalla, estrecho, gruesa, reducido,
   };
 
   // ───────────── Ampliar a pantalla completa ─────────────

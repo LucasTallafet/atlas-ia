@@ -37,7 +37,9 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, lectura);
+    Z.controles.append(controles);
     controles.append(
       api.boton('Barrida →', () => { unaBarrida(); dibujar(); }, { class: 'boton boton-principal' }),
       api.boton('Hasta converger', () => { hastaConverger(); dibujar(); }),

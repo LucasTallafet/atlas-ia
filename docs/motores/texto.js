@@ -69,8 +69,24 @@
   function textoEditable(api, valor, alCambiar, etiqueta) {
     const ta = api.html('textarea', { class: 'motor-textarea', 'aria-label': etiqueta || 'Texto de ejemplo (editable)' });
     ta.value = valor;
+    ta.style.fontSize = '16px';   // ≥ 16 px: Android no amplía la página al enfocar
     ta.addEventListener('input', () => alCambiar(ta.value));
     return ta;
+  }
+  // Barras horizontales con la etiqueta encima de cada barra (sin recortes en pantallas estrechas).
+  function graficoBarras(api, c, el, datos) {
+    const W = api.medida(el, { maxAncho: 640, minAncho: 280 }).ancho;
+    const fila = 44, alto = datos.length * fila + 6;
+    const s = api.svg(W, alto);
+    const F = api.fuente(s, 12);
+    const X = api.escala(0, Math.max(1e-9, ...datos.map(d => d[1])), 0, W - 56);
+    datos.forEach(([et, val, d3], i) => {
+      const y = i * fila + 3;
+      api.el('text', { x: 2, y: y + F, 'font-size': F, fill: c.texto, text: et }, s);
+      api.el('rect', { x: 2, y: y + F + 6, width: Math.max(2, X(val)), height: 14, rx: 3, fill: c.acento }, s);
+      api.el('text', { x: X(val) + 8, y: y + F + 18, 'font-size': F, fill: c.suave, text: d3 === undefined ? String(val) : d3 }, s);
+    });
+    return s;
   }
 
   // ───────────────────────── limpieza ─────────────────────────
@@ -90,7 +106,9 @@
     const etapas = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(entrada, controles, grafica, etapas, lectura);
+    const Z = api.zonas(el);
+    Z.grafico.append(entrada, grafica, etapas, lectura);
+    Z.controles.append(controles);
     entrada.append(textoEditable(api, E.texto, v => { E.texto = v; dibujar(); }));
     orden.forEach(nombre => {
       const b = api.boton(PASO[nombre].etiqueta, () => {
@@ -119,17 +137,7 @@
       grafica.innerHTML = '';
       const c = api.colores();
       const valoresBarra = etapasTxt.map(([, txt]) => partirEspacios(txt).length);
-      const Wb = Math.max(280, Math.min(el.clientWidth || 520, 640));
-      const filaAltoB = 26, Lb = 130, altoB = etapasTxt.length * filaAltoB + 8;
-      const sb = api.svg(Wb, altoB);
-      const Xb = api.escala(0, Math.max(1, Math.max(...valoresBarra)), Lb, Wb - 8);
-      etapasTxt.forEach(([et], i) => {
-        const y = i * filaAltoB + 4;
-        api.el('text', { x: Lb - 8, y: y + filaAltoB - 11, 'text-anchor': 'end', 'font-size': 11, fill: c.texto, text: et }, sb);
-        api.el('rect', { x: Lb, y, width: Math.max(1, Xb(valoresBarra[i]) - Lb), height: filaAltoB - 8, fill: c.acento }, sb);
-        api.el('text', { x: Xb(valoresBarra[i]) + 6, y: y + filaAltoB - 11, 'font-size': 11, fill: c.suave, text: String(valoresBarra[i]) }, sb);
-      });
-      grafica.append(sb);
+      grafica.append(graficoBarras(api, c, grafica, etapasTxt.map(([et], i) => [et, valoresBarra[i]])));
 
       const tokOrig = valoresBarra[0];
       const tokFinal = valoresBarra[valoresBarra.length - 1];
@@ -148,17 +156,19 @@
 
     const entrada = H('div', { class: 'motor-fila' });
     const grafica = H('div', { class: 'motor-grafica' });
-    const columnas = H('div', { class: 'motor-fila' });
+    const columnas = H('div', { class: 'motor-fila', style: 'flex-wrap:wrap;min-width:0' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(entrada, grafica, columnas, lectura, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(entrada, grafica, columnas, lectura);
+    Z.controles.append(controles);
     entrada.append(textoEditable(api, E.texto, v => { E.texto = v; dibujar(); }));
     controles.append(api.boton('Reiniciar', () => { Motores.desmontar(el); Motores.montar(el, 'texto', JSON.parse(JSON.stringify(p))); }));
 
     function columna(titulo, tokens) {
-      const cont = H('div', { class: 'motor-grafica', style: 'flex:1 1 16rem' });
+      const cont = H('div', { class: 'motor-grafica', style: 'flex:1 1 16rem;min-width:0' });
       cont.append(H('p', {}, H('strong', { text: titulo })));
-      const lista = H('div');
+      const lista = H('div', { style: 'display:flex;flex-wrap:wrap;gap:.25rem;min-width:0' });
       tokens.forEach(t => lista.append(H('span', { class: 'chip', style: 'cursor:default;margin:.15rem', text: t })));
       cont.append(lista);
       return cont;
@@ -178,17 +188,7 @@
         ['tokens (palabras)', porPalabras.length],
         ['vocabulario (palabras)', vocabPalabras.size],
       ];
-      const Wb = Math.max(280, Math.min(el.clientWidth || 520, 640));
-      const filaAltoB = 26, Lb = 150, altoB = datos.length * filaAltoB + 8;
-      const sb = api.svg(Wb, altoB);
-      const Xb = api.escala(0, Math.max(1, Math.max(...datos.map(d => d[1]))), Lb, Wb - 8);
-      datos.forEach(([et, val], i) => {
-        const y = i * filaAltoB + 4;
-        api.el('text', { x: Lb - 8, y: y + filaAltoB - 11, 'text-anchor': 'end', 'font-size': 11, fill: c.texto, text: et }, sb);
-        api.el('rect', { x: Lb, y, width: Math.max(1, Xb(val) - Lb), height: filaAltoB - 8, fill: c.acento }, sb);
-        api.el('text', { x: Xb(val) + 6, y: y + filaAltoB - 11, 'font-size': 11, fill: c.suave, text: String(val) }, sb);
-      });
-      grafica.append(sb);
+      grafica.append(graficoBarras(api, c, grafica, datos));
 
       columnas.innerHTML = '';
       columnas.append(
@@ -227,5 +227,5 @@
     },
   });
 
-  window.Texto = { modo: (nombre, fn) => { MODOS[nombre] = fn; }, STOPWORDS_ES, tokenizarPalabras, partirEspacios, escapar, tablaHTML, textoEditable };
+  window.Texto = { graficoBarras, modo: (nombre, fn) => { MODOS[nombre] = fn; }, STOPWORDS_ES, tokenizarPalabras, partirEspacios, escapar, tablaHTML, textoEditable };
 })();

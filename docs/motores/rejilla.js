@@ -119,7 +119,9 @@
   }
   function medidas(el, grid) {
     const dispW = Math.max(220, Math.min(el.clientWidth || 480, 560));
-    const cell = Math.max(26, Math.min(64, Math.floor((dispW - 4) / grid.cols)));
+    // Táctil o estrecho: celdas ≥ 44 px; si la rejilla no cabe, se desplaza en su caja (o se amplía con ⤢).
+    const tactil = window.matchMedia('(pointer: coarse)').matches || (el.clientWidth || 480) < 560;
+    const cell = Math.max(tactil ? 44 : 26, Math.min(64, Math.floor((dispW - 4) / grid.cols)));
     return { cell, ancho: cell * grid.cols + 4, alto: cell * grid.filas + 4 };
   }
   function centro(med, x, y) { return { cx: 2 + x * med.cell + med.cell / 2, cy: 2 + y * med.cell + med.cell / 2 }; }
@@ -153,6 +155,10 @@
     s.setAttribute('role', 'img');
     s.setAttribute('aria-label', `Cuadrícula de ${grid.filas} filas por ${grid.cols} columnas.`);
     cont.append(s);
+    cont.style.overflowX = 'auto';
+    s.style.maxWidth = 'none';
+    s.style.width = med.ancho + 'px';
+    const F = api.fuente(s, 12);
     const g = api.el('g', {}, s);
     for (let y = 0; y < grid.filas; y++) {
       for (let x = 0; x < grid.cols; x++) {
@@ -161,7 +167,7 @@
         const x0 = 2 + x * med.cell, y0 = 2 + y * med.cell, cx = x0 + med.cell / 2, cy = y0 + med.cell / 2;
         const rect = api.el('rect', { x: x0 + 1, y: y0 + 1, width: med.cell - 2, height: med.cell - 2, rx: 5, fill: d.fill || c.superficie, stroke: d.contorno || c.linea, 'stroke-width': d.grosor || 1 }, g);
         // pointer-events: none, para que estos adornos no tapen los clics dirigidos al rect (celda) de abajo
-        if (d.valorTexto) api.el('text', { x: cx, y: y0 + 12, 'text-anchor': 'middle', 'font-size': 9.5, 'font-weight': 600, fill: d.colorValor || c.suave, text: d.valorTexto, 'pointer-events': 'none' }, g);
+        if (d.valorTexto) api.el('text', { x: cx, y: y0 + F + 1, 'text-anchor': 'middle', 'font-size': F, 'font-weight': 600, fill: d.colorValor || c.suave, text: d.valorTexto, 'pointer-events': 'none' }, g);
         if (d.flecha != null) api.el('polygon', { points: puntosFlecha(d.flecha, cx, cy, med.cell * 0.27), fill: d.colorFlecha || c.acento, 'pointer-events': 'none' }, g);
         else if (d.icono) api.el('text', { x: cx, y: cy + Math.round(med.cell * 0.14), 'text-anchor': 'middle', 'font-size': Math.round(med.cell * 0.4), fill: d.colorIcono || c.texto, text: d.icono, 'pointer-events': 'none' }, g);
         if (d.agente) api.el('circle', { cx, cy, r: med.cell * 0.2, fill: d.colorAgente || c.acento, stroke: c.superficie, 'stroke-width': 2, 'pointer-events': 'none' }, g);
@@ -219,7 +225,9 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, lectura);
+    Z.controles.append(controles);
     controles.append(
       api.boton('Oleada →', () => { expandirOleada(); dibujar(); }, { class: 'boton boton-principal' }),
       api.boton('Hasta el final', () => { hastaElFinal(); dibujar(); }),
@@ -259,12 +267,11 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
-    const grupo = H('div', { class: 'motor-selector', role: 'group', 'aria-label': 'Acción a inspeccionar' });
-    ACCIONES.forEach((a, i) => { const b = api.boton(a.flecha + ' ' + a.nombre, () => { E.accion = i; marcar(); dibujar(); }); b.dataset.a = i; grupo.append(b); });
-    function marcar() { grupo.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.a === E.accion))); }
-    controles.append(grupo);
-    marcar();
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, lectura);
+    Z.controles.append(controles);
+    controles.append(api.segmentado(ACCIONES.map((a, i) => ({ valor: i, texto: a.flecha + ' ' + a.nombre })),
+      { valor: E.accion, etiqueta: 'Acción a inspeccionar', titulo: 'Acción', alCambiar: (v) => { E.accion = v; dibujar(); } }));
 
     function dibujar() {
       const c = api.colores();
@@ -314,13 +321,12 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
     const controles = H('div', { class: 'motor-controles' });
-    el.append(grafica, lectura, controles);
+    const Z = api.zonas(el);
+    Z.grafico.append(grafica, lectura);
+    Z.controles.append(controles);
     controles.append(api.slider({ etiqueta: 'γ (factor de descuento)', min: 0.5, max: 0.99, paso: 0.01, valor: E.gamma, alCambiar: v => { E.gamma = v; calcular(); dibujar(); } }));
-    const grupo = H('div', { class: 'motor-selector', role: 'group', 'aria-label': 'Qué mostrar' });
-    [['valores', 'Solo V(s)'], ['politica', 'Solo política'], ['ambas', 'V(s) y política']].forEach(([v, etq]) => { const b = api.boton(etq, () => { E.vista = v; marcar(); dibujar(); }); b.dataset.v = v; grupo.append(b); });
-    function marcar() { grupo.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === E.vista))); }
-    controles.append(grupo);
-    marcar();
+    controles.append(api.segmentado([{ valor: 'valores', texto: 'Solo V(s)' }, { valor: 'politica', texto: 'Solo política' }, { valor: 'ambas', texto: 'V(s) y política' }],
+      { valor: E.vista, etiqueta: 'Qué mostrar', alCambiar: (v) => { E.vista = v; dibujar(); } }));
 
     function dibujar() {
       const c = api.colores();

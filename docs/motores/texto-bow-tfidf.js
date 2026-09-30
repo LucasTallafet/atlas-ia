@@ -21,7 +21,9 @@
     const grafica = H('div', { class: 'motor-grafica' });
     const tabla = H('div', { class: 'motor-grafica' });
     const lectura = H('div', { class: 'motor-lectura', 'aria-live': 'polite' });
-    el.append(docs, opciones, grafica, tabla, lectura);
+    const Z = api.zonas(el);
+    Z.grafico.append(docs, grafica, tabla, lectura);
+    Z.controles.append(opciones);
 
     const areas = E.textos.map((t, i) => {
       const cont = H('div', { style: 'flex:1 1 12rem;min-width:10rem' });
@@ -81,20 +83,10 @@
       // ───── barras horizontales con los términos más relevantes ─────
       const top = filas.slice(0, 8);
       const valor = f => (E.metrica === 'conteo' ? f.conteo : f.tfidf);
-      const maxV = Math.max(...top.map(valor), 1e-9);
-      const alturaFila = 26, alto = Math.max(60, top.length * alturaFila + 16), anchoEtiqueta = 130;
-      const W = Math.max(320, Math.min(el.clientWidth || 640, 780));
       grafica.innerHTML = '';
-      const s = api.svg(W, alto);
+      const s = Texto.graficoBarras(api, c, grafica, top.map(f => [f.t, valor(f), num(valor(f), E.metrica === 'conteo' ? 0 : 3)]));
       s.setAttribute('role', 'img');
       grafica.append(s);
-      const x0 = anchoEtiqueta, xMax = W - 46;
-      top.forEach((f, i) => {
-        const y = 10 + i * alturaFila, w = valor(f) / maxV * (xMax - x0);
-        api.el('text', { x: x0 - 8, y: y + 15, 'text-anchor': 'end', 'font-size': 12, fill: c.texto, text: f.t }, s);
-        api.el('rect', { x: x0, y, width: Math.max(1, w), height: 16, fill: c.acento, 'fill-opacity': 0.75, rx: 3 }, s);
-        api.el('text', { x: x0 + w + 6, y: y + 13, 'font-size': 11, fill: c.suave, text: num(valor(f), E.metrica === 'conteo' ? 0 : 3) }, s);
-      });
       s.setAttribute('aria-label', `Términos más relevantes del documento ${E.doc + 1} según ${E.metrica === 'conteo' ? 'su conteo' : 'TF-IDF'}.`);
 
       // ───── tabla completa ─────
